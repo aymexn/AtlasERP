@@ -23,6 +23,7 @@ export declare class InventoryController {
         reason: string | null;
         date: Date;
         createdBy: string | null;
+        salesOrderId: string | null;
     }>;
     listMovements(req: any): Promise<({
         user: {
@@ -56,6 +57,7 @@ export declare class InventoryController {
         reason: string | null;
         date: Date;
         createdBy: string | null;
+        salesOrderId: string | null;
     })[]>;
     getStock(req: any, warehouseId?: string): Promise<({
         product: {
@@ -133,5 +135,6 @@ export declare class InventoryController {
         reason: string | null;
         date: Date;
         createdBy: string | null;
+        salesOrderId: string | null;
     })[]>;
 }

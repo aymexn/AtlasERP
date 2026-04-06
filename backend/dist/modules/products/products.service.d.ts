@@ -22,6 +22,7 @@ export declare class ProductsService {
             reason: string | null;
             date: Date;
             createdBy: string | null;
+            salesOrderId: string | null;
         }[];
         family: {
             id: string;
@@ -61,6 +62,7 @@ export declare class ProductsService {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     })[]>;
     findOne(id: string, companyId: string): Promise<{
         family: {
@@ -101,6 +103,7 @@ export declare class ProductsService {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
     create(companyId: string, dto: CreateProductDto): Promise<{
         family: {
@@ -141,6 +144,7 @@ export declare class ProductsService {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
     update(id: string, dto: UpdateProductDto, companyId: string): Promise<{
         family: {
@@ -181,6 +185,7 @@ export declare class ProductsService {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
     remove(id: string, companyId: string): Promise<{
         id: string;
@@ -207,5 +212,6 @@ export declare class ProductsService {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
 }

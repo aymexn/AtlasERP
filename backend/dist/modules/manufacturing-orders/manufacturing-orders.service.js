@@ -114,13 +114,30 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         });
         return orders.map(order => {
             const orderJson = JSON.parse(JSON.stringify(order));
-            let hasShortage = false;
+            let blockingShortage = false;
+            let partialShortage = false;
             orderJson.lines.forEach((line) => {
-                if (Number(line.component.stockQuantity) < Number(line.requiredQuantity)) {
-                    hasShortage = true;
+                const required = Number(line.requiredQuantity);
+                const available = Number(line.component.stockQuantity);
+                if (available <= 0 && required > 0) {
+                    blockingShortage = true;
+                }
+                else if (available < required) {
+                    partialShortage = true;
                 }
             });
-            orderJson.stockReadiness = order.status !== 'DRAFT' && order.status !== 'PLANNED' ? 'EXECUTED' : (hasShortage ? 'SHORTAGE' : 'READY');
+            if (['COMPLETED', 'CANCELLED'].includes(order.status)) {
+                orderJson.stockReadiness = 'EXECUTED';
+            }
+            else if (blockingShortage) {
+                orderJson.stockReadiness = 'BLOCKING';
+            }
+            else if (partialShortage) {
+                orderJson.stockReadiness = 'PARTIAL';
+            }
+            else {
+                orderJson.stockReadiness = 'READY';
+            }
             return orderJson;
         });
     }
@@ -210,14 +227,28 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         if (shortages.length > 0) {
             throw new common_1.BadRequestException(`Impossible to start production. Missing components: ${shortages.join(', ')}`);
         }
+        return await this.prisma.manufacturingOrder.update({
+            where: { id },
+            data: {
+                status: 'IN_PROGRESS',
+                startedAt: new Date()
+            }
+        });
+    }
+    async complete(companyId, userId, id, dto) {
+        const order = await this.prisma.manufacturingOrder.findFirst({
+            where: { id, companyId },
+            include: {
+                product: true,
+                lines: { include: { component: true } }
+            }
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Manufacturing order not found');
+        if (order.status !== 'IN_PROGRESS')
+            throw new common_1.BadRequestException('Order must be in IN_PROGRESS status to complete');
         return await this.prisma.$transaction(async (tx) => {
-            await tx.manufacturingOrder.update({
-                where: { id },
-                data: {
-                    status: 'IN_PROGRESS',
-                    startedAt: new Date()
-                }
-            });
+            const producedQty = new client_1.Prisma.Decimal(dto.producedQuantity);
             let totalActualCost = new client_1.Prisma.Decimal(0);
             for (const line of order.lines) {
                 const requiredQty = Number(line.requiredQuantity);
@@ -249,7 +280,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                             unitCost,
                             totalCost: requiredQty * unitCost,
                             reference: `MO-OUT-${order.reference}`,
-                            reason: `Consumption for Manufacturing Order ${order.reference}`,
+                            reason: `Atomic Consumption for MO ${order.reference}`,
                             createdBy: userId,
                             date: new Date()
                         }
@@ -257,61 +288,41 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                     totalActualCost = totalActualCost.add(requiredQty * unitCost);
                 }
             }
-            return await tx.manufacturingOrder.update({
-                where: { id },
-                data: { totalActualCost }
+            const actualUnitCost = producedQty.gt(0) ? totalActualCost.dividedBy(producedQty) : new client_1.Prisma.Decimal(0);
+            const currentProdStock = Number(order.product.stockQuantity);
+            const newProdStockQty = currentProdStock + Number(producedQty);
+            const newProdStockVal = Number(order.product.stockValue) + Number(totalActualCost);
+            await tx.product.update({
+                where: { id: order.productId },
+                data: {
+                    stockQuantity: newProdStockQty,
+                    stockValue: newProdStockVal
+                }
             });
-        });
-    }
-    async complete(companyId, userId, id, dto) {
-        const order = await this.prisma.manufacturingOrder.findFirst({
-            where: { id, companyId },
-            include: { product: true }
-        });
-        if (!order)
-            throw new common_1.NotFoundException('Manufacturing order not found');
-        if (order.status !== 'IN_PROGRESS')
-            throw new common_1.BadRequestException('Order must be in IN_PROGRESS status to complete');
-        return await this.prisma.$transaction(async (tx) => {
-            const producedQty = Number(dto.producedQuantity);
-            const updatedOrder = await tx.manufacturingOrder.update({
+            await tx.stockMovement.create({
+                data: {
+                    companyId,
+                    productId: order.productId,
+                    type: 'IN',
+                    quantity: producedQty,
+                    unit: order.unit,
+                    unitCost: actualUnitCost,
+                    totalCost: totalActualCost,
+                    reference: `MO-IN-${order.reference}`,
+                    reason: `Atomic Production Output from MO ${order.reference}`,
+                    createdBy: userId,
+                    date: new Date()
+                }
+            });
+            return await tx.manufacturingOrder.update({
                 where: { id },
                 data: {
                     status: 'COMPLETED',
                     completedAt: new Date(),
-                    producedQuantity: producedQty
+                    producedQuantity: producedQty,
+                    totalActualCost: totalActualCost
                 }
             });
-            if (producedQty > 0) {
-                const actualMaterialCost = Number(order.totalActualCost || order.totalEstimatedCost);
-                const unitCost = actualMaterialCost > 0 ? actualMaterialCost / producedQty : 0;
-                const currentStock = Number(order.product.stockQuantity);
-                const newStockQty = currentStock + producedQty;
-                const newStockVal = Number(order.product.stockValue) + actualMaterialCost;
-                await tx.product.update({
-                    where: { id: order.productId },
-                    data: {
-                        stockQuantity: newStockQty,
-                        stockValue: newStockVal
-                    }
-                });
-                await tx.stockMovement.create({
-                    data: {
-                        companyId,
-                        productId: order.productId,
-                        type: 'IN',
-                        quantity: producedQty,
-                        unit: order.unit,
-                        unitCost,
-                        totalCost: actualMaterialCost,
-                        reference: `MO-IN-${order.reference}`,
-                        reason: `Production output from Manufacturing Order ${order.reference}`,
-                        createdBy: userId,
-                        date: new Date()
-                    }
-                });
-            }
-            return updatedOrder;
         });
     }
     async cancel(companyId, id) {

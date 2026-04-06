@@ -21,6 +21,7 @@ export declare class StockMovementService {
         reason: string | null;
         date: Date;
         createdBy: string | null;
+        salesOrderId: string | null;
     }>;
     private updateStock;
     private generateReference;
@@ -52,6 +53,7 @@ export declare class StockMovementService {
         reason: string | null;
         date: Date;
         createdBy: string | null;
+        salesOrderId: string | null;
     })[]>;
     listMovements(companyId: string): Promise<({
         user: {
@@ -85,5 +87,6 @@ export declare class StockMovementService {
         reason: string | null;
         date: Date;
         createdBy: string | null;
+        salesOrderId: string | null;
     })[]>;
 }

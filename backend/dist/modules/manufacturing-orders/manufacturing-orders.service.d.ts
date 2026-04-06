@@ -33,6 +33,7 @@ export declare class ManufacturingOrdersService {
             stockValue: Prisma.Decimal;
             isBlocked: boolean;
             updatedAt: Date;
+            preferredSupplierId: string | null;
         };
         lines: ({
             component: {
@@ -60,6 +61,7 @@ export declare class ManufacturingOrdersService {
                 stockValue: Prisma.Decimal;
                 isBlocked: boolean;
                 updatedAt: Date;
+                preferredSupplierId: string | null;
             };
         } & {
             id: string;
@@ -100,11 +102,11 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: Prisma.Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: Prisma.Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -139,6 +141,7 @@ export declare class ManufacturingOrdersService {
             stockValue: Prisma.Decimal;
             isBlocked: boolean;
             updatedAt: Date;
+            preferredSupplierId: string | null;
         };
     } & {
         id: string;
@@ -148,11 +151,11 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: Prisma.Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: Prisma.Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -167,11 +170,11 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: Prisma.Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: Prisma.Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -186,11 +189,11 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: Prisma.Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: Prisma.Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -205,11 +208,11 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: Prisma.Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: Prisma.Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -224,11 +227,11 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: Prisma.Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: Prisma.Decimal;
         startedAt: Date | null;
         completedAt: Date | null;

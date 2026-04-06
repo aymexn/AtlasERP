@@ -29,6 +29,7 @@ export declare class ManufacturingOrdersController {
             stockValue: import("@prisma/client/runtime/library").Decimal;
             isBlocked: boolean;
             updatedAt: Date;
+            preferredSupplierId: string | null;
         };
         lines: ({
             component: {
@@ -56,6 +57,7 @@ export declare class ManufacturingOrdersController {
                 stockValue: import("@prisma/client/runtime/library").Decimal;
                 isBlocked: boolean;
                 updatedAt: Date;
+                preferredSupplierId: string | null;
             };
         } & {
             id: string;
@@ -96,11 +98,11 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: import("@prisma/client/runtime/library").Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: import("@prisma/client/runtime/library").Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -135,6 +137,7 @@ export declare class ManufacturingOrdersController {
             stockValue: import("@prisma/client/runtime/library").Decimal;
             isBlocked: boolean;
             updatedAt: Date;
+            preferredSupplierId: string | null;
         };
     } & {
         id: string;
@@ -144,11 +147,11 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: import("@prisma/client/runtime/library").Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: import("@prisma/client/runtime/library").Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -163,11 +166,11 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: import("@prisma/client/runtime/library").Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: import("@prisma/client/runtime/library").Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -182,11 +185,11 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: import("@prisma/client/runtime/library").Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: import("@prisma/client/runtime/library").Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -201,11 +204,11 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: import("@prisma/client/runtime/library").Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: import("@prisma/client/runtime/library").Decimal;
         startedAt: Date | null;
         completedAt: Date | null;
@@ -220,11 +223,11 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         reference: string;
         productId: string;
+        notes: string | null;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
         formulaId: string;
         plannedQuantity: import("@prisma/client/runtime/library").Decimal;
         plannedDate: Date;
-        notes: string | null;
         producedQuantity: import("@prisma/client/runtime/library").Decimal;
         startedAt: Date | null;
         completedAt: Date | null;

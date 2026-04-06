@@ -5,14 +5,34 @@ export declare class TenantsService {
     constructor(prisma: PrismaService);
     create(dto: CreateTenantDto, userId: string): Promise<{
         id: string;
+        email: string | null;
         createdAt: Date;
         name: string;
         slug: string;
+        address: string | null;
+        phone: string | null;
+        website: string | null;
+        logoUrl: string | null;
+        nif: string | null;
+        ai: string | null;
+        rc: string | null;
+        rib: string | null;
+        allowNegativeStock: boolean;
     }>;
     findByUserId(userId: string): Promise<{
         id: string;
+        email: string | null;
         createdAt: Date;
         name: string;
         slug: string;
+        address: string | null;
+        phone: string | null;
+        website: string | null;
+        logoUrl: string | null;
+        nif: string | null;
+        ai: string | null;
+        rc: string | null;
+        rib: string | null;
+        allowNegativeStock: boolean;
     }>;
 }

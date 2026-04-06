@@ -42,6 +42,7 @@ export declare class ProductsController {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
     findAll(req: any): Promise<({
         stockMovements: {
@@ -62,6 +63,7 @@ export declare class ProductsController {
             reason: string | null;
             date: Date;
             createdBy: string | null;
+            salesOrderId: string | null;
         }[];
         family: {
             id: string;
@@ -101,6 +103,7 @@ export declare class ProductsController {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     })[]>;
     findOne(id: string, req: any): Promise<{
         family: {
@@ -141,6 +144,7 @@ export declare class ProductsController {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
     update(id: string, updateProductDto: UpdateProductDto, req: any): Promise<{
         family: {
@@ -181,6 +185,7 @@ export declare class ProductsController {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
     remove(id: string, req: any): Promise<{
         id: string;
@@ -207,5 +212,6 @@ export declare class ProductsController {
         stockValue: import("@prisma/client/runtime/library").Decimal;
         isBlocked: boolean;
         updatedAt: Date;
+        preferredSupplierId: string | null;
     }>;
 }
