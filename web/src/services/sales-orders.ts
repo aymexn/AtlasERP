@@ -76,4 +76,7 @@ export const salesOrdersService = {
   async getProfitability(id: string): Promise<ProfitabilityReport> {
     return apiFetch(`/sales-orders/${id}/profitability`);
   },
+  getPdfUrl(id: string) {
+    return `/sales-orders/${id}/pdf`;
+  }
 };

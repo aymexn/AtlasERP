@@ -1,357 +1,291 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, Link } from '@/navigation';
+import { Link } from '@/navigation';
 import { apiFetch } from '@/lib/api';
 import { useTranslations, useLocale } from 'next-intl';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { formatCurrency } from '@/lib/formatters';
 import { 
-    Factory, AlertTriangle, CheckCircle2, ListFilter, 
-    ArrowUpRight, ArrowDownRight, Activity, Layers, Package, ShoppingCart,
-    TrendingUp, ArrowRight, User, Sparkles, Wallet, Landmark, PiggyBank,
-    ReceiptText, Building2
+    LayoutDashboard, 
+    Activity, 
+    PackageCheck, 
+    TrendingUp, 
+    AlertTriangle, 
+    Wallet, 
+    ShieldCheck, 
+    ArrowDownRight,
+    Building2,
+    ShoppingCart,
+    Receipt
 } from 'lucide-react';
 
-export function DashboardClient() {
+import { PageHeader } from '@/components/ui/page-header';
+import { KpiCard } from '@/components/ui/kpi-card';
+import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/lib/format';
+import { dashboardService } from '@/services/dashboard';
+
+export default function DashboardClient() {
     const t = useTranslations('dashboard');
     const ct = useTranslations('common');
     const locale = useLocale();
-
-    const [tenant, setTenant] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
+    const [tenant, setTenant] = useState<any>(null);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('atlas_token');
-        if (!token) {
-            router.push('/login');
-            return;
-        }
-
-        const loadData = async () => {
+        setIsMounted(true);
+        const loadDashboard = async () => {
             try {
-                const [tenantData, productionStats] = await Promise.all([
-                    apiFetch('/tenants/me'),
-                    apiFetch('/dashboard/production-stats')
+                const [dashboardData, tenantData] = await Promise.all([
+                    dashboardService.getProductionStats(),
+                    apiFetch('/tenants/me')
                 ]);
-
-                if (!tenantData) {
-                    router.push('/tenant');
-                } else {
-                    setTenant(tenantData);
-                    setStats(productionStats);
-                    setLoading(false);
-                }
-            } catch (err: any) {
-                console.error('[Dashboard] Failed to load data:', err);
+                setStats(dashboardData);
+                setTenant(tenantData);
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            } finally {
+                setLoading(false);
             }
         };
+        loadDashboard();
+    }, []);
 
-        loadData();
-    }, [router, locale]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('atlas_token');
-        router.push('/login');
-    };
-
-    if (loading) {
+    if (!isMounted || loading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-gray-50">
-                <div className="animate-pulse flex flex-col items-center">
-                    <div className="h-12 w-12 bg-blue-600 rounded-full mb-4 shadow-xl"></div>
-                    <p className="text-gray-500 font-black uppercase tracking-[0.2em] text-[10px]">{ct('loading')}</p>
-                </div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{ct('loading')}</div>
             </div>
         );
     }
 
+
+    const SectionHeader = ({ title, colorClass = "bg-primary" }: { title: string; colorClass?: string }) => (
+        <div className="flex items-center gap-4 mb-8">
+            <div className={`w-1.5 h-6 rounded-full ${colorClass}`} />
+            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                {title}
+            </h2>
+        </div>
+    );
+
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
-            <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg ring-4 ring-blue-50">
-                        {ct('title').charAt(0)}
-                    </div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tighter">{ct('title')}<span className="text-blue-600">ERP</span></h1>
-                </div>
-                <div className="flex items-center gap-6">
-                    <LanguageSwitcher />
-                    <div className="text-right hidden sm:block">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{ct('active_tenant')}</p>
-                        <p className="text-sm font-bold text-gray-900 leading-none mt-1">{tenant?.name || 'Default'}</p>
-                    </div>
-                    <button
-                        onClick={handleLogout}
-                        className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all shadow-lg hover:shadow-red-200/50 active:scale-95"
-                    >
-                        {ct('logout')}
-                    </button>
-                </div>
-            </nav>
+        <div className="max-w-[1600px] mx-auto space-y-16 pb-20 animate-in fade-in duration-1000">
+            {/* Header */}
+            <PageHeader 
+                title={t('title')}
+                subtitle={tenant?.name || t('company_overview' as any)}
+                icon={LayoutDashboard}
+            />
 
-            <main className="p-8 max-w-7xl mx-auto space-y-12">
-                <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-                    <div className="space-y-1">
-                        <h2 className="text-4xl font-black text-gray-900 tracking-tighter lg:text-5xl">{t('title')}</h2>
-                        <div className="flex items-center gap-2 text-gray-400">
-                             <Building2 size={14} className="text-blue-500" />
-                             <p className="font-black uppercase text-[10px] tracking-[0.2em]">{tenant?.name}</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-3">
-                        <Link href="/manufacturing/orders" className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3 active:scale-95">
-                           <Factory size={18} /> {t('go_to_production')}
-                        </Link>
-                    </div>
-                </header>
+            {/* Part 2: Operational Command Center (High-End 3-Column Grid) */}
+            <section>
+                <SectionHeader title={t('production_overview')} colorClass="bg-primary" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <KpiCard 
+                        title={t('active_orders')}
+                        value={stats?.orders?.active || 0}
+                        icon={Activity}
+                        variant="primary"
+                        type="count"
+                    />
+                    <KpiCard 
+                        title={t('real_production_cost')}
+                        value={stats?.costs?.actual || 0}
+                        icon={TrendingUp}
+                        variant="info"
+                    />
+                    <KpiCard 
+                        title={t('shortage_alerts')}
+                        value={stats?.procurement?.pendingCount || 0}
+                        icon={AlertTriangle}
+                        variant="danger"
+                        type="count"
+                    />
+                </div>
+            </section>
 
-                {/* Primary KPIs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        { label: t('active_orders'), value: stats?.orders?.active || 0, icon: Activity, color: 'blue' },
-                        { label: t('produced_goods'), value: stats?.inventory?.producedCount || 0, icon: CheckCircle2, color: 'emerald' },
-                        { label: t('actual_cost'), value: formatCurrency(stats?.costs?.actual || 0, locale), icon: Layers, color: 'indigo' },
-                        { label: t('shortage_alerts'), value: stats?.inventory?.shortageCount || 0, icon: AlertTriangle, color: 'rose' }
-                    ].map((item) => (
-                        <div key={item.label} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 transition-all hover:shadow-xl hover:border-blue-100 group relative overflow-hidden flex flex-col justify-between min-h-[140px]">
-                            <div className={`absolute top-0 right-0 h-24 w-24 bg-${item.color}-500/5 rounded-bl-full translate-x-12 -translate-y-12 group-hover:scale-150 transition-all`}></div>
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="font-black text-gray-400 uppercase text-[9px] tracking-[0.2em]">{item.label}</h3>
-                                <div className={`p-2 bg-${item.color}-50 text-${item.color}-600 rounded-xl`}>
-                                    <item.icon size={18} />
+            {/* Part 3: Financial Fortress & Performance */}
+            <section>
+                <SectionHeader title={t('financial_fortress')} colorClass="bg-primary" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <KpiCard 
+                        title={t('total_invoiced')}
+                        value={stats?.finances?.totalRevenue || 0}
+                        icon={Receipt}
+                        variant="success"
+                    />
+                    <KpiCard 
+                        title={t('cash_position')}
+                        value={stats?.finances?.cashPosition || 0}
+                        icon={Wallet}
+                        variant="primary"
+                    />
+                    <KpiCard 
+                        title={t('profitability')}
+                        value={(stats?.finances?.totalRevenue || 0) - (stats?.finances?.totalCogs || 0)}
+                        icon={ShieldCheck}
+                        variant="success"
+                        trend={{
+                            value: stats?.finances?.totalRevenue > 0 ? Math.round(((stats.finances.totalRevenue - stats.finances.totalCogs) / stats.finances.totalRevenue) * 100) : 0,
+                            label: t('margin_percent'),
+                            isPositive: (stats?.finances?.totalRevenue - stats?.finances?.totalCogs) > 0
+                        }}
+                    />
+                </div>
+            </section>
+
+            {/* Part 4: Operational Intelligence & Alerts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <section>
+                    <SectionHeader title={t('alerts.title')} colorClass="bg-danger" />
+                    <div className="bg-white border-2 border-red-50 rounded-4xl p-8 space-y-6 shadow-xl shadow-red-500/5">
+                        <div className="flex items-center justify-between p-6 bg-red-50/50 rounded-3xl border border-red-100">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-red-500 text-white rounded-2xl shadow-lg shadow-red-200">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-black text-red-400 uppercase tracking-widest">{t('alerts.stock_low')}</div>
+                                    <div className="text-xl font-black text-blue-600">{stats?.procurement?.pendingCount || 0} Articles</div>
                                 </div>
                             </div>
-                            <p className="text-3xl font-black text-gray-950 tracking-tighter leading-none mb-1 truncate">{item.value}</p>
+                            <Link href="/inventory" className="p-3 hover:bg-red-100 rounded-xl transition-all text-red-500"><ArrowDownRight size={24} /></Link>
                         </div>
-                    ))}
-                </div>
+                        <div className="flex items-center justify-between p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-500 text-white rounded-2xl shadow-lg shadow-blue-200">
+                                    <Receipt size={24} />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{t('alerts.pending_invoices')}</div>
+                                    <div className="text-xl font-black text-blue-600">{formatCurrency(stats?.finances?.totalRevenue - stats?.finances?.cashPosition || 0)}</div>
+                                </div>
+                            </div>
+                            <Link href="/invoices" className="p-3 hover:bg-blue-100 rounded-xl transition-all text-blue-500"><ArrowDownRight size={24} /></Link>
+                        </div>
+                    </div>
+                </section>
 
+                <section>
+                    <SectionHeader title={t('flux.title')} colorClass="bg-blue-600" />
+                    <div className="bg-white border-2 border-blue-50 rounded-4xl p-8 space-y-8 shadow-xl shadow-blue-500/5">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('flux.gap')}</div>
+                                <div className="text-3xl font-black text-blue-600">{formatCurrency((stats?.sales?.monthlyRevenue || 0) - (stats?.finances?.cashPosition || 0))}</div>
+                            </div>
+                            {(() => {
+                                const gap = (stats?.sales?.monthlyRevenue || 0) - (stats?.finances?.cashPosition || 0);
+                                if (gap > 1000) return <Badge variant="cancelled" className="bg-red-500 text-white border-none px-4 py-2 text-[10px] font-black">{t('flux.negative')}</Badge>;
+                                if (gap < -1000) return <Badge variant="active" className="bg-blue-500 text-white border-none px-4 py-2 text-[10px] font-black">{t('flux.positive')}</Badge>;
+                                return <Badge variant="active" className="bg-blue-500 text-white border-none px-4 py-2 text-[10px] font-black">{t('flux.stable')}</Badge>;
+                            })()}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('flux.invoiced')}</div>
+                                <div className="text-lg font-black text-blue-600">{formatCurrency(stats?.sales?.monthlyRevenue || 0)}</div>
+                            </div>
+                            <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                <div className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{t('flux.collected')}</div>
+                                <div className="text-lg font-black text-blue-600">{formatCurrency(stats?.finances?.cashPosition || 0)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+
+            {/* Bottom Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {/* Procurement Snapshot */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm flex items-center justify-between group hover:shadow-2xl transition-all overflow-hidden relative">
-                        <div className="absolute top-0 right-0 h-40 w-40 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-all duration-700"></div>
-                        <div className="flex items-center gap-8 relative z-10">
-                            <div className="h-20 w-20 bg-amber-50 text-amber-600 rounded-3xl flex items-center justify-center shadow-inner">
-                                <ShoppingCart size={40} />
+                <section>
+                    <SectionHeader title={t('procurement_section')} colorClass="bg-warning" />
+                    <div className="bg-card border border-border rounded-2xl p-8 space-y-8 h-full flex flex-col">
+                        <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('purchases_in_transit')}</span>
+                                <span className="text-2xl font-black text-foreground tracking-tighter">
+                                    {formatCurrency(stats?.procurement?.pendingValue || 0)}
+                                </span>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-2">{t('purchases_in_transit')}</p>
-                                <p className="text-4xl font-black text-gray-900 tracking-tighter">{formatCurrency(stats?.procurement?.pendingValue || 0, locale)}</p>
-                                <div className="text-[10px] font-black text-amber-600 mt-3 flex items-center gap-3 uppercase tracking-widest bg-amber-50 w-fit px-3 py-1 rounded-full border border-amber-100">
-                                    <div className="h-1.5 w-1.5 bg-amber-600 rounded-full animate-pulse"></div>
-                                    {t('pending_bc', { count: stats?.procurement?.pendingCount || 0 })}
-                                </div>
-                            </div>
-                        </div>
-                        <Link href="/purchases/orders" className="h-14 w-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center hover:bg-amber-600 hover:text-white transition-all relative z-10 shadow-sm hover:rotate-12">
-                            <ArrowUpRight size={24} />
-                        </Link>
-                    </div>
-
-                    <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-2xl transition-all overflow-hidden relative min-h-[220px]">
-                        <div className="absolute top-0 right-0 h-40 w-40 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-all duration-700"></div>
-                        <div className="flex items-center gap-8 relative z-10 mb-6">
-                            <div className="h-20 w-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center shadow-inner">
-                                <Package size={40} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-3">{t('top_suppliers')}</p>
-                                <div className="space-y-3">
-                                    {(stats?.procurement?.topSuppliers || []).slice(0, 3).map((s: any, idx: number) => (
-                                        <div key={idx} className="flex justify-between items-center text-[11px] font-black">
-                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                <div className="h-6 w-6 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                                    <User size={12} />
-                                                </div>
-                                                <span className="text-gray-600 truncate uppercase tracking-tight">{s.name}</span>
-                                            </div>
-                                            <span className="text-gray-900 ml-4 font-mono">{formatCurrency(s.value, locale)}</span>
-                                        </div>
-                                    ))}
-                                    {(!stats?.procurement?.topSuppliers || stats?.procurement?.topSuppliers.length === 0) && (
-                                        <p className="text-[10px] text-gray-300 italic font-medium uppercase tracking-widest">{t('no_suppliers')}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 relative z-10">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('raw_material_stock')}:</span>
-                                <p className="text-lg font-black text-blue-600 tracking-tighter">{formatCurrency(stats?.procurement?.rawMaterialValue || 0, locale)}</p>
-                            </div>
-                            <Link href="/purchases/suppliers" className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl active:scale-95">
-                                Voir tout
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Financial Fortress Snapshot */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10 transition-all hover:shadow-2xl">
-                        <div className="absolute top-0 left-0 h-full w-2 bg-blue-600"></div>
-                        <div className="flex items-center gap-8 min-w-0">
-                            <div className="h-24 w-24 bg-blue-50 text-blue-600 rounded-[2.5rem] flex items-center justify-center shadow-inner flex-shrink-0">
-                                <Landmark size={48} />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-2">{t('cash_flow')}</p>
-                                <h3 className={`text-5xl font-black tracking-tighter truncate ${stats?.finances?.cashPosition >= 0 ? 'text-gray-950' : 'text-rose-600'}`}>
-                                    {formatCurrency(stats?.finances?.cashPosition || 0, locale)}
-                                </h3>
-                                <div className="flex flex-wrap items-center gap-4 mt-6">
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-2xl text-[10px] font-black uppercase border border-emerald-100">
-                                        <Wallet size={14} />
-                                        {t('receipts')}: {formatCurrency(stats?.finances?.receipts || 0, locale)}
-                                    </div>
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-700 rounded-2xl text-[10px] font-black uppercase border border-rose-100">
-                                        <ReceiptText size={14} />
-                                        {t('total_expenses')}: {formatCurrency(stats?.finances?.totalExpenses || 0, locale)}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <Link href="/finances/expenses" className="flex items-center gap-4 bg-gray-900 text-white px-10 py-5 rounded-[2.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-700 transition-all active:scale-95 group shrink-0">
-                            {t('go_to_finances')}
-                            <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
-                        </Link>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[3rem] p-10 shadow-2xl shadow-emerald-100 relative overflow-hidden transition-all hover:scale-[1.02] group">
-                        <div className="absolute top-0 right-0 h-40 w-40 bg-white/10 rounded-full translate-x-12 -translate-y-12 group-hover:scale-125 transition-transform duration-1000"></div>
-                        <p className="text-[10px] font-black text-emerald-100 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                            <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-                            {t('net_profit')}
-                        </p>
-                        <div className="flex flex-col">
-                            <h3 className="text-5xl font-black text-white tracking-tighter mb-3 truncate">
-                                {formatCurrency(stats?.finances?.netProfit || 0, locale)}
-                            </h3>
-                            <div className="flex items-center gap-3 text-emerald-100 font-black uppercase text-[10px] tracking-widest opacity-80">
-                                <PiggyBank size={18} className="text-emerald-300" />
-                                {t('profit_desc')}
-                            </div>
-                        </div>
-                        <div className="mt-12 pt-8 border-t border-white/20 grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-[8px] font-black text-emerald-200/60 uppercase tracking-widest mb-1">{t('revenue_ht')}</p>
-                                <p className="text-xs font-black text-white truncate">{formatCurrency(stats?.finances?.totalRevenue || 0, locale)}</p>
-                            </div>
-                            <div>
-                                <p className="text-[8px] font-black text-emerald-200/60 uppercase tracking-widest mb-1">{t('cogs')}</p>
-                                <p className="text-xs font-black text-white truncate">{formatCurrency(stats?.finances?.totalCogs || 0, locale)}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sales Snapshot */}
-                <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm group hover:shadow-2xl transition-all relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
-                    <div className="absolute top-0 left-0 h-full w-2 bg-emerald-500"></div>
-                    <div className="flex items-center gap-10 min-w-0">
-                        <div className="h-24 w-24 bg-emerald-50 text-emerald-600 rounded-[2.5rem] flex items-center justify-center shadow-inner flex-shrink-0">
-                            <TrendingUp size={48} />
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-2">{t('monthly_revenue')}</p>
-                            <h3 className="text-5xl font-black text-gray-950 tracking-tighter truncate">
-                                {formatCurrency(stats?.sales?.monthlyRevenue || 0, locale)}
-                                <span className="text-base font-black text-gray-400 ml-4 tracking-normal">HT</span>
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-4 mt-6">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-black uppercase border border-blue-100">
-                                    <ShoppingCart size={14} />
-                                    {t('active_sales', { count: stats?.sales?.activeOrders || 0 })}
-                                </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-2xl text-[10px] font-black uppercase border border-emerald-100">
-                                    <User size={14} />
-                                    {t('active_customers', { count: stats?.sales?.customerCount || 0 })}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <Link href="/sales/orders" className="flex items-center gap-4 bg-gray-900 text-white px-10 py-5 rounded-[2.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-emerald-600 transition-all active:scale-95 group shrink-0">
-                        {t('go_to_sales')}
-                        <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
-                    </Link>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Production Detail */}
-                    <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm transition-all hover:shadow-xl">
-                        <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-2xl font-black text-gray-950 tracking-tight flex items-center gap-4">
-                                <div className="h-12 w-12 bg-blue-50 text-blue-600 rounded-[1.25rem] flex items-center justify-center shadow-inner">
-                                    <Layers size={24} />
-                                </div>
-                                {t('production_overview')}
-                            </h3>
+                            <Badge variant="confirmed">
+                                {stats?.procurement?.pendingCount || 0} {t('pending_orders')}
+                            </Badge>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="bg-gray-50/50 rounded-[2.5rem] p-10 border border-gray-100 group hover:bg-white hover:shadow-2xl transition-all duration-500">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">{t('estimated_cost')}</p>
-                                <p className="text-4xl font-black text-gray-950 tracking-tighter truncate">{formatCurrency(stats?.costs?.estimated || 0, locale)}</p>
-                            </div>
-                            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 group hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">{t('variance')}</p>
-                                <div className="flex items-center justify-between">
-                                    <p className={`text-4xl font-black tracking-tighter truncate ${stats?.costs?.variance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                        {formatCurrency(stats?.costs?.variance || 0, locale)}
-                                    </p>
-                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${stats?.costs?.variance > 0 ? 'bg-rose-50 text-rose-600 shadow-rose-100' : 'bg-emerald-50 text-emerald-600 shadow-emerald-100'}`}>
-                                        {stats?.costs?.variance > 0 ? <ArrowUpRight size={24} /> : <ArrowDownRight size={24} />}
+                        <div className="flex-1 space-y-4">
+                            <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('top_suppliers')}</h4>
+                            <div className="space-y-3">
+                                {(stats?.procurement?.topSuppliers || []).map((s: any, idx: number) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 bg-muted rounded-xl hover:bg-muted/80 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-card rounded-lg border border-border">
+                                                <Building2 size={14} className="text-muted-foreground" />
+                                            </div>
+                                            <span className="text-sm font-bold text-foreground">{s.name}</span>
+                                        </div>
+                                        <span className="text-sm font-black text-foreground">{formatCurrency(s.value)}</span>
                                     </div>
-                                </div>
+                                ))}
+                                {(!stats?.procurement?.topSuppliers || stats.procurement.topSuppliers.length === 0) && (
+                                    <div className="text-[10px] text-center text-muted-foreground/40 py-12 font-black uppercase tracking-widest">{t('no_supplier_data')}</div>
+                                )}
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Top Selling Products */}
-                    <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm transition-all hover:shadow-xl h-full flex flex-col">
-                        <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-2xl font-black text-gray-950 tracking-tight flex items-center gap-4">
-                                <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-[1.25rem] flex items-center justify-center shadow-inner">
-                                    <Sparkles size={24} />
-                                </div>
-                                {t('top_selling')}
-                            </h3>
                         </div>
                         
-                        <div className="space-y-8 flex-1">
-                            {stats?.sales?.topSellingProducts?.length > 0 ? (
-                                stats.sales.topSellingProducts.slice(0, 5).map((p: any, idx: number) => (
-                                    <div key={idx} className="space-y-3 group cursor-default">
-                                        <div className="flex justify-between items-end gap-4 min-w-0">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-black text-gray-900 group-hover:text-emerald-600 transition-colors uppercase tracking-tight truncate">{p.name}</p>
-                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 opacity-60">{p.quantity} units sold</p>
-                                            </div>
-                                            <p className="text-xs font-black text-gray-950 font-mono flex-shrink-0">{formatCurrency(p.revenue, locale)}</p>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">
-                                            <div 
-                                                className="h-full bg-emerald-500 rounded-full transition-all duration-1000 group-hover:bg-emerald-400"
-                                                style={{ width: `${(p.revenue / (stats.sales.topSellingProducts[0].revenue || 1)) * 100}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full opacity-30 py-12">
-                                    <div className="h-20 w-20 bg-gray-50 rounded-[2rem] flex items-center justify-center text-gray-300 mb-6">
-                                        <TrendingUp size={40} />
-                                    </div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">{t('no_sales_data')}</p>
-                                </div>
-                            )}
-                        </div>
+                        <Link href="/purchases/orders" className="flex items-center justify-center gap-2 w-full py-4 bg-muted text-muted-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all mt-auto">
+                            <ShoppingCart size={14} /> {t('access_command_center')}
+                        </Link>
                     </div>
-                </div>
-            </main>
+                </section>
+
+                {/* Sales Velocity */}
+                <section>
+                    <SectionHeader title={t('sales_section')} colorClass="bg-primary" />
+                    <div className="bg-card border border-border rounded-2xl p-8 space-y-8 h-full flex flex-col">
+                        <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('monthly_sales')}</span>
+                                <span className="text-2xl font-black text-foreground tracking-tighter">
+                                    {formatCurrency(stats?.sales?.monthlyRevenue || 0)}
+                                </span>
+                            </div>
+                            <Badge variant="active">
+                                {stats?.sales?.activeOrders || 0} {t('active_orders')}
+                            </Badge>
+                        </div>
+
+                        <div className="flex-1 space-y-4">
+                            <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('top_sales')}</h4>
+                            <div className="space-y-3">
+                                {(stats?.sales?.topSellingProducts || []).slice(0, 3).map((p: any, idx: number) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 bg-muted rounded-xl hover:bg-muted/80 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-card rounded-lg border border-border">
+                                                <Activity size={14} className="text-muted-foreground" />
+                                            </div>
+                                            <span className="text-sm font-bold text-foreground">{p.name}</span>
+                                        </div>
+                                        <span className="text-sm font-black text-foreground">{formatCurrency(p.revenue)}</span>
+                                    </div>
+                                ))}
+                                {(!stats?.sales?.topSellingProducts || stats.sales.topSellingProducts.length === 0) && (
+                                    <div className="text-[10px] text-center text-muted-foreground/40 py-12 font-black uppercase tracking-widest">{t('no_sales_data')}</div>
+                                )}
+                            </div>
+                        </div>
+
+                        <Link href="/sales/orders" className="flex items-center justify-center gap-2 w-full py-4 bg-muted text-muted-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all mt-auto">
+                            <TrendingUp size={14} /> {t('access_sales_cockpit')}
+                        </Link>
+
+                    </div>
+                </section>
+            </div>
         </div>
     );
 }

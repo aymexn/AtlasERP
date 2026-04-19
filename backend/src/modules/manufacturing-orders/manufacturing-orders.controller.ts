@@ -1,12 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, Query, Res } from '@nestjs/common';
 import { ManufacturingOrdersService } from './manufacturing-orders.service';
 import { CreateManufacturingOrderDto, UpdateManufacturingOrderDto, CompleteManufacturingOrderDto } from './dto/manufacturing-order.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { PdfService } from '../../common/services/pdf.service';
+import { Public } from '../../common/decorators/public.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('manufacturing-orders')
 export class ManufacturingOrdersController {
-  constructor(private readonly manufacturingOrdersService: ManufacturingOrdersService) {}
+  constructor(
+    private readonly manufacturingOrdersService: ManufacturingOrdersService,
+    private readonly pdfService: PdfService
+  ) {}
 
   @Post()
   create(@Request() req, @Body() createDto: CreateManufacturingOrderDto) {
@@ -16,6 +21,20 @@ export class ManufacturingOrdersController {
   @Get()
   findAll(@Request() req, @Query('status') status?: string) {
     return this.manufacturingOrdersService.findAll(req.user.companyId, status);
+  }
+
+  @Get(':id/pdf')
+  async getPdf(@Request() req, @Param('id') id: string, @Res() res) {
+    const companyId = req.user.companyId;
+    const order = await this.manufacturingOrdersService.findForPdf(companyId, id);
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=WorkOrder_${order.reference}.pdf`);
+    return this.pdfService.generateWorkOrderPdf(order, res);
   }
 
   @Get(':id')

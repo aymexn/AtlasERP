@@ -1,8 +1,10 @@
 import { ManufacturingOrdersService } from './manufacturing-orders.service';
 import { CreateManufacturingOrderDto, UpdateManufacturingOrderDto, CompleteManufacturingOrderDto } from './dto/manufacturing-order.dto';
+import { PdfService } from '../../common/services/pdf.service';
 export declare class ManufacturingOrdersController {
     private readonly manufacturingOrdersService;
-    constructor(manufacturingOrdersService: ManufacturingOrdersService);
+    private readonly pdfService;
+    constructor(manufacturingOrdersService: ManufacturingOrdersService, pdfService: PdfService);
     create(req: any, createDto: CreateManufacturingOrderDto): Promise<{
         product: {
             id: string;
@@ -110,6 +112,7 @@ export declare class ManufacturingOrdersController {
         totalActualCost: import("@prisma/client/runtime/library").Decimal | null;
     }>;
     findAll(req: any, status?: string): Promise<any[]>;
+    getPdf(req: any, id: string, res: any): Promise<any>;
     findOne(req: any, id: string): Promise<any>;
     update(req: any, id: string, updateDto: UpdateManufacturingOrderDto): Promise<{
         product: {

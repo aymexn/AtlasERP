@@ -14,6 +14,9 @@ import {
     AlertCircle
 } from 'lucide-react';
 
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
+
 export default function FamiliesClient() {
     const t = useTranslations('product_families');
     const ct = useTranslations('common');
@@ -79,11 +82,71 @@ export default function FamiliesClient() {
         f.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Helpers for hierarchy
-    const getParentName = (parentId?: string) => {
-        if (!parentId) return null;
-        return families.find(f => f.id === parentId)?.name;
-    };
+    const columns = [
+        {
+            header: t('fields.code'),
+            accessor: (f: ProductFamily) => (
+                <span className="font-mono text-xs font-bold text-gray-400 px-2 py-1 bg-gray-100 rounded-lg">
+                    {f.code || ct('none')}
+                </span>
+            )
+        },
+        {
+            header: t('fields.name'),
+            accessor: (f: ProductFamily) => (
+                <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: f.colorBadge || '#F3F4F6', color: f.colorBadge ? '#FFF' : '#3B82F6' }}>
+                        <FolderTree size={16} />
+                    </div>
+                    <span className="font-bold text-gray-900">{f.name}</span>
+                </div>
+            )
+        },
+        {
+            header: t('fields.parent'),
+            accessor: (f: ProductFamily) => (
+                f.parent ? (
+                    <span className="inline-flex items-center gap-1.5 text-blue-600 font-bold bg-blue-50 px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wide">
+                        <FolderTree size={12} />
+                        {f.parent.name}
+                    </span>
+                ) : (
+                    <span className="text-gray-300 text-xs font-medium">{t('root')}</span>
+                )
+            )
+        },
+        {
+            header: t('fields.description'),
+            accessor: (f: ProductFamily) => <span className="text-gray-500 font-medium truncate max-w-[200px] block">{f.description || '—'}</span>
+        },
+        {
+            header: ct('actions'),
+            align: 'right' as const,
+            accessor: (f: ProductFamily) => (
+                <div className="flex items-center justify-end gap-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentFamily(f);
+                            setIsModalOpen(true);
+                        }}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-white rounded-lg border border-transparent hover:border-blue-100 shadow-sm transition-all"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(f.id);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-white rounded-lg border border-transparent hover:border-red-100 shadow-sm transition-all"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            )
+        }
+    ];
 
     if (loading) {
         return (
@@ -96,102 +159,36 @@ export default function FamiliesClient() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tighter">{t('title')}</h1>
-                    <p className="text-gray-500 font-medium">{t('subtitle')}</p>
-                </div>
-                <button
-                    onClick={() => { setCurrentFamily({ sortOrder: 0 }); setIsModalOpen(true); }}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
-                >
-                    <Plus size={20} />
-                    {t('add')}
-                </button>
-            </div>
+            <PageHeader 
+                title={t('title')}
+                subtitle={t('subtitle')}
+                action={{
+                    label: t('add'),
+                    onClick: () => { setCurrentFamily({ sortOrder: 0 }); setIsModalOpen(true); },
+                    icon: Plus
+                }}
+            />
 
-            {/* Table Area */}
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
-                <div className="p-6 border-b border-gray-50 flex items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder={t('search')}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-200 focus:bg-white transition-all text-sm font-medium"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+            <div className="space-y-4">
+                <div className="relative group max-w-md">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
+                    <input 
+                        type="text" 
+                        placeholder={t('search')}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-16 pr-6 py-4 bg-white border border-gray-100 rounded-[2rem] outline-none focus:border-blue-200 focus:ring-4 focus:ring-blue-50 transition-all font-bold shadow-sm"
+                    />
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50/50">
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{t('fields.code')}</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{t('fields.name')}</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{t('fields.parent')}</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{t('fields.description')}</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">{ct('actions')}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50 text-sm">
-                            {filteredFamilies.map((f) => (
-                                <tr key={f.id} className="hover:bg-blue-50/30 transition-colors group">
-                                    <td className="px-6 py-5">
-                                        <span className="font-mono text-xs font-bold text-gray-400 px-2 py-1 bg-gray-100 rounded-lg">
-                                            {f.code || ct('none')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: f.colorBadge || '#F3F4F6', color: f.colorBadge ? '#FFF' : '#3B82F6' }}>
-                                                <FolderTree size={16} />
-                                            </div>
-                                            <span className="font-bold text-gray-900">{f.name}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        {f.parent ? (
-                                            <span className="inline-flex items-center gap-1.5 text-blue-600 font-bold bg-blue-50 px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wide">
-                                                <FolderTree size={12} />
-                                                {f.parent.name}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-300 text-xs font-medium">{t('root')}</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-5 text-gray-500 font-medium truncate max-w-[200px]">{f.description || '—'}</td>
-                                    <td className="px-6 py-5 text-right">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={() => { setCurrentFamily(f); setIsModalOpen(true); }}
-                                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-white rounded-lg border border-transparent hover:border-blue-100 shadow-sm transition-all"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(f.id)}
-                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-white rounded-lg border border-transparent hover:border-red-100 shadow-sm transition-all"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredFamilies.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">
-                                        {t('no_families')}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable 
+                    data={filteredFamilies}
+                    columns={columns}
+                    onRowClick={(f) => {
+                        setCurrentFamily(f);
+                        setIsModalOpen(true);
+                    }}
+                />
             </div>
 
             {/* Modal */}

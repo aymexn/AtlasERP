@@ -34,6 +34,11 @@ export class InvoicesController {
     );
   }
 
+  @Post(':id/payments')
+  async addPayment(@Param('id') id: string, @Body() body: any, @Req() req: any) {
+    return this.invoicesService.addPayment(req.user.companyId, id, body);
+  }
+
   @Patch(':id/cancel')
   async cancel(@Param('id') id: string, @Req() req: any) {
       return this.invoicesService.cancel(req.user.companyId, id);
@@ -41,11 +46,21 @@ export class InvoicesController {
 
   @Get(':id/pdf')
   async generatePdf(@Param('id') id: string, @Req() req: any, @Res() res: Response) {
-    const invoice = await this.invoicesService.findOne(req.user.companyId, id);
-    
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=Invoice-${invoice.reference}.pdf`);
-    
-    await this.pdfService.generateInvoicePdf(invoice, res);
+    try {
+      const invoice = await this.invoicesService.findOne(req.user.companyId, id);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=Invoice-${invoice.reference}.pdf`);
+      
+      await this.pdfService.generateInvoicePdf(invoice, res);
+    } catch (error) {
+      console.error('Invoice PDF Route Error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          message: 'Error generating invoice PDF', 
+          error: error.message 
+        });
+      }
+    }
   }
 }

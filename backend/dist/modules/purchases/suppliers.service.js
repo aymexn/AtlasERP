@@ -17,14 +17,41 @@ let SuppliersService = class SuppliersService {
         this.prisma = prisma;
     }
     async list(companyId) {
-        return this.prisma.supplier.findMany({
-            where: { companyId },
-            orderBy: { name: 'asc' },
-        });
+        console.log(`[SuppliersService.list] Fetching for companyId: ${companyId}`);
+        try {
+            if (!companyId)
+                throw new common_1.BadRequestException('Company ID is required');
+            return await this.prisma.supplier.findMany({
+                where: { companyId },
+                include: {
+                    _count: {
+                        select: {
+                            purchaseOrders: true,
+                            expenses: true
+                        }
+                    }
+                },
+                orderBy: { name: 'asc' },
+            });
+        }
+        catch (error) {
+            console.error('SuppliersService.list Error:', error);
+            throw error;
+        }
     }
     async findOne(id, companyId) {
+        if (!id || !companyId)
+            throw new common_1.BadRequestException('ID and Company ID are required');
         const supplier = await this.prisma.supplier.findFirst({
             where: { id, companyId },
+            include: {
+                _count: {
+                    select: {
+                        purchaseOrders: true,
+                        expenses: true
+                    }
+                }
+            }
         });
         if (!supplier) {
             throw new common_1.NotFoundException(`Fournisseur avec l'ID ${id} introuvable.`);
@@ -32,20 +59,29 @@ let SuppliersService = class SuppliersService {
         return supplier;
     }
     async create(companyId, dto) {
-        if (dto.code) {
-            const existing = await this.prisma.supplier.findFirst({
-                where: { companyId, code: dto.code },
-            });
-            if (existing) {
-                throw new common_1.BadRequestException(`Un fournisseur avec le code ${dto.code} existe déjà.`);
+        console.log(`[SuppliersService.create] Called for companyId: ${companyId}`);
+        try {
+            if (!companyId)
+                throw new common_1.BadRequestException('Company ID is required');
+            if (dto.code) {
+                const existing = await this.prisma.supplier.findFirst({
+                    where: { companyId, code: dto.code },
+                });
+                if (existing) {
+                    throw new common_1.BadRequestException(`Un fournisseur avec le code ${dto.code} existe déjà.`);
+                }
             }
+            return await this.prisma.supplier.create({
+                data: {
+                    ...dto,
+                    companyId,
+                },
+            });
         }
-        return this.prisma.supplier.create({
-            data: {
-                ...dto,
-                companyId,
-            },
-        });
+        catch (error) {
+            console.error('SuppliersService.create Error:', error);
+            throw error;
+        }
     }
     async update(id, companyId, dto) {
         await this.findOne(id, companyId);
@@ -62,7 +98,7 @@ let SuppliersService = class SuppliersService {
             }
         }
         return this.prisma.supplier.update({
-            where: { id },
+            where: { id, companyId },
             data: dto,
         });
     }
@@ -82,7 +118,7 @@ let SuppliersService = class SuppliersService {
             throw new common_1.BadRequestException(`Impossible de supprimer un fournisseur ayant des bons de commande rattachés.`);
         }
         return this.prisma.supplier.delete({
-            where: { id },
+            where: { id, companyId },
         });
     }
     async getStats(companyId) {

@@ -17,15 +17,27 @@ const common_1 = require("@nestjs/common");
 const manufacturing_orders_service_1 = require("./manufacturing-orders.service");
 const manufacturing_order_dto_1 = require("./dto/manufacturing-order.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const pdf_service_1 = require("../../common/services/pdf.service");
 let ManufacturingOrdersController = class ManufacturingOrdersController {
-    constructor(manufacturingOrdersService) {
+    constructor(manufacturingOrdersService, pdfService) {
         this.manufacturingOrdersService = manufacturingOrdersService;
+        this.pdfService = pdfService;
     }
     create(req, createDto) {
         return this.manufacturingOrdersService.create(req.user.companyId, createDto);
     }
     findAll(req, status) {
         return this.manufacturingOrdersService.findAll(req.user.companyId, status);
+    }
+    async getPdf(req, id, res) {
+        const companyId = req.user.companyId;
+        const order = await this.manufacturingOrdersService.findForPdf(companyId, id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=WorkOrder_${order.reference}.pdf`);
+        return this.pdfService.generateWorkOrderPdf(order, res);
     }
     findOne(req, id) {
         return this.manufacturingOrdersService.findOne(req.user.companyId, id);
@@ -63,6 +75,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ManufacturingOrdersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id/pdf'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], ManufacturingOrdersController.prototype, "getPdf", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Request)()),
@@ -116,6 +137,7 @@ __decorate([
 exports.ManufacturingOrdersController = ManufacturingOrdersController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('manufacturing-orders'),
-    __metadata("design:paramtypes", [manufacturing_orders_service_1.ManufacturingOrdersService])
+    __metadata("design:paramtypes", [manufacturing_orders_service_1.ManufacturingOrdersService,
+        pdf_service_1.PdfService])
 ], ManufacturingOrdersController);
 //# sourceMappingURL=manufacturing-orders.controller.js.map

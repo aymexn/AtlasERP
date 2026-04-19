@@ -18,6 +18,7 @@ let DashboardService = class DashboardService {
         this.prisma = prisma;
     }
     async getProductionStats(companyId) {
+        const activeStatuses = ['PLANNED', 'IN_PROGRESS'];
         const orders = await this.prisma.manufacturingOrder.findMany({
             where: { companyId },
             include: {
@@ -33,22 +34,34 @@ let DashboardService = class DashboardService {
                 }
             }
         });
-        const activeStatuses = ['PLANNED', 'IN_PROGRESS'];
-        let totalEstimatedCost = 0;
-        let totalActualCost = 0;
-        let finishedGoodsProduced = 0;
-        let rawMaterialsConsumedCount = 0;
-        let componentsInShortage = new Set();
-        orders.forEach(order => {
-            if (['IN_PROGRESS', 'COMPLETED'].includes(order.status)) {
-                totalEstimatedCost += Number(order.totalEstimatedCost || 0);
-                totalActualCost += Number(order.totalActualCost || 0);
-            }
-            finishedGoodsProduced += Number(order.producedQuantity || 0);
-            order.lines.forEach(line => {
-                if (Number(line.consumedQuantity) > 0) {
-                    rawMaterialsConsumedCount++;
+        const orderStats = await this.prisma.manufacturingOrder.aggregate({
+            where: { companyId, status: 'COMPLETED' },
+            _sum: { totalActualCost: true, producedQuantity: true }
+        });
+        const inProgressStats = await this.prisma.manufacturingOrder.aggregate({
+            where: { companyId, status: 'IN_PROGRESS' },
+            _sum: { totalEstimatedCost: true }
+        });
+        const totalActualCost = Number(orderStats._sum.totalActualCost || 0);
+        const totalEstimatedCost = Number(inProgressStats._sum.totalEstimatedCost || 0);
+        const finishedGoodsProduced = Number(orderStats._sum.producedQuantity || 0);
+        const activeOrders = await this.prisma.manufacturingOrder.findMany({
+            where: { companyId, status: { in: ['PLANNED', 'IN_PROGRESS'] } },
+            include: {
+                lines: {
+                    include: {
+                        component: {
+                            select: {
+                                stockQuantity: true,
+                            }
+                        }
+                    }
                 }
+            }
+        });
+        const componentsInShortage = new Set();
+        activeOrders.forEach(order => {
+            order.lines.forEach(line => {
                 const required = Number(line.requiredQuantity);
                 const available = Number(line.component.stockQuantity);
                 if (available < required) {
@@ -131,11 +144,17 @@ let DashboardService = class DashboardService {
         const totalCogs = salesLines.reduce((acc, line) => {
             return acc + (Number(line.quantity) * Number(line.unitCostSnapshot || 0));
         }, 0);
+        const unpaidInvoices = await this.prisma.invoice.aggregate({
+            where: { companyId, status: { notIn: ['PAID', 'CANCELLED'] } },
+            _sum: { amountRemaining: true }
+        });
+        const unpaidAmount = Number(unpaidInvoices._sum.amountRemaining || 0);
         const totalRevenue = Number(salesPerformance._sum.lineTotalHt || 0);
         const totalExpenses = Number(allExpenses._sum.amount || 0);
         const totalReceipts = Number(allReceipts._sum.amount || 0);
         const netProfit = totalRevenue - totalCogs - totalExpenses;
         const cashPosition = totalReceipts - totalExpenses;
+        const marginPercent = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
         const topProducts = await this.prisma.salesOrderLine.groupBy({
             by: ['productId'],
             where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } },
@@ -187,6 +206,9 @@ let DashboardService = class DashboardService {
                 totalExpenses,
                 totalCogs,
                 netProfit,
+                netMargin: netProfit,
+                marginPercent,
+                unpaidAmount,
                 cashPosition,
                 receipts: totalReceipts
             },

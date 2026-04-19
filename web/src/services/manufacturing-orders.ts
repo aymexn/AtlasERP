@@ -82,5 +82,8 @@ export const manufacturingOrdersService = {
 
   async cancel(id: string): Promise<ManufacturingOrder> {
     return apiFetch(`/manufacturing-orders/${id}/cancel`, { method: 'POST' });
+  },
+  getPdfUrl(id: string) {
+    return `/manufacturing-orders/${id}/pdf`;
   }
 };

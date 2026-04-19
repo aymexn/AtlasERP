@@ -18,9 +18,10 @@ let ExpensesService = class ExpensesService {
         this.prisma = prisma;
     }
     async findAll(companyId) {
+        console.log(`[ExpensesService.findAll] Fetching for companyId: ${companyId}`);
         return this.prisma.expense.findMany({
             where: { companyId },
-            include: { supplier: { select: { name: true } } },
+            include: { supplier: true },
             orderBy: { date: 'desc' },
         });
     }
@@ -34,16 +35,24 @@ let ExpensesService = class ExpensesService {
         return expense;
     }
     async create(companyId, data) {
-        const { supplierId, ...rest } = data;
-        return this.prisma.expense.create({
-            data: {
-                ...rest,
-                companyId,
-                date: data.date ? new Date(data.date) : new Date(),
-                supplierId: supplierId || null,
-                paymentMethod: data.paymentMethod || client_1.PaymentMethod.CASH,
-            },
-        });
+        console.log(`[ExpensesService.create] Called for companyId: ${companyId}`);
+        try {
+            const { supplierId, amount, ...rest } = data;
+            return await this.prisma.expense.create({
+                data: {
+                    ...rest,
+                    companyId,
+                    amount: Number(amount) || 0,
+                    date: data.date ? new Date(data.date) : new Date(),
+                    supplierId: supplierId || null,
+                    paymentMethod: data.paymentMethod || client_1.PaymentMethod.CASH,
+                },
+            });
+        }
+        catch (error) {
+            console.error('ExpensesService.create Error:', error);
+            throw error;
+        }
     }
     async update(companyId, id, data) {
         await this.findOne(companyId, id);

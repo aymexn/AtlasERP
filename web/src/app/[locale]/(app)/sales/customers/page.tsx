@@ -1,4 +1,4 @@
-import { CustomersClient } from './customers-client';
+import CustomersClient from './customers-client';
 
 export const metadata = {
   title: 'Annuaire Clients | AtlasERP',

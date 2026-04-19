@@ -28,6 +28,9 @@ let TenantsController = class TenantsController {
     async getMyTenant(req) {
         return this.tenantsService.findByUserId(req.user.userId);
     }
+    async updateMyTenant(dto, req) {
+        return this.tenantsService.updateCompany(req.user.userId, dto);
+    }
 };
 exports.TenantsController = TenantsController;
 __decorate([
@@ -48,6 +51,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TenantsController.prototype, "getMyTenant", null);
+__decorate([
+    (0, common_1.Post)('me'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update current user company/tenant info' }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "updateMyTenant", null);
 exports.TenantsController = TenantsController = __decorate([
     (0, swagger_1.ApiTags)('Tenants'),
     (0, swagger_1.ApiBearerAuth)(),

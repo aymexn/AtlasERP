@@ -23,4 +23,10 @@ export class TenantsController {
     async getMyTenant(@Request() req: any) {
         return this.tenantsService.findByUserId(req.user.userId);
     }
+
+    @Post('me')
+    @ApiOperation({ summary: 'Update current user company/tenant info' })
+    async updateMyTenant(@Body() dto: any, @Request() req: any) {
+        return this.tenantsService.updateCompany(req.user.userId, dto);
+    }
 }

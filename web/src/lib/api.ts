@@ -90,6 +90,38 @@ async function fetchWithRetry(
     }
 }
 
+// ─── Data Sterilization Utility ───────────────────────────────────────────────
+/**
+ * Strips metadata and nested relations that the backend ValidationPipe 
+ * might reject due to 'forbidNonWhitelisted' constraints.
+ */
+export function sanitizeData(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    
+    // If it's an array, sanitize each element
+    if (Array.isArray(data)) {
+        return data.map(item => sanitizeData(item));
+    }
+
+    const clean: any = {};
+    const metadataFields = ['id', 'createdAt', 'updatedAt', 'companyId', '_count'];
+    
+    Object.keys(data).forEach(key => {
+        if (metadataFields.includes(key)) return;
+        
+        const value = data[key];
+        
+        // Strip out object relations (those would be nested objects with an 'id' that aren't arrays)
+        if (value && typeof value === 'object' && !Array.isArray(value) && value.id) {
+            return;
+        }
+
+        clean[key] = value;
+    });
+
+    return clean;
+}
+
 // ─── Main apiFetch ────────────────────────────────────────────────────────────
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const isClient = typeof window !== 'undefined';
@@ -98,10 +130,22 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const publicEndpoints = ['/auth/login', '/auth/register', '/health'];
     const isPublic = publicEndpoints.some((p) => endpoint.includes(p));
 
+    // Automatically sanitize body if it's a POST/PATCH/PUT request
+    let finalBody = options.body;
+    if (options.body && typeof options.body === 'string' && ['POST', 'PATCH', 'PUT'].includes(options.method || '')) {
+        try {
+            const parsed = JSON.parse(options.body);
+            finalBody = JSON.stringify(sanitizeData(parsed));
+        } catch {
+            // Not JSON or fail, keep original
+        }
+    }
+
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...(options.headers as any),
     };
+
 
     if (!isPublic && token) {
         headers['Authorization'] = `Bearer ${token}`;
@@ -111,7 +155,9 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         const { response, wasRetried } = await fetchWithRetry(`${API_URL}${endpoint}`, {
             ...options,
             headers,
+            body: finalBody,
         });
+
 
         if (response.status === 401 && isClient) {
             recoveryLog('warn', '401 Unauthorized — clearing session');

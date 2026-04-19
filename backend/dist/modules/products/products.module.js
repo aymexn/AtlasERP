@@ -15,14 +15,16 @@ const families_controller_1 = require("./families.controller");
 const formula_service_1 = require("./formula.service");
 const formula_controller_1 = require("./formula.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
+const pdf_service_1 = require("../../common/services/pdf.service");
+const tenants_module_1 = require("../tenants/tenants.module");
 let ProductsModule = class ProductsModule {
 };
 exports.ProductsModule = ProductsModule;
 exports.ProductsModule = ProductsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, tenants_module_1.TenantsModule],
         controllers: [products_controller_1.ProductsController, families_controller_1.FamiliesController, formula_controller_1.FormulaController],
-        providers: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService],
+        providers: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService, pdf_service_1.PdfService],
         exports: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService],
     })
 ], ProductsModule);

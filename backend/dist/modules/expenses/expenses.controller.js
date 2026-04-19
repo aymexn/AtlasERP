@@ -16,15 +16,32 @@ exports.ExpensesController = void 0;
 const common_1 = require("@nestjs/common");
 const expenses_service_1 = require("./expenses.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const pdf_service_1 = require("../../common/services/pdf.service");
+const tenants_service_1 = require("../tenants/tenants.service");
 let ExpensesController = class ExpensesController {
-    constructor(expensesService) {
+    constructor(expensesService, pdfService, tenantsService) {
         this.expensesService = expensesService;
+        this.pdfService = pdfService;
+        this.tenantsService = tenantsService;
     }
     async findAll(req) {
         return this.expensesService.findAll(req.user.companyId);
     }
     async getStats(req) {
         return this.expensesService.getStats(req.user.companyId);
+    }
+    async exportPdf(req, res) {
+        try {
+            const expenses = await this.expensesService.findAll(req.user.companyId);
+            const company = await this.tenantsService.findByUserId(req.user.userId);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Expenses-Recap.pdf');
+            await this.pdfService.generateExpensesPdf(company, expenses, res);
+        }
+        catch (error) {
+            console.error('Expenses PDF Export Error:', error);
+            res.status(500).json({ message: 'Error generating expenses PDF' });
+        }
     }
     async findOne(id, req) {
         return this.expensesService.findOne(req.user.companyId, id);
@@ -54,6 +71,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ExpensesController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Get)('export/pdf'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ExpensesController.prototype, "exportPdf", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -90,6 +115,8 @@ __decorate([
 exports.ExpensesController = ExpensesController = __decorate([
     (0, common_1.Controller)('expenses'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [expenses_service_1.ExpensesService])
+    __metadata("design:paramtypes", [expenses_service_1.ExpensesService,
+        pdf_service_1.PdfService,
+        tenants_service_1.TenantsService])
 ], ExpensesController);
 //# sourceMappingURL=expenses.controller.js.map

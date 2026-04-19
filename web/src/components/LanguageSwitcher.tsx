@@ -29,7 +29,7 @@ const LanguageSwitcher = () => {
                     className={`
                         flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all
                         ${locale === lang.code
-                            ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                            ? 'bg-white text-primary shadow-sm transform scale-105'
                             : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'}
                     `}
                 >
@@ -42,3 +42,4 @@ const LanguageSwitcher = () => {
 };
 
 export default LanguageSwitcher;
+

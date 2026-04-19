@@ -54,20 +54,20 @@ export function LoginClient() {
             <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100" suppressHydrationWarning>
                 <div className="flex justify-between items-center mb-4" suppressHydrationWarning>
                     <span className="text-2xl font-black text-gray-900 tracking-tighter">
-                        {ct('title')}<span className="text-blue-600">ERP</span>
+                        {ct('title')}<span className="text-blue-600">{ct('brand_suffix')}</span>
                     </span>
                     <LanguageSwitcher />
                 </div>
 
                 <div className="text-center">
                     <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">{t('title')}</h2>
-                    <p className="mt-3 text-gray-500">{t('subtitle')}</p>
+                    <div className="mt-3 text-gray-500">{t('subtitle')}</div>
                 </div>
 
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm">
-                        <p className="font-bold">Error</p>
-                        <p>{error}</p>
+                        <div className="font-bold">{ct('error_title')}</div>
+                        <div>{error}</div>
                     </div>
                 )}
 
@@ -104,12 +104,12 @@ export function LoginClient() {
                     </button>
                 </form>
 
-                <p className="text-center text-sm text-gray-600">
+                <div className="text-center text-sm text-gray-600">
                     {t('no_account')}{' '}
                     <Link href="/register" className="font-bold text-blue-600 hover:text-blue-500">
                         {t('register')}
                     </Link>
-                </p>
+                </div>
             </div>
         </div>
     );

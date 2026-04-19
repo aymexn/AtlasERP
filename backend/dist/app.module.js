@@ -23,6 +23,7 @@ const sales_module_1 = require("./modules/sales/sales.module");
 const invoices_module_1 = require("./modules/invoices/invoices.module");
 const payments_module_1 = require("./modules/payments/payments.module");
 const expenses_module_1 = require("./modules/expenses/expenses.module");
+const common_module_1 = require("./common/common.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
             tenants_module_1.TenantsModule,
             users_module_1.UsersModule,
             prisma_module_1.PrismaModule,
+            common_module_1.CommonModule,
             products_module_1.ProductsModule,
             inventory_module_1.InventoryModule,
             manufacturing_orders_module_1.ManufacturingOrdersModule,

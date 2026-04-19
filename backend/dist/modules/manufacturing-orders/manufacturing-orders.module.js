@@ -12,6 +12,7 @@ const prisma_module_1 = require("../prisma/prisma.module");
 const manufacturing_orders_controller_1 = require("./manufacturing-orders.controller");
 const manufacturing_orders_service_1 = require("./manufacturing-orders.service");
 const inventory_module_1 = require("../inventory/inventory.module");
+const pdf_service_1 = require("../../common/services/pdf.service");
 let ManufacturingOrdersModule = class ManufacturingOrdersModule {
 };
 exports.ManufacturingOrdersModule = ManufacturingOrdersModule;
@@ -19,7 +20,7 @@ exports.ManufacturingOrdersModule = ManufacturingOrdersModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule, inventory_module_1.InventoryModule],
         controllers: [manufacturing_orders_controller_1.ManufacturingOrdersController],
-        providers: [manufacturing_orders_service_1.ManufacturingOrdersService],
+        providers: [manufacturing_orders_service_1.ManufacturingOrdersService, pdf_service_1.PdfService],
         exports: [manufacturing_orders_service_1.ManufacturingOrdersService],
     })
 ], ManufacturingOrdersModule);

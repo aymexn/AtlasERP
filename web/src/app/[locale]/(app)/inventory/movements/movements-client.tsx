@@ -98,7 +98,7 @@ export default function MovementsClient() {
 
     const getTypeIcon = (type: string) => {
         switch (type) {
-            case 'IN': return <ArrowDownLeft className="text-emerald-500" />;
+            case 'IN': return <ArrowDownLeft className="text-primary" />;
             case 'OUT': return <ArrowUpRight className="text-red-500" />;
             case 'TRANSFER': return <Truck className="text-blue-500" />;
             case 'ADJUSTMENT': return <Settings2 className="text-orange-500" />;
@@ -198,7 +198,7 @@ export default function MovementsClient() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`font-black text-lg ${['IN', 'ADJUSTMENT'].includes(m.type) ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        <span className={`font-black text-lg ${['IN', 'ADJUSTMENT'].includes(m.type) ? 'text-primary' : 'text-red-600'}`}>
                                             {['IN', 'ADJUSTMENT'].includes(m.type) ? '+' : '-'}{m.quantity}
                                             <span className="text-[10px] ml-1 uppercase text-gray-400">{m.unit}</span>
                                         </span>
@@ -221,8 +221,7 @@ export default function MovementsClient() {
                                     <td colSpan={7} className="px-6 py-24 text-center">
                                         <div className="flex flex-col items-center justify-center gap-4">
                                             <div className="relative">
-                                                <div className="absolute inset-0 bg-blue-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                                                <div className="relative h-20 w-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border border-gray-200 shadow-sm flex items-center justify-center text-gray-400">
+                                                <div className="relative h-20 w-20 bg-linear-to-br from-gray-50 to-gray-100 rounded-3xl border border-gray-200 shadow-sm flex items-center justify-center text-gray-400">
                                                     <ClipboardList size={40} className="text-gray-300" />
                                                 </div>
                                             </div>
@@ -414,7 +413,7 @@ export default function MovementsClient() {
                                 {/* Section 3: Values & Quantities */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <RefreshCw size={16} className="text-emerald-600" />
+                                        <RefreshCw size={16} className="text-primary" />
                                         <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Valeurs & Quantités</h4>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -450,14 +449,14 @@ export default function MovementsClient() {
                                     </div>
 
                                     {/* Calculated Summary */}
-                                    <div className="p-6 bg-emerald-50/20 border border-emerald-100/50 rounded-4xl flex items-center justify-between">
+                                    <div className="p-6 bg-blue-50/50/20 border border-blue-100/50/50 rounded-4xl flex items-center justify-between">
                                         <div>
-                                            <h5 className="text-[10px] font-black text-emerald-600 tracking-widest uppercase mb-1">{t('movements.fields.total_cost')}</h5>
-                                            <p className="text-3xl font-black text-emerald-700 tracking-tighter">
+                                            <h5 className="text-[10px] font-black text-primary tracking-widest uppercase mb-1">{t('movements.fields.total_cost')}</h5>
+                                            <p className="text-3xl font-black text-blue-700 tracking-tighter">
                                                 {formatCurrency((Number(newMovement.quantity) || 0) * (Number(newMovement.unitCost) || 0), locale)}
                                             </p>
                                         </div>
-                                        <div className="h-14 w-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500">
+                                        <div className="h-14 w-14 bg-blue-50/50 rounded-2xl flex items-center justify-center text-primary">
                                             <Calculator size={28} />
                                         </div>
                                     </div>

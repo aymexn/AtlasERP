@@ -386,4 +386,26 @@ export class ManufacturingOrdersService {
       data: { status: 'CANCELLED' }
     });
   }
+
+  async findForPdf(companyId: string | undefined, id: string) {
+    const where: Prisma.ManufacturingOrderWhereInput = { id };
+    if (companyId) {
+      where.companyId = companyId;
+    }
+
+    const order = await this.prisma.manufacturingOrder.findFirst({
+      where,
+      include: {
+        company: true,
+        product: true,
+        formula: true,
+        lines: {
+          include: { component: true }
+        }
+      }
+    });
+
+    if (!order) throw new NotFoundException('Manufacturing order not found');
+    return order;
+  }
 }

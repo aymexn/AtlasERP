@@ -1,8 +1,13 @@
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { PdfService } from '../../common/services/pdf.service';
+import { TenantsService } from '../tenants/tenants.service';
+import { Response } from 'express';
 export declare class ProductsController {
     private readonly productsService;
-    constructor(productsService: ProductsService);
+    private readonly pdfService;
+    private readonly tenantsService;
+    constructor(productsService: ProductsService, pdfService: PdfService, tenantsService: TenantsService);
     create(createProductDto: CreateProductDto, req: any): Promise<{
         family: {
             id: string;
@@ -105,6 +110,7 @@ export declare class ProductsController {
         updatedAt: Date;
         preferredSupplierId: string | null;
     })[]>;
+    exportPdf(req: any, res: Response): Promise<void>;
     findOne(id: string, req: any): Promise<{
         family: {
             id: string;

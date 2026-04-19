@@ -114,4 +114,12 @@ export const purchasesService = {
   async validateReception(id: string): Promise<StockReception> {
     return apiFetch(`/stock-receptions/${id}/validate`, { method: 'POST' });
   },
+
+  getPdfUrl(id: string) {
+    return `/purchase-orders/${id}/pdf`;
+  },
+
+  getReceptionPdfUrl(id: string) {
+    return `/stock-receptions/${id}/pdf`; // Assuming this might exist or be needed
+  }
 };

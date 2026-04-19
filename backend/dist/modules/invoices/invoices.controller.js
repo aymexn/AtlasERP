@@ -31,14 +31,28 @@ let InvoicesController = class InvoicesController {
     async createFromSalesOrder(body, req) {
         return this.invoicesService.createFromSalesOrder(req.user.companyId, body.salesOrderId, body.paymentMethod);
     }
+    async addPayment(id, body, req) {
+        return this.invoicesService.addPayment(req.user.companyId, id, body);
+    }
     async cancel(id, req) {
         return this.invoicesService.cancel(req.user.companyId, id);
     }
     async generatePdf(id, req, res) {
-        const invoice = await this.invoicesService.findOne(req.user.companyId, id);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=Invoice-${invoice.reference}.pdf`);
-        await this.pdfService.generateInvoicePdf(invoice, res);
+        try {
+            const invoice = await this.invoicesService.findOne(req.user.companyId, id);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=Invoice-${invoice.reference}.pdf`);
+            await this.pdfService.generateInvoicePdf(invoice, res);
+        }
+        catch (error) {
+            console.error('Invoice PDF Route Error:', error);
+            if (!res.headersSent) {
+                res.status(500).json({
+                    message: 'Error generating invoice PDF',
+                    error: error.message
+                });
+            }
+        }
     }
 };
 exports.InvoicesController = InvoicesController;
@@ -65,6 +79,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], InvoicesController.prototype, "createFromSalesOrder", null);
+__decorate([
+    (0, common_1.Post)(':id/payments'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], InvoicesController.prototype, "addPayment", null);
 __decorate([
     (0, common_1.Patch)(':id/cancel'),
     __param(0, (0, common_1.Param)('id')),

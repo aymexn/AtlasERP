@@ -1,15 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { PdfService } from '../../common/services/pdf.service';
+import { TenantsService } from '../tenants/tenants.service';
+import { Response } from 'express';
 
 @ApiTags('Products')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('products')
 export class ProductsController {
-    constructor(private readonly productsService: ProductsService) { }
+    constructor(
+        private readonly productsService: ProductsService,
+        private readonly pdfService: PdfService,
+        private readonly tenantsService: TenantsService
+    ) { }
 
     @Post()
     @ApiOperation({ summary: 'Create a new product' })
@@ -21,6 +28,24 @@ export class ProductsController {
     @ApiOperation({ summary: 'List all products for the current tenant' })
     findAll(@Request() req: any) {
         return this.productsService.list(req.user.companyId);
+    }
+
+    @Get('export/pdf')
+    @ApiOperation({ summary: 'Export inventory as PDF' })
+    async exportPdf(@Request() req: any, @Res() res: Response) {
+        try {
+            const products = await this.productsService.list(req.user.companyId);
+            // Fetch company with details for the PDF header
+            const company = await this.tenantsService.findByUserId(req.user.userId);
+
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Inventory-Report.pdf');
+
+            await this.pdfService.generateInventoryPdf(company, products, res);
+        } catch (error) {
+            console.error('Inventory PDF Export Error:', error);
+            res.status(500).json({ message: 'Error generating inventory PDF' });
+        }
     }
 
     @Get(':id')

@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const expenses_service_1 = require("./expenses.service");
 const expenses_controller_1 = require("./expenses.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
+const tenants_module_1 = require("../tenants/tenants.module");
 let ExpensesModule = class ExpensesModule {
 };
 exports.ExpensesModule = ExpensesModule;
 exports.ExpensesModule = ExpensesModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, tenants_module_1.TenantsModule],
         controllers: [expenses_controller_1.ExpensesController],
         providers: [expenses_service_1.ExpensesService],
         exports: [expenses_service_1.ExpensesService]

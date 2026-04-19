@@ -8,12 +8,9 @@ export default async function AppLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const locale = await getLocale();
-    const isRtl = locale === 'ar';
-
     return (
         <AuthWrapper>
-            <div className={`flex min-h-screen bg-gray-50/50 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+            <div className="flex min-h-screen bg-gray-50/50 flex-row" dir="ltr">
                 {/* Fixed Sidebar */}
                 <Sidebar />
 

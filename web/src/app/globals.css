@@ -2,25 +2,65 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #09090b; /* Zinc-950 */
+  
+  /* AtlasERP Core Palette - Industrial Haute-Densité */
+  --primary: #2563eb; /* Royal Blue */
+  --primary-foreground: #ffffff;
+  
+  --success: #3b82f6; /* Blue-500 - Validated Status (Purged Green) */
+  --success-foreground: #ffffff;
+  
+  --warning: #f59e0b; /* Amber-500 - Pending Status */
+  --warning-foreground: #ffffff;
+  
+  --danger: #e11d48; /* Rose-600 - Critical Status */
+  --danger-foreground: #ffffff;
+  
+  --muted: #f4f4f5; /* Zinc-100 */
+  --muted-foreground: #71717a; /* Zinc-500 */
+  
+  --border: #e4e4e7; /* Zinc-200 */
+  --card: #ffffff;
+  --card-foreground: #09090b; /* Zinc-950 */
+  --radius: 12px;
 }
 
+/* AtlasERP: Royal Blue Identity — High-End Light Mode Only */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: var(--primary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --border-color-default: var(--border);
+  --radius-xl: var(--radius);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.01em;
 }
+
+/* Custom Scrollbar for Premium Feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+

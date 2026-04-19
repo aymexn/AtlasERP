@@ -18,15 +18,32 @@ const swagger_1 = require("@nestjs/swagger");
 const products_service_1 = require("./products.service");
 const product_dto_1 = require("./dto/product.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const pdf_service_1 = require("../../common/services/pdf.service");
+const tenants_service_1 = require("../tenants/tenants.service");
 let ProductsController = class ProductsController {
-    constructor(productsService) {
+    constructor(productsService, pdfService, tenantsService) {
         this.productsService = productsService;
+        this.pdfService = pdfService;
+        this.tenantsService = tenantsService;
     }
     create(createProductDto, req) {
         return this.productsService.create(req.user.companyId, createProductDto);
     }
     findAll(req) {
         return this.productsService.list(req.user.companyId);
+    }
+    async exportPdf(req, res) {
+        try {
+            const products = await this.productsService.list(req.user.companyId);
+            const company = await this.tenantsService.findByUserId(req.user.userId);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Inventory-Report.pdf');
+            await this.pdfService.generateInventoryPdf(company, products, res);
+        }
+        catch (error) {
+            console.error('Inventory PDF Export Error:', error);
+            res.status(500).json({ message: 'Error generating inventory PDF' });
+        }
     }
     findOne(id, req) {
         return this.productsService.findOne(id, req.user.companyId);
@@ -56,6 +73,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('export/pdf'),
+    (0, swagger_1.ApiOperation)({ summary: 'Export inventory as PDF' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "exportPdf", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get a product by ID' }),
@@ -89,6 +115,8 @@ exports.ProductsController = ProductsController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('products'),
-    __metadata("design:paramtypes", [products_service_1.ProductsService])
+    __metadata("design:paramtypes", [products_service_1.ProductsService,
+        pdf_service_1.PdfService,
+        tenants_service_1.TenantsService])
 ], ProductsController);
 //# sourceMappingURL=products.controller.js.map

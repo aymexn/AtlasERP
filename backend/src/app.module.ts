@@ -14,6 +14,7 @@ import { SalesModule } from './modules/sales/sales.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
         TenantsModule, 
         UsersModule, 
         PrismaModule, 
+        CommonModule,
         ProductsModule, 
         InventoryModule, 
         ManufacturingOrdersModule, 

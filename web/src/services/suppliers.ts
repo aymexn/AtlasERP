@@ -10,6 +10,9 @@ export interface Supplier {
   city?: string;
   country: string;
   taxId?: string;
+  nif?: string;
+  ai?: string;
+  rc?: string;
   paymentTermsDays: number;
   isActive: boolean;
   notes?: string;

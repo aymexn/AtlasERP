@@ -21,8 +21,9 @@ let StockReceptionsService = class StockReceptionsService {
         return this.prisma.stockReception.findMany({
             where: { companyId },
             include: {
-                purchaseOrder: { select: { reference: true, supplier: { select: { name: true } } } },
-                warehouse: { select: { name: true } },
+                purchaseOrder: { include: { supplier: true } },
+                warehouse: true,
+                lines: { include: { product: true } },
                 _count: { select: { lines: true } }
             },
             orderBy: { createdAt: 'desc' }
@@ -128,7 +129,11 @@ let StockReceptionsService = class StockReceptionsService {
             });
             return tx.stockReception.update({
                 where: { id },
-                data: { status: 'VALIDATED' }
+                data: { status: 'VALIDATED' },
+                include: {
+                    purchaseOrder: { include: { supplier: true } },
+                    lines: { include: { product: true } }
+                }
             });
         });
     }

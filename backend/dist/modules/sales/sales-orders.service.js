@@ -20,7 +20,11 @@ let SalesOrdersService = class SalesOrdersService {
     async findAll(companyId) {
         return this.prisma.salesOrder.findMany({
             where: { companyId },
-            include: { customer: { select: { name: true } } },
+            include: {
+                customer: true,
+                company: true,
+                lines: { include: { product: true } }
+            },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -29,36 +33,75 @@ let SalesOrdersService = class SalesOrdersService {
             where: { id, companyId },
             include: {
                 customer: true,
-                lines: { include: { product: true } }
+                company: true,
+                lines: {
+                    include: {
+                        product: true
+                    }
+                }
             },
         });
         if (!order)
             throw new common_1.NotFoundException('Sales Order not found');
         return order;
     }
+    async findOnePublic(id) {
+        const order = await this.prisma.salesOrder.findUnique({
+            where: { id },
+            include: {
+                customer: true,
+                company: true,
+                lines: { include: { product: true } }
+            },
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        return order;
+    }
     async create(companyId, data) {
-        const { customerId, lines, ...rest } = data;
+        const { customerId, lines, notes } = data;
+        let totalAmountHt = new client_1.Prisma.Decimal(0);
+        let totalAmountTva = new client_1.Prisma.Decimal(0);
+        const formattedLines = lines.map((l) => {
+            const qty = new client_1.Prisma.Decimal(l.quantity || 0);
+            const price = new client_1.Prisma.Decimal(l.unitPriceHt || 0);
+            const taxRate = new client_1.Prisma.Decimal(l.taxRate || 0.19);
+            const lineHt = qty.mul(price);
+            const lineTva = lineHt.mul(taxRate);
+            totalAmountHt = totalAmountHt.add(lineHt);
+            totalAmountTva = totalAmountTva.add(lineTva);
+            return {
+                productId: l.productId,
+                quantity: qty,
+                unit: l.unit || 'pcs',
+                unitPriceHt: price,
+                unitCostSnapshot: 0,
+                taxRate: taxRate,
+                lineTotalHt: lineHt,
+                lineTotalTtc: lineHt.add(lineTva),
+            };
+        });
+        const totalAmountTtc = totalAmountHt.add(totalAmountTva);
         const count = await this.prisma.salesOrder.count({ where: { companyId } });
         const reference = `BC-CLI-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
         return this.prisma.salesOrder.create({
             data: {
-                ...rest,
                 reference,
                 companyId,
-                customer: { connect: { id: customerId } },
+                customerId,
+                notes,
+                totalAmountHt,
+                totalAmountTva,
+                totalAmountTtc,
+                status: 'DRAFT',
                 lines: {
-                    create: lines.map((l) => ({
-                        productId: l.productId,
-                        quantity: l.quantity,
-                        unit: l.unit,
-                        unitPriceHt: l.unitPriceHt,
-                        unitCostSnapshot: l.unitCostSnapshot || 0,
-                        taxRate: l.taxRate || 0.19,
-                        lineTotalHt: new client_1.Prisma.Decimal(l.quantity).mul(new client_1.Prisma.Decimal(l.unitPriceHt)),
-                        lineTotalTtc: new client_1.Prisma.Decimal(l.quantity).mul(new client_1.Prisma.Decimal(l.unitPriceHt)).mul(1 + (l.taxRate || 0.19)),
-                    })),
+                    create: formattedLines,
                 },
             },
+            include: {
+                customer: true,
+                lines: true
+            }
         });
     }
     async ship(companyId, userId, id) {
@@ -117,6 +160,33 @@ let SalesOrdersService = class SalesOrdersService {
                 where: { id },
                 data: { status: 'SHIPPED' }
             });
+        });
+    }
+    async validateOrder(companyId, id) {
+        const order = await this.prisma.salesOrder.findFirst({
+            where: { id, companyId }
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        if (order.status !== 'DRAFT')
+            throw new common_1.BadRequestException('Only DRAFT orders can be validated');
+        return this.prisma.salesOrder.update({
+            where: { id },
+            data: { status: 'VALIDATED' }
+        });
+    }
+    async cancelOrder(companyId, id) {
+        const order = await this.prisma.salesOrder.findFirst({
+            where: { id, companyId }
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        if (order.status === 'SHIPPED' || order.status === 'INVOICED') {
+            throw new common_1.BadRequestException('Cannot cancel a shipped or invoiced order');
+        }
+        return this.prisma.salesOrder.update({
+            where: { id },
+            data: { status: 'CANCELLED' }
         });
     }
     async getProfitability(companyId, id) {

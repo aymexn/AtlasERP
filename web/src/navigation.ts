@@ -2,7 +2,7 @@ import { createNavigation } from 'next-intl/navigation';
 import { defineRouting } from 'next-intl/routing';
 
 export const routing = defineRouting({
-    locales: ['fr', 'ar', 'en'],
+    locales: ['fr'],
     defaultLocale: 'fr',
     localePrefix: 'always',
     pathnames: {
@@ -20,9 +20,10 @@ export const routing = defineRouting({
         '/purchases/receptions': '/purchases/receptions',
         '/sales/customers': '/sales/customers',
         '/sales/orders': '/sales/orders',
-        '/sales/invoices': '/sales/invoices',
+        '/invoices': '/invoices',
         '/sales/payments': '/sales/payments',
-        '/finances/expenses': '/finances/expenses',
+        '/expenses': '/expenses',
+        '/settings': '/settings',
         '/login': '/login',
         '/register': '/register',
         '/tenant': '/tenant'

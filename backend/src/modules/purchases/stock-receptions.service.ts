@@ -11,13 +11,15 @@ export class StockReceptionsService {
     return this.prisma.stockReception.findMany({
       where: { companyId },
       include: {
-        purchaseOrder: { select: { reference: true, supplier: { select: { name: true } } } },
-        warehouse: { select: { name: true } },
+        purchaseOrder: { include: { supplier: true } },
+        warehouse: true,
+        lines: { include: { product: true } },
         _count: { select: { lines: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
   }
+
 
   async findOne(id: string, companyId: string) {
     const reception = await this.prisma.stockReception.findFirst({
@@ -142,7 +144,11 @@ export class StockReceptionsService {
       // 3. Finalize reception
       return tx.stockReception.update({
         where: { id },
-        data: { status: 'VALIDATED' }
+        data: { status: 'VALIDATED' },
+        include: {
+          purchaseOrder: { include: { supplier: true } },
+          lines: { include: { product: true } }
+        }
       });
     });
   }

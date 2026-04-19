@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import {
     LayoutDashboard,
     Package,
@@ -9,124 +9,172 @@ import {
     TrendingUp,
     Receipt,
     Settings,
-    ChevronLeft,
-    ChevronRight,
     FolderTree,
     Factory,
     ShoppingCart,
-    User,
-    Truck
+    Users,
+    Truck,
+    Building2,
+    Wallet,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { useState } from 'react';
 
 const Sidebar = () => {
     const t = useTranslations('nav');
+    const ct = useTranslations('common');
     const pathname = usePathname();
-    const locale = useLocale();
-    const isRtl = locale === 'ar';
     const [collapsed, setCollapsed] = useState(false);
 
-    const menuItems = [
-        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, disabled: false },
-        { name: t('products'), href: '/products', icon: Package, disabled: false },
-        { name: t('product_families'), href: '/product-families', icon: FolderTree, disabled: false },
-        { name: t('inventory'), href: '/inventory', icon: ClipboardList, disabled: false },
-        { name: t('manufacturing'), href: '/manufacturing/orders', icon: Factory, disabled: false },
-        
-        // Purchasing Group
-        { name: 'Fournisseurs', href: '/purchases/suppliers', icon: User, disabled: false },
-        { name: 'Bons de Commande', href: '/purchases/orders', icon: ShoppingCart, disabled: false },
-        { name: 'Réceptions Stock', href: '/purchases/receptions', icon: Truck, disabled: false },
-
-        { name: t('customers'), href: '/sales/customers', icon: User, disabled: false },
-        { name: t('sales'), href: '/sales/orders', icon: TrendingUp, disabled: false },
-        { name: t('invoices'), href: '/sales/invoices', icon: Receipt, disabled: false },
-        { name: t('expenses'), href: '/finances/expenses', icon: Receipt, disabled: false },
-        { name: t('settings'), href: '/settings', icon: Settings, disabled: true },
+    const groups = [
+        {
+            title: t('groups.catalogue'),
+            items: [
+                { name: t('items.products'), href: '/products', icon: Package, disabled: false },
+                { name: t('items.families'), href: '/product-families', icon: FolderTree, disabled: false },
+            ]
+        },
+        {
+            title: t('groups.production'),
+            items: [
+                { name: t('items.inventory'), href: '/inventory', icon: ClipboardList, disabled: false },
+                { name: t('items.manufacturing'), href: '/manufacturing/orders', icon: Factory, disabled: false },
+            ]
+        },
+        {
+            title: t('groups.commerce'),
+            items: [
+                { name: t('items.customers'), href: '/sales/customers', icon: Users, disabled: false },
+                { name: t('items.sales'), href: '/sales/orders', icon: TrendingUp, disabled: false },
+                { name: t('items.suppliers'), href: '/purchases/suppliers', icon: Building2, disabled: false },
+                { name: t('items.purchase_orders'), href: '/purchases/orders', icon: ShoppingCart, disabled: false },
+                { name: t('items.receptions'), href: '/purchases/receptions', icon: Truck, disabled: false },
+            ]
+        },
+        {
+            title: t('groups.finance'),
+            items: [
+                { name: t('items.invoices'), href: '/invoices', icon: Receipt, disabled: false },
+                { name: t('items.expenses'), href: '/expenses', icon: Wallet, disabled: false },
+            ]
+        }
     ];
 
     return (
         <aside
             className={`
-                bg-white border-gray-200 shadow-xl transition-all duration-300 z-30 sticky top-0 h-screen
-                ${collapsed ? 'w-20' : 'w-72'}
-                ${isRtl ? 'border-l' : 'border-r'}
+                bg-white border-r border-slate-100 shadow-xl transition-all duration-300 z-50 sticky top-0 h-screen flex flex-col shrink-0
+                ${collapsed ? 'w-[60px]' : 'w-[280px]'}
             `}
         >
-            <div className="flex flex-col h-full">
-                {/* Brand Logo Section */}
-                <div className="p-6 flex items-center justify-between">
-                    {!collapsed && (
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg">A</div>
-                            <span className="text-xl font-black text-gray-900 tracking-tighter italic">Atlas<span className="text-blue-600">ERP</span></span>
-                        </div>
-                    )}
-                    {collapsed && (
-                        <div className="mx-auto h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg">A</div>
-                    )}
+            {/* Header / Brand - Restored to Elite Compact Standard (56px) */}
+            <div className={`h-14 flex items-center border-b border-slate-50 shrink-0 transition-all ${collapsed ? 'justify-center px-0' : 'px-4'}`}>
+                <div className="h-10 w-10 shrink-0 bg-blue-600 rounded-[10px] flex items-center justify-center font-bold text-[18px] text-white shadow-sm">
+                    A
+                </div>
+                {!collapsed && (
+                    <div className="ml-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-500">
+                        <span className="text-[18px] font-bold tracking-tight">
+                            <span className="text-slate-800">Atlas</span>
+                            <span className="text-blue-600">ERP</span>
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-8 space-y-10">
+                {/* Dashboard Link */}
+                <div className="px-2">
+                    <Link
+                        href="/dashboard"
+                        className={`
+                            flex items-center rounded-xl transition-all group h-12 w-full
+                            ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                            ${pathname === '/dashboard'
+                                ? 'bg-blue-50 text-primary font-bold shadow-sm'
+                                : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
+                            }
+                        `}
+                    >
+                        <LayoutDashboard size={20} className="shrink-0" />
+                        {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">{t('dashboard')}</span>}
+                    </Link>
                 </div>
 
-                {/* Collapse Toggle Button */}
+                {groups.map((group, gIdx) => (
+                    <div key={gIdx} className="space-y-3">
+                        {!collapsed && (
+                            <h3 className="px-7 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] whitespace-nowrap">
+                                {group.title}
+                            </h3>
+                        )}
+                        <div className="px-2 space-y-1">
+                            {group.items.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = pathname === item.href;
+                                if (item.disabled) return null;
+
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href as any}
+                                        className={`
+                                            flex items-center rounded-xl transition-all h-12 w-full
+                                            ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                                            ${isActive
+                                                ? 'bg-blue-50 text-primary font-bold shadow-sm'
+                                                : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
+                                            }
+                                        `}
+                                    >
+                                        <Icon size={20} className="shrink-0" />
+                                        {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">{item.name}</span>}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </nav>
+
+            {/* Footer / Toggle & Settings */}
+            <div className="p-2 border-t border-slate-50 space-y-3 bg-slate-50/30">
+                <Link
+                    href="/settings"
+                    className={`
+                        flex items-center rounded-xl transition-all h-12 w-full
+                        ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                        ${pathname === '/settings'
+                            ? 'bg-blue-50 text-primary font-bold shadow-sm'
+                            : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
+                        }
+                    `}
+                >
+                    <Settings size={20} className="shrink-0" />
+                    {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">{t('items.settings')}</span>}
+                </Link>
+
                 <button
                     onClick={() => setCollapsed(!collapsed)}
                     className={`
-                        absolute top-16 bg-white border border-gray-200 rounded-full p-1 shadow-md hover:bg-gray-50 transition-all
-                        ${isRtl ? '-left-3 rotate-0' : '-right-3 rotate-0'}
+                        flex items-center rounded-xl transition-all h-12 w-full group
+                        ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                        text-slate-300 hover:bg-slate-100/50 hover:text-slate-600 font-bold
                     `}
                 >
-                    {collapsed ? (isRtl ? <ChevronLeft size={16} /> : <ChevronRight size={16} />) : (isRtl ? <ChevronRight size={16} /> : <ChevronLeft size={16} />)}
-                </button>
-
-                {/* Navigation Items */}
-                <nav className="flex-1 px-4 mt-6 space-y-2">
-                    {menuItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.disabled ? '#' : item.href as any}
-                                className={`
-                                    flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group
-                                    ${isActive
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                                        : item.disabled
-                                            ? 'text-gray-300 cursor-not-allowed'
-                                            : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'
-                                    }
-                                `}
-                                onClick={(e) => item.disabled && e.preventDefault()}
-                            >
-                                <Icon size={20} className={`${isActive ? 'text-white' : 'group-hover:text-blue-600'}`} />
-                                {!collapsed && (
-                                    <div className="flex flex-1 items-center justify-between">
-                                        <span className="font-bold text-sm tracking-tight">{item.name}</span>
-                                        {item.disabled && (
-                                            <span className="text-[10px] font-black uppercase tracking-tighter bg-gray-100 text-gray-400 px-2 py-0.5 rounded-md group-hover:bg-blue-100 group-hover:text-blue-400">
-                                                Soon
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Footer Section */}
-                <div className="p-6 border-t border-gray-100">
-                    {!collapsed && (
-                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                            <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-xs font-bold text-gray-700">Cloud Sync Active</span>
-                            </div>
-                        </div>
+                    {collapsed ? (
+                        <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                    ) : (
+                        <>
+                            <ChevronLeft size={20} className="shrink-0 group-hover:-translate-x-0.5 transition-transform" /> 
+                            <span className="text-[10px] uppercase font-black tracking-widest whitespace-nowrap opacity-60">
+                                RÉDUIRE
+                            </span>
+                        </>
                     )}
-                </div>
+                </button>
             </div>
         </aside>
     );

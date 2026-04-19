@@ -27,6 +27,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const locale = useLocale();
     const t = useTranslations('common');
+    const rt = useTranslations('recovery');
 
     // ── Auth Check ────────────────────────────────────────────────────────────
     const checkAuth = useCallback(async () => {
@@ -129,19 +130,19 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     // ─── Render: Loading ──────────────────────────────────────────────────────
     if (phase === 'loading') {
         return (
-            <div className="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center">
+            <div className="fixed inset-0 bg-white z-9999 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-5">
                     <div className="relative">
-                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-blue-500/30">
+                        <div className="h-16 w-16 rounded-2xl bg-linear-to-br from-primary to-blue-700 flex items-center justify-center shadow-2xl shadow-primary/20">
                             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                                 <path d="M6 16L13 23L26 9" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         </div>
-                        <div className="absolute -inset-1 rounded-2xl border-2 border-blue-400/30 animate-ping" />
+                        <div className="absolute -inset-1 rounded-2xl border-2 border-primary/20 animate-ping" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-400 tracking-widest uppercase animate-pulse">
+                    <div className="text-xs font-black text-gray-400 tracking-[0.2em] uppercase animate-pulse">
                         {t('loading')}
-                    </p>
+                    </div>
                 </div>
             </div>
         );
@@ -151,18 +152,18 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     if (phase === 'reconnecting' || phase === 'retrying') {
         const delayLabels = ['1s', '3s', '5s'];
         return (
-            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
-                <div className="w-full max-w-sm bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl p-8 space-y-6">
+            <div className="fixed inset-0 bg-white/80 backdrop-blur-md z-9999 flex items-center justify-center p-4">
+                <div className="w-full max-w-sm bg-white border border-gray-100 rounded-2xl shadow-2xl p-8 space-y-6">
                     <div className="flex flex-col items-center gap-4 text-center">
-                        <div className="h-14 w-14 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                            <Wifi size={26} className="text-amber-400 animate-pulse" />
+                        <div className="h-14 w-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                            <Wifi size={26} className="text-primary animate-pulse" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-white">Reconnecting…</h2>
-                            <p className="text-sm text-slate-400 mt-1">
-                                Attempt {retryAttempt} of 3
-                                {retryAttempt > 0 && ` · waiting ${delayLabels[retryAttempt - 1]}`}
-                            </p>
+                            <h2 className="text-lg font-black text-gray-900 tracking-tight">{rt('reconnecting')}</h2>
+                            <div className="text-sm text-gray-400 font-bold mt-1">
+                                {rt('attempt', { attempt: retryAttempt })}
+                                {retryAttempt > 0 && ` · ${rt('waiting', { delay: delayLabels[retryAttempt - 1] })}`}
+                            </div>
                         </div>
                     </div>
 
@@ -172,15 +173,15 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
                             <div
                                 key={i}
                                 className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                                    i <= retryAttempt ? 'bg-amber-400 scale-125' : 'bg-slate-700'
+                                    i <= retryAttempt ? 'bg-primary scale-125' : 'bg-gray-200'
                                 }`}
                             />
                         ))}
                     </div>
 
-                    <p className="text-xs text-slate-500 text-center">
-                        Connection lost. Retrying automatically with exponential backoff…
-                    </p>
+                    <div className="text-[11px] font-bold text-gray-400 text-center uppercase tracking-widest">
+                        {rt('lost')}
+                    </div>
                 </div>
             </div>
         );
@@ -189,15 +190,15 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     // ─── Render: Restored ─────────────────────────────────────────────────────
     if (phase === 'restored') {
         return (
-            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
-                <div className="w-full max-w-sm bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl p-8">
+            <div className="fixed inset-0 bg-white/80 backdrop-blur-md z-9999 flex items-center justify-center p-4">
+                <div className="w-full max-w-sm bg-white border border-success/30 rounded-2xl shadow-2xl p-8">
                     <div className="flex flex-col items-center gap-4 text-center">
-                        <div className="h-14 w-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                            <CheckCircle2 size={28} className="text-emerald-400" />
+                        <div className="h-14 w-14 rounded-xl bg-success/10 border border-success/20 flex items-center justify-center">
+                            <CheckCircle2 size={28} className="text-success" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-white">Connection Restored</h2>
-                            <p className="text-sm text-slate-400 mt-1">Backend is responding normally.</p>
+                            <h2 className="text-lg font-black text-gray-900 tracking-tight">{rt('restored')}</h2>
+                            <div className="text-sm text-gray-400 font-bold mt-1">{rt('responding')}</div>
                         </div>
                     </div>
                 </div>
@@ -209,33 +210,32 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     if (phase === 'critical' || phase === 'error') {
         const isCritical = manualRestarts >= MAX_MANUAL_RESTARTS;
         return (
-            <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
-                <div className="w-full max-w-md bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl p-8 space-y-6">
+            <div className="fixed inset-0 bg-white/95 backdrop-blur-md z-9999 flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-white border border-gray-100 rounded-2xl shadow-2xl p-8 space-y-6">
                     <div className="flex flex-col items-center gap-4 text-center">
                         <div className={`h-14 w-14 rounded-xl flex items-center justify-center border ${
                             isCritical
-                                ? 'bg-red-500/10 border-red-500/20'
-                                : 'bg-orange-500/10 border-orange-500/20'
+                                ? 'bg-red-50 border-red-100'
+                                : 'bg-blue-50 border-blue-100'
                         }`}>
-                            <WifiOff size={26} className={isCritical ? 'text-red-400' : 'text-orange-400'} />
+                            <WifiOff size={26} className={isCritical ? 'text-red-500' : 'text-primary'} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-white">
-                                {isCritical ? '⚠ CRITICAL — Backend Unreachable' : 'Backend Unreachable'}
+                            <h2 className="text-lg font-black text-gray-900 tracking-tight">
+                                {isCritical ? rt('critical_title') : rt('unreachable')}
                             </h2>
-                            <p className="text-sm text-slate-400 mt-1">
+                            <div className="text-sm text-gray-400 font-bold mt-1">
                                 {isCritical
-                                    ? 'All retry attempts failed. Start the backend server manually.'
-                                    : "Couldn't connect to AtlasERP server. The backend may be down."}
-                            </p>
+                                    ? rt('start_manual')
+                                    : rt('down_msg')}
+                            </div>
                         </div>
                     </div>
-
                     {isCritical && (
-                        <div className="bg-slate-800 rounded-xl p-4 space-y-2 text-left">
-                            <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Manual Fix</p>
-                            <code className="text-xs text-emerald-400 block">cd AtlasERP/backend</code>
-                            <code className="text-xs text-emerald-400 block">npm run start:dev</code>
+                        <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-left border border-gray-100">
+                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{rt('manual_fix')}</div>
+                            <code className="text-xs text-primary font-bold block">cd AtlasERP/backend</code>
+                            <code className="text-xs text-primary font-bold block">npm run start:dev</code>
                         </div>
                     )}
 
@@ -243,22 +243,17 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
                         <button
                             onClick={handleManualRetry}
                             disabled={isCritical}
-                            className={`w-full px-6 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                            className={`w-full px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                                 isCritical
-                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    : 'bg-primary hover:bg-blue-700 text-white shadow-xl shadow-blue-200 active:scale-95'
                             }`}
                         >
-                            <RefreshCw size={16} />
+                            <RefreshCw size={14} strokeWidth={3} />
                             {isCritical
-                                ? `Max retries reached (${manualRestarts}/${MAX_MANUAL_RESTARTS})`
-                                : `Retry Connection (${manualRestarts}/${MAX_MANUAL_RESTARTS})`}
+                                ? rt('max_reached', { count: manualRestarts, max: MAX_MANUAL_RESTARTS })
+                                : rt('retry_btn', { count: manualRestarts, max: MAX_MANUAL_RESTARTS })}
                         </button>
-                        {!isCritical && (
-                            <p className="text-xs text-slate-500 text-center">
-                                Auto-retry with 1s → 3s → 5s backoff
-                            </p>
-                        )}
                     </div>
                 </div>
             </div>
@@ -267,3 +262,4 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
     return <>{children}</>;
 }
+

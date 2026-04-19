@@ -32,6 +32,8 @@ import {
 } from 'lucide-react';
 import { familiesService, ProductFamily } from '@/services/families';
 import { Link } from '@/navigation';
+import { downloadPdf } from '@/lib/download-pdf';
+import { Download, Percent } from 'lucide-react';
 
 type TabType = 'general' | 'pricing' | 'stock' | 'formula';
 
@@ -39,7 +41,7 @@ export default function ProductsClient() {
     const t = useTranslations('products');
     const ct = useTranslations('common');
     const tt = useTranslations('toast');
-    const st = useTranslations('products.articleTypes');
+    const st = useTranslations('products.article_types');
     const locale = useLocale();
 
     const [products, setProducts] = useState<Product[]>([]);
@@ -167,10 +169,19 @@ export default function ProductsClient() {
             {/* Header section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tighter">{t('title')}</h1>
-                    <p className="text-gray-500 font-medium">{t('subtitle')}</p>
+                    <h1 className="text-3xl font-black text-foreground tracking-tighter">{t('title')}</h1>
+                    <p className="text-muted-foreground font-medium">{t('subtitle')}</p>
                 </div>
                 <div className="flex gap-3">
+                    <button
+                        onClick={() => {
+                            downloadPdf(productsService.getInventoryPdfUrl(), 'inventaire.pdf');
+                        }}
+                        className="flex items-center gap-2 bg-white border border-gray-200 text-blue-600 px-6 py-3 rounded-2xl font-bold shadow-sm transition-all hover:bg-gray-50 active:scale-95"
+                    >
+                        <Download size={20} />
+                        {ct('inventory_export')}
+                    </button>
                     <button
                         onClick={() => {
                             setCurrentProduct({
@@ -187,7 +198,7 @@ export default function ProductsClient() {
                             setIsModalOpen(true);
                             setActiveTab('general');
                         }}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-200 transition-all active:scale-95"
                     >
                         <Plus size={20} />
                         {t('add')}
@@ -198,17 +209,22 @@ export default function ProductsClient() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
-                    { label: t('stats.total'), value: products.length, color: 'blue', icon: Package },
-                    { label: t('stats.finished'), value: products.filter(p => p.articleType === 'FINISHED_PRODUCT').length, color: 'emerald', icon: CheckCircle2 },
-                    { label: t('stats.raw'), value: products.filter(p => p.articleType === 'RAW_MATERIAL').length, color: 'purple', icon: Layers },
-                    { label: t('stats.low_stock'), value: products.filter(p => p.stockQuantity <= (p.minStock || 0)).length, color: 'orange', icon: AlertCircle }
+                    { label: t('stats.total'), value: products.length, variant: 'primary', icon: Package },
+                    { label: t('stats.finished'), value: products.filter(p => p.articleType === 'FINISHED_PRODUCT').length, variant: 'success', icon: CheckCircle2 },
+                    { label: t('stats.raw'), value: products.filter(p => p.articleType === 'RAW_MATERIAL').length, variant: 'secondary', icon: Layers },
+                    { label: t('stats.low_stock'), value: products.filter(p => p.stockQuantity <= (p.minStock || 0)).length, variant: 'warning', icon: AlertCircle }
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div key={i} className="bg-card p-6 rounded-3xl border border-border shadow-sm flex items-center justify-between transition-all hover:border-primary/20 group">
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                            <p className="text-2xl font-black text-gray-900">{stat.value}</p>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
+                            <p className="text-2xl font-black text-foreground">{stat.value}</p>
                         </div>
-                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center`} style={{ backgroundColor: `var(--${stat.color}-50, #F3F4F6)`, color: `var(--${stat.color}-600, #3B82F6)` }}>
+                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-black/5 ${
+                            stat.variant === 'primary' ? 'bg-blue-600/10 text-blue-600' :
+                            stat.variant === 'success' ? 'bg-emerald-600/10 text-emerald-600' :
+                            stat.variant === 'secondary' ? 'bg-blue-600/10 text-blue-600' :
+                            'bg-amber-600/10 text-amber-600'
+                        }`}>
                             <stat.icon size={24} />
                         </div>
                     </div>
@@ -219,19 +235,19 @@ export default function ProductsClient() {
             <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex flex-wrap items-center justify-between gap-4">
                     <div className="relative flex-1 min-w-[300px]">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                         <input
                             type="text"
                             placeholder={t('search')}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-200 focus:bg-white transition-all text-sm font-medium"
+                            className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-2xl outline-none focus:border-primary/20 focus:bg-card transition-all text-sm font-medium"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="flex items-center gap-3">
-                        <Filter size={18} className="text-gray-400" />
+                        <Filter size={18} className="text-muted-foreground" />
                         <select
-                            className="px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-200 focus:bg-white transition-all text-sm font-bold text-gray-600"
+                            className="px-4 py-3 bg-muted border border-border rounded-2xl outline-none focus:border-primary/20 focus:bg-card transition-all text-sm font-bold text-muted-foreground"
                             value={selectedFamilyId}
                             onChange={(e) => setSelectedFamilyId(e.target.value)}
                         >
@@ -241,7 +257,7 @@ export default function ProductsClient() {
                             ))}
                         </select>
                         <select
-                            className="px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-200 focus:bg-white transition-all text-sm font-bold text-gray-600"
+                            className="px-4 py-3 bg-muted border border-border rounded-2xl outline-none focus:border-primary/20 focus:bg-card transition-all text-sm font-bold text-muted-foreground"
                             value={stockFilter}
                             onChange={(e) => setStockFilter(e.target.value as any)}
                         >
@@ -270,17 +286,18 @@ export default function ProductsClient() {
                             {filteredProducts.map((p) => (
                                 <tr key={p.id} className="hover:bg-blue-50/30 transition-colors group">
                                     <td className="px-6 py-5">
-                                        <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${p.articleType === 'FINISHED_PRODUCT' ? 'bg-emerald-100 text-emerald-700' :
-                                            p.articleType === 'RAW_MATERIAL' ? 'bg-purple-100 text-purple-700' :
-                                                p.articleType === 'SERVICE' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
-                                            }`}>
+                                        <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${
+                                            p.articleType === 'FINISHED_PRODUCT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                            p.articleType === 'RAW_MATERIAL' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                                            p.articleType === 'SERVICE' ? 'bg-slate-50 text-slate-700 border border-slate-100' : 'bg-gray-50 text-gray-700 border border-gray-100'
+                                        }`}>
                                             {t(`article_types.${p.articleType}`)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-gray-900">{p.name}</span>
-                                            {p.secondaryName && <span className="text-[10px] text-gray-400 font-medium">{p.secondaryName}</span>}
+                                            <span className="font-bold text-foreground">{p.name}</span>
+                                            {p.secondaryName && <span className="text-[10px] text-muted-foreground font-medium">{p.secondaryName}</span>}
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 font-mono text-xs font-black text-gray-400">{p.sku}</td>
@@ -296,10 +313,10 @@ export default function ProductsClient() {
                                     <td className="px-6 py-5">
                                         {p.articleType === 'FINISHED_PRODUCT' || p.articleType === 'SEMI_FINISHED' ? (
                                             <div className="flex items-center gap-1.5">
-                                                <div className={`h-2 w-2 rounded-full ${isProductionReady(p) === 'READY' ? 'bg-emerald-500 animate-pulse' :
+                                                <div className={`h-2 w-2 rounded-full ${isProductionReady(p) === 'READY' ? 'bg-blue-600 animate-pulse' :
                                                     isProductionReady(p) === 'MISSING_COST' ? 'bg-amber-500' : 'bg-gray-300'
                                                     }`} />
-                                                <span className={`text-[10px] font-black uppercase tracking-tight ${isProductionReady(p) === 'READY' ? 'text-emerald-700' :
+                                                <span className={`text-[10px] font-black uppercase tracking-tight ${isProductionReady(p) === 'READY' ? 'text-blue-700' :
                                                     isProductionReady(p) === 'MISSING_COST' ? 'text-amber-700' : 'text-gray-400'
                                                     }`}>
                                                     {isProductionReady(p) === 'READY' ? t('fields.readiness.ready') :
@@ -315,13 +332,13 @@ export default function ProductsClient() {
                                         {formatCurrency(Number(p.salePriceHt) * (1 + Number(p.taxRate)), locale)}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${p.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                            {p.isActive ? t('fields.status.active' as any) : t('fields.status.inactive' as any)}
+                                        <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${p.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+                                            {p.isActive ? t('fields.status.active') : t('fields.status.inactive')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-2">
-                                            <span className={`font-black ${p.stockQuantity <= (p.minStock || 0) ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                            <span className={`font-black ${p.stockQuantity <= (p.minStock || 0) ? 'text-amber-600' : 'text-blue-600'}`}>
                                                 {p.stockQuantity} <span className="text-[10px] font-medium text-gray-400 uppercase">{p.unit}</span>
                                             </span>
                                             {p.stockQuantity <= (p.minStock || 0) && <AlertCircle size={14} className="text-orange-500" />}
@@ -332,8 +349,8 @@ export default function ProductsClient() {
                                             {(p.articleType === 'FINISHED_PRODUCT' || p.articleType === 'SEMI_FINISHED') && (
                                                 <Link 
                                                     href={`/manufacturing/orders` as any}
-                                                    className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-white rounded-lg border border-transparent hover:border-emerald-100 shadow-sm transition-all"
-                                                    title={t('create_order' as any) || "Ordres de Fabrication"}
+                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-white rounded-lg border border-transparent hover:border-blue-100/50 shadow-sm transition-all"
+                                                    title={t('create_order')}
                                                 >
                                                     <Factory size={16} />
                                                 </Link>
@@ -370,18 +387,18 @@ export default function ProductsClient() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className={`bg-white rounded-4xl w-full ${activeTab === 'formula' ? 'max-w-6xl' : 'max-w-2xl'} relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-all`}>
+                    <div className={`bg-card rounded-4xl w-full ${activeTab === 'formula' ? 'max-w-6xl' : 'max-w-2xl'} relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-all border border-border`}>
                         {/* Modal Header */}
-                        <div className="p-8 pb-4 flex items-center justify-between border-b border-gray-50">
+                        <div className="p-8 pb-4 flex items-center justify-between border-b border-border bg-muted/30">
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tighter">
+                                <h2 className="text-2xl font-black text-foreground tracking-tighter">
                                     {currentProduct?.id ? t('edit') : t('add')}
                                 </h2>
-                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">
-                                    {currentProduct?.sku || t('add')}
+                                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">
+                                    {currentProduct?.sku || t('new_product')}
                                 </p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 p-2 rounded-xl">
+                            <button onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors bg-card p-2 rounded-xl border border-border shadow-sm">
                                 <X size={20} />
                             </button>
                         </div>
@@ -484,7 +501,7 @@ export default function ProductsClient() {
                                             onChange={(e) => setCurrentProduct({ ...currentProduct, isActive: e.target.checked })}
                                         />
                                         <label htmlFor="isActive" className="text-sm font-bold text-gray-700 cursor-pointer select-none">
-                                            {t('fields.status.active' as any)}
+                                            {t('fields.status.active')}
                                         </label>
                                     </div>
                                 </div>
@@ -500,20 +517,25 @@ export default function ProductsClient() {
                                                 type="number"
                                                 step="0.01"
                                                 className="w-full px-5 py-3 bg-blue-50/30 border border-blue-100 rounded-2xl outline-none focus:border-blue-300 focus:bg-white transition-all font-black text-blue-600"
-                                                value={currentProduct?.salePriceHt || 0}
+                                                value={currentProduct?.salePriceHt === 0 ? '' : currentProduct?.salePriceHt}
+                                                placeholder="0.00"
                                                 onChange={(e) => setCurrentProduct({ ...currentProduct, salePriceHt: parseFloat(e.target.value) || 0 })}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('fields.taxRate')}</label>
-                                            <input
-                                                required
-                                                type="number"
-                                                step="0.01"
-                                                className="w-full px-5 py-3 bg-gray-100/50 border border-gray-100 rounded-2xl outline-none focus:border-blue-200 focus:bg-white transition-all font-bold"
-                                                value={currentProduct?.taxRate ?? 0.19}
-                                                onChange={(e) => setCurrentProduct({ ...currentProduct, taxRate: parseFloat(e.target.value) || 0 })}
-                                            />
+                                            <div className="relative">
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="w-full pl-5 pr-12 py-3 bg-gray-100/50 border border-gray-100 rounded-2xl outline-none focus:border-blue-200 focus:bg-white transition-all font-bold"
+                                                    value={currentProduct?.taxRate ? (currentProduct.taxRate * 100).toFixed(0) : ''}
+                                                    placeholder="19"
+                                                    onChange={(e) => setCurrentProduct({ ...currentProduct, taxRate: (parseFloat(e.target.value) || 0) / 100 })}
+                                                />
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-sm">%</div>
+                                            </div>
                                         </div>
                                         <div className="col-span-2 p-5 bg-blue-600 rounded-3xl shadow-xl shadow-blue-100 flex items-center justify-between text-white">
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{t('fields.price_ttc')}</span>
@@ -551,8 +573,8 @@ export default function ProductsClient() {
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('fields.stock')}</label>
                                             <div className="flex flex-col gap-4">
-                                                <div className="flex-1 px-5 py-4 bg-emerald-50/30 border border-emerald-100 rounded-2xl">
-                                                    <span className="text-3xl font-black text-emerald-600">
+                                                <div className="flex-1 px-5 py-4 bg-blue-50/50/30 border border-blue-100/50 rounded-2xl">
+                                                    <span className="text-3xl font-black text-primary">
                                                         {currentProduct?.stockQuantity || 0}
                                                         <span className="text-xs ml-2 uppercase text-gray-400 font-bold">{currentProduct?.unit || 'PCS'}</span>
                                                     </span>
@@ -630,7 +652,7 @@ export default function ProductsClient() {
                                                             <tr key={m.id} className="text-xs">
                                                                 <td className="px-4 py-2 text-gray-500">{new Date(m.createdAt).toLocaleDateString(locale)}</td>
                                                                 <td className="px-4 py-2 font-bold">{m.type}</td>
-                                                                <td className={`px-4 py-2 text-right font-black ${['ENTRY', 'ADJUSTMENT'].includes(m.type) ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                                <td className={`px-4 py-2 text-right font-black ${['ENTRY', 'ADJUSTMENT'].includes(m.type) ? 'text-primary' : 'text-red-600'}`}>
                                                                     {['ENTRY', 'ADJUSTMENT'].includes(m.type) ? '+' : '-'}{m.quantity}
                                                                 </td>
                                                             </tr>
@@ -699,7 +721,7 @@ export default function ProductsClient() {
                                                                 className="group bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-blue-100/50 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between h-48"
                                                             >
                                                                 <div className={`absolute top-0 right-0 px-4 py-1 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest ${
-                                                                    f.status === 'ACTIVE' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'
+                                                                    f.status === 'ACTIVE' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'
                                                                 }`}>
                                                                     {t(`formula.${f.status.toLowerCase()}`)}
                                                                 </div>
@@ -744,14 +766,14 @@ export default function ProductsClient() {
                                                                     <span className="text-gray-200">·</span>
                                                                     <span className="text-sm font-black text-gray-900 tracking-tight">{currentProduct?.name}</span>
                                                                     {formula?.version && <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-black uppercase">v{formula.version}</span>}
-                                                                    {formula?.status && <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${formula.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : formula.status === 'ARCHIVED' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>{t(`formula.${formula.status.toLowerCase()}`)}</span>}
+                                                                    {formula?.status && <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${formula.status === 'ACTIVE' ? 'bg-blue-100/50 text-blue-700' : formula.status === 'ARCHIVED' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>{t(`formula.${formula.status.toLowerCase()}`)}</span>}
                                                                 </div>
                                                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{formula?.id ? t('formula.edit_formula') : t('formula.new_formula')}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             {formula?.id && formula.status !== 'ACTIVE' && (
-                                                                <button type="button" onClick={async () => { try { const upd = await productsService.activateFormula(formula.id); setFormula(upd); } catch(e:any){alert(e.message);} }} className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-1.5">
+                                                                <button type="button" onClick={async () => { try { const upd = await productsService.activateFormula(formula.id); setFormula(upd); } catch(e:any){alert(e.message);} }} className="px-4 py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-1.5">
                                                                     <Activity size={12} />{t('formula.activate')}
                                                                 </button>
                                                             )}
@@ -844,13 +866,13 @@ export default function ProductsClient() {
                                                         {/* RIGHT: Cost KPIs */}
                                                         <div className="lg:col-span-2 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col">
                                                             <div className="flex items-center gap-2 mb-5">
-                                                                <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center"><Calculator size={15} /></div>
+                                                                <div className="h-8 w-8 rounded-xl bg-primary text-white flex items-center justify-center"><Calculator size={15} /></div>
                                                                 <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest">{t('formula.cost_summary')}</h4>
                                                             </div>
                                                             <div className="space-y-2 flex-1">
                                                                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl">
                                                                     <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t('formula.material_cost')}</span>
-                                                                    <span className="text-base font-black text-emerald-600">{formatCurrency(formula?.costSummary?.theoreticalMaterialCost || 0, locale)}</span>
+                                                                    <span className="text-base font-black text-primary">{formatCurrency(formula?.costSummary?.theoreticalMaterialCost || 0, locale)}</span>
                                                                 </div>
                                                                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl">
                                                                     <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t('formula.wastage_impact')}</span>

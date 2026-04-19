@@ -1,0 +1,28 @@
+=== AtlasERP i18n Missing Keys Report ===
+Generated: 2026-04-19T14:24:11.944Z
+
+❌ 23 missing key(s) found:
+
+DYNAMIC (Verify Manually): finances.expenses.[dynamic]  [in src\app\[locale]\(app)\expenses\expenses-client.tsx]
+DYNAMIC (Verify Manually): finances.invoices.[dynamic]  [in src\app\[locale]\(app)\invoices\invoices-client.tsx]
+DYNAMIC (Verify Manually): inventory.[dynamic]  [in src\app\[locale]\(app)\inventory\movements\movements-client.tsx]
+DYNAMIC (Verify Manually): manufacturing_orders.[dynamic]  [in src\app\[locale]\(app)\manufacturing\orders\orders-client.tsx]
+DYNAMIC (Verify Manually): products.[dynamic]  [in src\app\[locale]\(app)\products\products-client.tsx]
+DYNAMIC (Verify Manually): purchases.[dynamic]  [in src\app\[locale]\(app)\purchases\orders\[id]\order-detail-client.tsx]
+DYNAMIC (Verify Manually): purchases.[dynamic]  [in src\app\[locale]\(app)\purchases\receptions\receptions-client.tsx]
+DYNAMIC (Verify Manually): sales.orders.[dynamic]  [in src\app\[locale]\(app)\sales\orders\orders-client.tsx]
+MISSING: common.errors.fetch_failed  [in src\app\[locale]\(app)\purchases\orders\orders-client.tsx]
+MISSING: common.errors.fetch_failed  [in src\app\[locale]\(app)\purchases\suppliers\suppliers-client.tsx]
+MISSING: common.general_info  [in src\app\[locale]\(app)\purchases\orders\orders-client.tsx]
+MISSING: common.missing_fields  [in src\app\[locale]\(app)\purchases\receptions\receptions-client.tsx]
+MISSING: finances.invoices.total_ttc  [in src\app\[locale]\(app)\invoices\invoices-client.tsx]
+MISSING: purchases.common.fields.name  [in src\app\[locale]\(app)\purchases\orders\[id]\order-detail-client.tsx]
+MISSING: purchases.common.qty  [in src\app\[locale]\(app)\purchases\orders\[id]\order-detail-client.tsx]
+MISSING: purchases.common.received  [in src\app\[locale]\(app)\purchases\orders\[id]\order-detail-client.tsx]
+MISSING: purchases.expected_date  [in src\app\[locale]\(app)\purchases\orders\[id]\order-detail-client.tsx]
+MISSING: purchases.orders  [in src\app\[locale]\(app)\purchases\suppliers\suppliers-client.tsx]
+MISSING: purchases.purchases.receptions.toast.created  [in src\app\[locale]\(app)\purchases\receptions\receptions-client.tsx]
+MISSING: sales.customers.fields.nif_label  [in src\app\[locale]\(app)\sales\customers\customers-client.tsx]
+MISSING: sales.customers.fields.no_contact  [in src\app\[locale]\(app)\sales\customers\customers-client.tsx]
+MISSING: sales.customers.fields.none  [in src\app\[locale]\(app)\sales\customers\customers-client.tsx]
+MISSING: suppliers.name_required  [in src\app\[locale]\(app)\purchases\suppliers\suppliers-client.tsx]

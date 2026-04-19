@@ -10,10 +10,19 @@ export class InvoicesService {
   async findAll(companyId: string) {
     return this.prisma.invoice.findMany({
       where: { companyId },
-      include: { customer: { select: { name: true } }, salesOrder: { select: { reference: true } } },
+      include: { 
+        customer: true, 
+        payments: true,
+        salesOrder: { 
+          include: { 
+            lines: { include: { product: true } } 
+          } 
+        } 
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
+
 
   async findOne(companyId: string, id: string) {
     const invoice = await this.prisma.invoice.findFirst({
@@ -21,7 +30,11 @@ export class InvoicesService {
       include: { 
         customer: true,
         company: true,
-        salesOrder: { include: { lines: { include: { product: true } } } },
+        salesOrder: { 
+          include: { 
+            lines: { include: { product: true } } 
+          } 
+        },
         payments: true
       },
     });
@@ -96,6 +109,16 @@ export class InvoicesService {
           totalAmountTtc: fiscal.totalTtc,
           amountRemaining: fiscal.totalTtc,
           paymentMethod,
+        },
+        include: {
+          customer: true,
+          salesOrder: {
+            include: {
+              lines: {
+                include: { product: true }
+              }
+            }
+          }
         }
       });
 
@@ -109,99 +132,45 @@ export class InvoicesService {
     });
   }
 
-  async generatePdf(companyId: string, id: string): Promise<Buffer> {
-    const invoice = await this.findOne(companyId, id);
 
-    return new Promise((resolve, reject) => {
-      const doc = new (PDFDocument as any)({ margin: 50, size: 'A4' });
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
-      doc.on('error', reject);
+  async addPayment(companyId: string, invoiceId: string, data: any) {
+    return await this.prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findFirst({
+        where: { id: invoiceId, companyId }
+      });
+      if (!invoice) throw new NotFoundException('Invoice not found');
 
-      // --- Header: Company Info ---
-      doc.fillColor('#444444').fontSize(20).text(invoice.company.name, { align: 'left' });
-      doc.fontSize(10).text(invoice.company.address || '', { align: 'left' });
-      doc.text(`NIF: ${invoice.company.nif || 'N/A'} | RC: ${invoice.company.rc || 'N/A'}`, { align: 'left' });
-      doc.text(`AI: ${invoice.company.ai || 'N/A'} | Tel: ${invoice.company.phone || 'N/A'}`, { align: 'left' });
+      const paymentAmount = new Prisma.Decimal(data.amount || 0);
+      if (paymentAmount.lte(0)) throw new BadRequestException('Payment amount must be greater than zero');
 
-      doc.moveDown();
-      doc.fillColor('#000000').fontSize(25).text('FACTURE', { align: 'right' });
-      doc.fontSize(12).text(`Référence: ${invoice.reference}`, { align: 'right' });
-      doc.text(`Date: ${new Date(invoice.date).toLocaleDateString('fr-DZ')}`, { align: 'right' });
-
-      doc.moveDown(2);
-
-      // --- Customer Info ---
-      doc.fontSize(12).text('Facturé à:', { underline: true });
-      doc.fontSize(14).text(invoice.customer.name);
-      doc.fontSize(10).text(invoice.customer.address || '');
-      doc.text(`NIF: ${invoice.customer.taxId || 'N/A'}`);
-
-      doc.moveDown(2);
-
-      // --- Table Header ---
-      const tableTop = 270;
-      doc.font('Helvetica-Bold');
-      doc.text('Désignation', 50, tableTop);
-      doc.text('Qté', 280, tableTop, { width: 50, align: 'right' });
-      doc.text('P.U HT', 330, tableTop, { width: 70, align: 'right' });
-      doc.text('TVA', 410, tableTop, { width: 40, align: 'right' });
-      doc.text('Total TTC', 460, tableTop, { width: 90, align: 'right' });
-      
-      doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
-
-      // --- Table Body ---
-      let y = tableTop + 25;
-      doc.font('Helvetica');
-      invoice.salesOrder?.lines.forEach(line => {
-        doc.text(line.product.name, 50, y, { width: 220 });
-        doc.text(Number(line.quantity).toString(), 280, y, { width: 50, align: 'right' });
-        doc.text(Number(line.unitPriceHt).toLocaleString('fr-DZ'), 330, y, { width: 70, align: 'right' });
-        doc.text(`${(Number(line.taxRate) * 100).toFixed(0)}%`, 410, y, { width: 40, align: 'right' });
-        doc.text(Number(line.lineTotalTtc).toLocaleString('fr-DZ'), 460, y, { width: 90, align: 'right' });
-        y += 20;
-
-        // Check for page break if y gets too high
-        if (y > 700) {
-            doc.addPage();
-            y = 50;
+      await tx.payment.create({
+        data: {
+          companyId,
+          invoiceId,
+          amount: paymentAmount,
+          method: data.method || 'CASH',
+          reference: data.reference,
+          notes: data.notes
         }
       });
 
-      // --- Totals Section ---
-      const totalsTop = Math.min(y + 30, 750);
-      doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(350, totalsTop).lineTo(550, totalsTop).stroke();
-      
-      const formatCurrency = (val) => `${Number(val).toLocaleString('fr-DZ', { minimumFractionDigits: 2 })} DA`;
+      const newAmountPaid = invoice.amountPaid.add(paymentAmount);
+      let newAmountRemaining = invoice.totalAmountTtc.minus(newAmountPaid);
+      if (newAmountRemaining.lt(0)) newAmountRemaining = new Prisma.Decimal(0);
 
-      y = totalsTop + 10;
-      doc.fontSize(10).text('Total HT:', 350, y);
-      doc.text(formatCurrency(invoice.totalAmountHt), 450, y, { align: 'right' });
-      
-      y += 15;
-      doc.text('Total TVA:', 350, y);
-      doc.text(formatCurrency(invoice.totalAmountTva), 450, y, { align: 'right' });
-
-      if (Number(invoice.totalAmountStamp) > 0) {
-        y += 15;
-        doc.text('Droit de Timbre (1%):', 350, y);
-        doc.text(formatCurrency(invoice.totalAmountStamp), 450, y, { align: 'right' });
+      let newStatus: InvoiceStatus = 'PARTIAL';
+      if (newAmountRemaining.lte(0)) {
+          newStatus = 'PAID';
       }
 
-      y += 20;
-      doc.font('Helvetica-Bold').fontSize(14);
-      doc.text('NET À PAYER:', 350, y);
-      doc.text(formatCurrency(invoice.totalAmountTtc), 450, y, { align: 'right' });
-
-      // --- Footer ---
-      doc.fontSize(9).font('Helvetica').fillColor('#777777');
-      if (invoice.company.rib) {
-          doc.text(`RIB: ${invoice.company.rib}`, 50, 780, { align: 'center' });
-      }
-      doc.text('AtlasERP - Solution de gestion industrielle', 50, 795, { align: 'center' });
-
-      doc.end();
+      return tx.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          amountPaid: newAmountPaid,
+          amountRemaining: newAmountRemaining,
+          status: newStatus
+        }
+      });
     });
   }
 

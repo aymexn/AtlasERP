@@ -6,7 +6,12 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor() {
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: ExtractJwt.fromExtractors([
+                ExtractJwt.fromAuthHeaderAsBearerToken(),
+                (req: any) => {
+                    return req?.query?.token;
+                }
+            ]),
             ignoreExpiration: false,
             secretOrKey: process.env.JWT_SECRET || 'atlas_secret_key_2026',
         });

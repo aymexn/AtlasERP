@@ -31,6 +31,18 @@ export class CreateSupplierDto {
 
   @IsString()
   @IsOptional()
+  nif?: string;
+
+  @IsString()
+  @IsOptional()
+  ai?: string;
+
+  @IsString()
+  @IsOptional()
+  rc?: string;
+
+  @IsString()
+  @IsOptional()
   taxId?: string;
 
   @IsInt()

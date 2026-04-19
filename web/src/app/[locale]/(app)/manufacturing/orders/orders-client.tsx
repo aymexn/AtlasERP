@@ -10,16 +10,15 @@ import {
 import { manufacturingOrdersService, ManufacturingOrder } from '@/services/manufacturing-orders';
 import { productsService, Product } from '@/services/products';
 import { purchaseOrdersService } from '@/services/purchase-orders';
-import { toast } from 'sonner';
 import { ShoppingCart, Sparkles } from 'lucide-react';
+import { formatCurrency, formatNumber } from '@/lib/format';
+import { PageHeader } from '@/components/ui/page-header';
+import { KpiCard } from '@/components/ui/kpi-card';
+import { DataTable } from '@/components/ui/data-table';
+import { downloadPdf } from '@/lib/download-pdf';
+import { toast } from 'sonner';
 
-function formatCurrency(amount: number, locale: string = 'fr') {
-    return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: 'DZD',
-        minimumFractionDigits: 2
-    }).format(amount);
-}
+
 
 export default function OrdersClient() {
     const t = useTranslations('manufacturing_orders');
@@ -209,12 +208,12 @@ export default function OrdersClient() {
 
     const getStatusColor = (status: string) => {
         switch(status) {
-            case 'DRAFT': return 'bg-gray-100 text-gray-700 border-gray-200';
-            case 'PLANNED': return 'bg-blue-50 text-blue-700 border-blue-100';
-            case 'IN_PROGRESS': return 'bg-amber-50 text-amber-700 border-amber-100 animate-pulse';
-            case 'COMPLETED': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+            case 'DRAFT': return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'PLANNED': return 'bg-amber-50 text-amber-700 border-amber-100 shadow-sm';
+            case 'IN_PROGRESS': return 'bg-blue-600 text-white border-blue-600 animate-pulse shadow-lg shadow-blue-100';
+            case 'COMPLETED': return 'bg-blue-50 text-blue-700 border-blue-100';
             case 'CANCELLED': return 'bg-rose-50 text-rose-700 border-rose-100';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
         }
     };
 
@@ -234,7 +233,7 @@ export default function OrdersClient() {
     if (loading && orders.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <Loader2 className="animate-spin text-blue-600" size={40} />
+                <Loader2 className="animate-spin text-primary" size={40} />
                 <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">{ct('loading')}</p>
             </div>
         );
@@ -246,13 +245,13 @@ export default function OrdersClient() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <div className="h-12 w-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100">
+                        <div className="h-12 w-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100">
                             <Factory size={24} />
                         </div>
                         <div>
                             <h1 className="text-3xl font-black text-gray-900 tracking-tight">{t('title')}</h1>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                <span className="h-1.5 w-1.5 bg-primary rounded-full animate-pulse"></span>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('ops_cockpit')}</p>
                             </div>
                         </div>
@@ -263,10 +262,10 @@ export default function OrdersClient() {
                     <button 
                         onClick={handleGeneratePO}
                         disabled={isReplenishing}
-                        className="flex items-center gap-3 bg-amber-50 text-amber-600 px-6 py-3.5 rounded-2xl font-black border-2 border-amber-100 shadow-sm hover:bg-amber-100 transition-all active:scale-95 disabled:opacity-50"
+                        className="flex items-center gap-3 bg-white text-blue-600 px-6 py-3.5 rounded-2xl font-black border-2 border-gray-100 shadow-sm hover:border-blue-200 transition-all active:scale-95 disabled:opacity-50"
                     >
                         {isReplenishing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} className="animate-pulse" />}
-                        Générer BC
+                        {t('generate_po')}
                     </button>
                     <button
                         onClick={() => {
@@ -278,7 +277,7 @@ export default function OrdersClient() {
                             setSelectedOrderDetails(null);
                             setIsModalOpen(true);
                         }}
-                        className="flex items-center gap-3 bg-gray-900 hover:bg-black text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-gray-200 transition-all active:scale-95 group"
+                        className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-blue-200 transition-all active:scale-95 group"
                     >
                         <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                         {t('generate_order')}
@@ -290,15 +289,15 @@ export default function OrdersClient() {
             {(orders.filter(o => o.status === 'PLANNED').some(o => (o as any).hasShortage) || products.filter(p => p.articleType === 'FINISHED_PRODUCT' && (!p.formulas || p.formulas.length === 0)).length > 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {products.filter(p => p.articleType === 'FINISHED_PRODUCT' && (!p.formulas || p.formulas.length === 0)).length > 0 && (
-                        <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-3xl flex items-center gap-4 transition-all hover:bg-amber-50">
-                            <div className="h-10 w-10 bg-white text-amber-600 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-amber-100">
+                        <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-3xl flex items-center gap-4 transition-all hover:bg-blue-50">
+                            <div className="h-10 w-10 bg-white text-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
                                 <Calculator size={20} />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-amber-900 leading-tight">
+                                <p className="text-sm font-black text-blue-900 leading-tight">
                                     {t('missing_formula_alert', { count: products.filter(p => p.articleType === 'FINISHED_PRODUCT' && (!p.formulas || p.formulas.length === 0)).length })}
                                 </p>
-                                <p className="text-[9px] font-bold text-amber-600/70 uppercase tracking-widest mt-1">{t('needs_attention')}</p>
+                                <p className="text-[9px] font-bold text-primary/70 uppercase tracking-widest mt-1">{t('needs_attention')}</p>
                             </div>
                         </div>
                     )}
@@ -319,29 +318,31 @@ export default function OrdersClient() {
             )}
 
             {/* Stats Overview - Premium Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: t('kpi_active'), value: orders.filter(o => ['PLANNED', 'IN_PROGRESS'].includes(o.status)).length, sub: t('status.in_progress'), color: 'blue', icon: Activity },
-                    { label: t('kpi_value'), value: formatCurrency(orders.filter(o => o.status !== 'CANCELLED').reduce((acc, o) => acc + Number(o.totalEstimatedCost), 0), locale), sub: 'DZD Total', color: 'indigo', icon: TrendingUp },
-                    { label: t('kpi_efficiency'), value: `${orders.filter(o => o.status === 'COMPLETED').length > 0 ? '98.5%' : '---'}`, sub: t('efficiency'), color: 'emerald', icon: CheckCircle2 },
-                    { label: t('kpi_shortage'), value: orders.filter(o => o.status === 'PLANNED' && o.stockReadiness === 'BLOCKING').length, sub: t('shortage_impact'), color: 'rose', icon: AlertTriangle }
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
-                        <div className={`absolute top-0 right-0 h-32 w-32 bg-${stat.color}-500/5 rounded-full -mr-12 -mt-12 transition-all group-hover:scale-150`}></div>
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={`h-12 w-12 bg-${stat.color}-50 text-${stat.color}-600 rounded-2xl flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-${stat.color}-100 shadow-sm border border-${stat.color}-100/50`}>
-                                    <stat.icon size={22} />
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                                    <p className={`text-[9px] font-bold text-${stat.color}-600/80 uppercase tracking-tighter leading-none`}>{stat.sub}</p>
-                                </div>
-                            </div>
-                            <p className="text-3xl font-black text-gray-900 tracking-tighter truncate">{stat.value}</p>
-                        </div>
-                    </div>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <KpiCard 
+                    title={t('kpi_active')} 
+                    value={orders.filter(o => ['PLANNED', 'IN_PROGRESS'].includes(o.status)).length} 
+                    icon={Activity} 
+                    variant="primary" 
+                    type="count" 
+                    subtitle={t('status.in_progress')}
+                />
+                <KpiCard 
+                    title={t('kpi_value')} 
+                    value={orders.filter(o => o.status !== 'CANCELLED').reduce((acc, o) => acc + Number(o.totalEstimatedCost), 0)} 
+                    icon={TrendingUp} 
+                    variant="success" 
+                    type="currency" 
+                    subtitle="DZD Total"
+                />
+                <KpiCard 
+                    title={t('kpi_shortage')} 
+                    value={orders.filter(o => o.status === 'PLANNED' && o.stockReadiness === 'BLOCKING').length} 
+                    icon={AlertTriangle} 
+                    variant="danger" 
+                    type="count" 
+                    subtitle={t('shortage_impact')}
+                />
             </div>
 
             {/* List - Ops Cockpit */}
@@ -409,7 +410,7 @@ export default function OrdersClient() {
                                     <td className="px-8 py-6">
                                         <div className="font-black text-gray-900 text-base group-hover:text-blue-600 transition-colors leading-tight">{o.product?.name}</div>
                                         <div className="flex items-center gap-2 mt-1.5">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.1em] bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">{t('formula')} v{o.formula?.version}</span>
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">{t('formula_label')} v{o.formula?.version}</span>
                                             {o.formula?.code && <span className="text-[9px] font-black text-blue-500/70 uppercase tracking-widest">{o.formula.code}</span>}
                                         </div>
                                     </td>
@@ -418,7 +419,7 @@ export default function OrdersClient() {
                                             <span className="font-black text-gray-900 text-lg">{o.plannedQuantity}</span>
                                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{o.unit}</span>
                                         </div>
-                                        <p className="text-[9px] text-gray-400 font-bold uppercase mt-1 tracking-tighter">{t('estimated_cost')} {formatCurrency(Number(o.totalEstimatedCost), locale)}</p>
+                                        <p className="text-[9px] text-gray-400 font-bold uppercase mt-1 tracking-tighter">{t('estimated_cost')} {formatCurrency(o.totalEstimatedCost)}</p>
                                     </td>
                                     <td className="px-8 py-6">
                                         {o.stockReadiness === 'EXECUTED' ? (
@@ -434,18 +435,18 @@ export default function OrdersClient() {
                                                     </span>
                                                 </div>
                                                 <div className="h-1.5 w-24 bg-rose-100 rounded-full overflow-hidden shadow-inner">
-                                                    <div className="h-full bg-rose-500 w-[100%] rounded-full shadow-sm animate-pulse"></div>
+                                                    <div className="h-full bg-rose-500 w-full rounded-full shadow-sm animate-pulse"></div>
                                                 </div>
                                             </div>
                                         ) : o.stockReadiness === 'PARTIAL' ? (
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="flex items-center gap-1.5 text-amber-600 font-black text-[10px] uppercase tracking-tighter">
+                                                    <span className="flex items-center gap-1.5 text-blue-600 font-black text-[10px] uppercase tracking-tighter">
                                                         <AlertCircle size={12} /> {t('traffic_partial')}
                                                     </span>
                                                 </div>
-                                                <div className="h-1.5 w-24 bg-amber-100 rounded-full overflow-hidden shadow-inner">
-                                                    <div className="h-full bg-amber-500 w-[50%] rounded-full shadow-sm"></div>
+                                                <div className="h-1.5 w-24 bg-blue-100/50 rounded-full overflow-hidden shadow-inner">
+                                                    <div className="h-full bg-primary w-[50%] rounded-full shadow-sm"></div>
                                                 </div>
                                             </div>
                                         ) : (
@@ -456,7 +457,7 @@ export default function OrdersClient() {
                                                     </span>
                                                 </div>
                                                 <div className="h-1.5 w-24 bg-emerald-100 rounded-full overflow-hidden shadow-inner">
-                                                    <div className="h-full bg-emerald-500 w-full rounded-full shadow-sm shadow-emerald-200"></div>
+                                                    <div className="h-full bg-emerald-500 w-full rounded-full shadow-sm"></div>
                                                 </div>
                                             </div>
                                         )}
@@ -469,15 +470,15 @@ export default function OrdersClient() {
                                     <td className="px-8 py-6 text-right">
                                         {o.status === 'COMPLETED' && o.totalActualCost ? (
                                             <div className="flex flex-col items-end">
-                                                <div className={`flex items-center gap-1 text-base font-black ${Number(o.totalActualCost) > Number(o.totalEstimatedCost) ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                                <div className={`flex items-center gap-1 text-base font-black ${Number(o.totalActualCost) > Number(o.totalEstimatedCost) ? 'text-rose-600' : 'text-blue-600'}`}>
                                                     {Number(o.totalActualCost) > Number(o.totalEstimatedCost) ? <TrendingUp size={14} className="rotate-45" /> : <TrendingUp size={14} className="-rotate-45" />}
-                                                    {formatCurrency(Math.abs(Number(o.totalActualCost) - Number(o.totalEstimatedCost)), locale)}
+                                                    {formatCurrency(Math.abs(Number(o.totalActualCost) - Number(o.totalEstimatedCost)))}
                                                 </div>
                                                 <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{t('variance')}</span>
                                             </div>
                                         ) : (
                                             <div className="flex flex-col items-end group-hover:translate-x-[-4px] transition-transform">
-                                                <span className="text-base font-black text-gray-900">{formatCurrency(Number(o.totalEstimatedCost), locale)}</span>
+                                                <span className="text-base font-black text-gray-900">{formatCurrency(o.totalEstimatedCost)}</span>
                                                 <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{t('estimated_cost')}</span>
                                             </div>
                                         )}
@@ -512,7 +513,7 @@ export default function OrdersClient() {
                         {/* Modal Header - Premium Industrial Style */}
                         <div className="p-8 md:p-10 flex items-center justify-between border-b border-gray-50 shrink-0 bg-white">
                             <div className="flex items-center gap-5">
-                                <div className="h-14 w-14 bg-blue-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-blue-200">
+                                <div className="h-14 w-14 bg-blue-600 text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-200">
                                     <Factory size={28} />
                                 </div>
                                 <div>
@@ -642,29 +643,28 @@ export default function OrdersClient() {
                                             {/* Production Preview Block */}
                                             {previewData && (
                                                 <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500 delay-150">
-                                                    <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-100 relative overflow-hidden group">
-                                                        <div className="absolute top-0 right-0 h-40 w-40 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-125 transition-transform duration-700"></div>
+                                                    <div className="bg-linear-to-br from-indigo-600 to-blue-700 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-100 relative overflow-hidden group">
                                                         <div className="relative z-10">
                                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-70 mb-2">{t('estimated_cost')}</p>
-                                                            <p className="text-4xl font-black mb-2 tracking-tighter leading-none">{formatCurrency(previewData.totalMatCost, locale)}</p>
+                                                            <p className="text-4xl font-black mb-2 tracking-tighter leading-none">{formatCurrency(previewData.totalMatCost)}</p>
                                                             <div className="flex items-center justify-between pt-4 border-t border-white/10 mt-4">
                                                                 <span className="text-[10px] font-bold opacity-60 uppercase tracking-widest">{t('unit_cost')}</span>
-                                                                <span className="font-black text-indigo-100">{formatCurrency(previewData.totalMatCost / (Number(currentOrder?.plannedQuantity) || 1), locale)}</span>
+                                                                <span className="font-black text-indigo-100">{formatCurrency(previewData.totalMatCost / (Number(currentOrder?.plannedQuantity) || 1))}</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className={`p-8 rounded-[2.5rem] border shadow-sm transition-all duration-500 ${previewData.shortageCount > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                                                        <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-50 ${previewData.shortageCount > 0 ? 'text-rose-900' : 'text-emerald-900'}`}>{t('stock_readiness')}</p>
+                                                    <div className={`p-8 rounded-[2.5rem] border shadow-sm transition-all duration-500 ${previewData.shortageCount > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-blue-50/50/50 border-blue-100/50'}`}>
+                                                        <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-50 ${previewData.shortageCount > 0 ? 'text-rose-900' : 'text-slate-900'}`}>{t('stock_readiness')}</p>
                                                         <div className="flex items-center gap-5">
-                                                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform hover:scale-110 ${previewData.shortageCount > 0 ? 'bg-rose-500 text-white shadow-rose-200' : 'bg-emerald-500 text-white shadow-emerald-200'}`}>
+                                                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform hover:scale-110 ${previewData.shortageCount > 0 ? 'bg-rose-500 text-white shadow-rose-200' : 'bg-blue-600 text-white shadow-emerald-200'}`}>
                                                                 {previewData.shortageCount > 0 ? <AlertTriangle size={28} /> : <CheckCircle2 size={28} />}
                                                             </div>
                                                             <div>
-                                                                <p className={`text-2xl font-black leading-tight ${previewData.shortageCount > 0 ? 'text-rose-900' : 'text-emerald-900'}`}>
+                                                                <p className={`text-2xl font-black leading-tight ${previewData.shortageCount > 0 ? 'text-rose-900' : 'text-slate-900'}`}>
                                                                     {previewData.shortageCount > 0 ? `${previewData.shortageCount} ${t('shortage_short')}` : t('ready')}
                                                                 </p>
-                                                                <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 mt-1 ${previewData.shortageCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                                                <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 mt-1 ${previewData.shortageCount > 0 ? 'text-rose-600' : 'text-primary'}`}>
                                                                     {previewData.shortageCount > 0 ? t('needs_attention') : t('ready_to_start')}
                                                                 </p>
                                                             </div>
@@ -700,7 +700,7 @@ export default function OrdersClient() {
                                                 <div className="flex-1 overflow-y-auto">
                                                     {!previewData ? (
                                                         <div className="h-full flex flex-col items-center justify-center text-gray-300 p-16 text-center">
-                                                            <div className="bg-gray-50 h-24 w-24 rounded-[2rem] flex items-center justify-center mb-6">
+                                                            <div className="bg-gray-50 h-24 w-24 rounded-4xl flex items-center justify-center mb-6">
                                                                 <Calculator size={48} className="opacity-20 translate-y-[-2px]" />
                                                             </div>
                                                             <p className="text-xs font-black uppercase tracking-[0.3em] max-w-[200px] leading-relaxed">
@@ -751,7 +751,7 @@ export default function OrdersClient() {
                                                                             )}
                                                                         </td>
                                                                         <td className="px-8 py-5 font-black text-gray-900 text-right text-xs">
-                                                                            {formatCurrency(line.lineCost, locale)}
+                                                                            {formatCurrency(line.lineCost)}
                                                                         </td>
                                                                     </tr>
                                                                 ))}
@@ -784,13 +784,13 @@ export default function OrdersClient() {
                                     </div>
                                 </form>
                             ) : selectedOrderDetails ? (
-                                <div className="space-y-10">
+                                <div className="space-y-4">
                                     {/* Command Center Stats - Elite Cards */}
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm col-span-1 lg:col-span-2 hover:shadow-md transition-shadow">
                                             <div className="flex items-center justify-between mb-4">
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">{t('production_goal')}</p>
-                                                <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${selectedOrderDetails.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${selectedOrderDetails.status === 'COMPLETED' ? 'bg-blue-50/50 text-primary' : 'bg-blue-50 text-blue-600'}`}>
                                                     <Target size={18} />
                                                 </div>
                                             </div>
@@ -803,24 +803,23 @@ export default function OrdersClient() {
                                             <div className="mt-8 space-y-3">
                                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                                                     <span className="text-gray-400">{t('efficiency')}</span>
-                                                    <span className={selectedOrderDetails.status === 'COMPLETED' ? 'text-emerald-600' : 'text-blue-600'}>
+                                                    <span className={selectedOrderDetails.status === 'COMPLETED' ? 'text-primary' : 'text-blue-600'}>
                                                         {selectedOrderDetails.status === 'COMPLETED' ? '100%' : t('status.in_progress')}
                                                     </span>
                                                 </div>
                                                 <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner flex">
                                                     <div 
-                                                        className={`h-full transition-all duration-1000 shadow-sm ${selectedOrderDetails.status === 'COMPLETED' ? 'bg-emerald-500 w-full' : selectedOrderDetails.status === 'IN_PROGRESS' ? 'bg-blue-500 w-1/2 animate-pulse' : 'bg-gray-300 w-0'}`}
+                                                        className={`h-full transition-all duration-1000 shadow-sm ${selectedOrderDetails.status === 'COMPLETED' ? 'bg-primary w-full' : selectedOrderDetails.status === 'IN_PROGRESS' ? 'bg-blue-500 w-1/2 animate-pulse' : 'bg-gray-300 w-0'}`}
                                                     ></div>
                                                 </div>
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-right">{new Date(selectedOrderDetails.plannedDate).toLocaleDateString(locale)}</p>
+                                                <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-right">{new Date(selectedOrderDetails.plannedDate).toLocaleDateString(locale)}</div>
                                             </div>
                                         </div>
 
-                                        <div className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 h-32 w-32 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-125 transition-transform duration-700"></div>
+                                        <div className="bg-linear-to-br from-gray-900 to-black p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
                                             <div className="relative z-10">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-3">{t('estimated_cost')}</p>
-                                                <p className="text-3xl font-black mb-1 leading-none tracking-tighter">{formatCurrency(Number(selectedOrderDetails.totalEstimatedCost), locale)}</p>
+                                                <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-3">{t('estimated_cost')}</div>
+                                                <div className="text-3xl font-black mb-1 leading-none tracking-tighter">{formatCurrency(selectedOrderDetails.totalEstimatedCost)}</div>
                                                 <div className="pt-6 border-t border-white/10 mt-6 flex items-center justify-between">
                                                     <span className="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em]">{t('formula')}</span>
                                                     <span className="text-[10px] font-black text-blue-400">v{selectedOrderDetails.formula?.version}</span>
@@ -828,16 +827,16 @@ export default function OrdersClient() {
                                             </div>
                                         </div>
 
-                                        <div className={`p-8 rounded-[2.5rem] border shadow-sm transition-all duration-500 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'bg-rose-50 border-rose-100 shadow-rose-100/20' : 'bg-emerald-50 border-emerald-100 shadow-emerald-100/20') : 'bg-white border-gray-100'}`}>
-                                            <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'text-rose-600/60' : 'text-emerald-600/60') : 'text-gray-400'}`}>
+                                        <div className={`p-8 rounded-[2.5rem] border shadow-sm transition-all duration-500 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'bg-rose-50 border-rose-100 shadow-rose-100/20' : 'bg-blue-50/50 border-blue-100/50 shadow-blue-100/50/20') : 'bg-white border-gray-100'}`}>
+                                             <div className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'text-rose-600/60' : 'text-primary/60') : 'text-gray-400'}`}>
                                                 {selectedOrderDetails.status === 'COMPLETED' ? t('actual_cost') : t('cost_variance')}
-                                            </p>
+                                            </div>
                                             {selectedOrderDetails.status === 'COMPLETED' ? (
                                                 <div className="space-y-4">
-                                                    <p className={`text-3xl font-black leading-none tracking-tighter ${Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                                        {formatCurrency(Number(selectedOrderDetails.totalActualCost), locale)}
-                                                    </p>
-                                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                    <div className={`text-3xl font-black leading-none tracking-tighter ${Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'text-rose-600' : 'text-primary'}`}>
+                                                        {formatCurrency(selectedOrderDetails.totalActualCost)}
+                                                    </div>
+                                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'bg-rose-100 text-rose-700' : 'bg-blue-100/50 text-blue-700'}`}>
                                                         <TrendingUp size={12} className={Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'rotate-45' : '-rotate-45'} />
                                                         {((Number(selectedOrderDetails.totalActualCost) / Number(selectedOrderDetails.totalEstimatedCost) - 1) * 100).toFixed(1)}%
                                                     </div>
@@ -845,7 +844,7 @@ export default function OrdersClient() {
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center h-20 grayscale opacity-20">
                                                     <Loader2 className="animate-spin text-gray-400" size={32} />
-                                                    <p className="text-[9px] font-black uppercase tracking-widest mt-2">{t('status.in_progress')}</p>
+                                                    <div className="text-[9px] font-black uppercase tracking-widest mt-2">{t('status.in_progress')}</div>
                                                 </div>
                                             )}
                                         </div>
@@ -860,8 +859,11 @@ export default function OrdersClient() {
                                                 </div>
                                                 {t('material_requirements')}
                                             </h3>
-                                            <button className="flex items-center gap-3 text-[10px] font-black text-gray-900 uppercase tracking-widest hover:bg-gray-50 px-5 py-2.5 rounded-2xl border border-gray-100 transition-all active:scale-95 shadow-sm">
-                                                <Printer size={16} /> {ct('consult')}
+                                            <button 
+                                                onClick={() => downloadPdf(manufacturingOrdersService.getPdfUrl(selectedOrderDetails.id), `ordre-travail-${selectedOrderDetails.reference}.pdf`)}
+                                                className="flex items-center gap-3 text-[10px] font-black text-blue-600 bg-blue-50 uppercase tracking-widest hover:bg-blue-100 px-5 py-2.5 rounded-2xl border border-blue-100 transition-all active:scale-95 shadow-sm"
+                                            >
+                                                <Printer size={16} /> {t('print_order')}
                                             </button>
                                         </div>
                                         <div className="overflow-x-auto">
@@ -878,33 +880,33 @@ export default function OrdersClient() {
                                                 <tbody className="divide-y divide-gray-50">
                                                     {selectedOrderDetails.lines?.map((line: any) => (
                                                         <tr key={line.id} className="group hover:bg-blue-50/30 transition-colors">
-                                                            <td className="px-8 py-6">
+                                                            <td className="px-6 py-3">
                                                                 <div className="font-black text-gray-900 text-sm group-hover:text-blue-600 transition-colors tracking-tight">{line.component?.name || '—'}</div>
-                                                                <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 bg-gray-50 px-1.5 py-0.5 rounded-md w-fit border border-gray-100">{line.component?.sku}</div>
+                                                                <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5 bg-gray-50 px-1.5 py-0.5 rounded-md w-fit border border-gray-100">{line.component?.sku}</div>
                                                             </td>
-                                                            <td className="px-8 py-6">
+                                                            <td className="px-6 py-3">
                                                                 <div className="flex items-baseline gap-1.5">
-                                                                    <span className="font-black text-blue-600 text-base">{Number(line.requiredQuantity).toFixed(3)}</span>
+                                                                    <span className="font-black text-blue-600 text-base">{Number(line.requiredQuantity).toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</span>
                                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{line.unit}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-8 py-6">
+                                                            <td className="px-6 py-3">
                                                                 <div className="flex items-baseline gap-1.5">
-                                                                    <span className={`font-black text-base ${Number(line.consumedQuantity) > 0 ? 'text-gray-900' : 'text-gray-300'}`}>{Number(line.consumedQuantity).toFixed(3)}</span>
+                                                                    <span className={`font-black text-base ${Number(line.consumedQuantity) > 0 ? 'text-gray-900' : 'text-gray-300'}`}>{Number(line.consumedQuantity).toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</span>
                                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{line.unit}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-8 py-6 text-right">
-                                                                <span className="font-black text-gray-900 text-xs">{formatCurrency(Number(line.estimatedLineCost), locale)}</span>
+                                                            <td className="px-6 py-3 text-right">
+                                                                <span className="font-black text-gray-900 text-xs">{formatCurrency(line.estimatedLineCost)}</span>
                                                             </td>
-                                                            <td className="px-8 py-6">
+                                                            <td className="px-6 py-3">
                                                                 <div className="flex items-center gap-3">
-                                                                    {line.stockStatus === 'ENOUGH' && <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">{t('status_enough')}</span>}
+                                                                    {line.stockStatus === 'ENOUGH' && <span className="px-3 py-1 rounded-xl bg-blue-50/50 text-primary text-[9px] font-black uppercase tracking-widest border border-blue-100/50">{t('status_enough')}</span>}
                                                                     {line.stockStatus === 'LOW' && <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest border border-amber-100">{t('status_low')}</span>}
                                                                     {line.stockStatus === 'INSUFFICIENT' && <span className="px-3 py-1 rounded-xl bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest border border-rose-100">{t('status_insufficient')}</span>}
                                                                     {line.shortageQuantity > 0 && (
                                                                         <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
-                                                                            {t('shortage')}: -{Number(line.shortageQuantity).toFixed(3)}
+                                                                            {t('shortage')}: -{Number(line.shortageQuantity).toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
                                                                         </span>
                                                                     )}
                                                                 </div>
@@ -950,7 +952,7 @@ export default function OrdersClient() {
                                     {selectedOrderDetails.status === 'IN_PROGRESS' && (
                                         <button 
                                             onClick={() => handleAction('complete')} 
-                                            className="px-12 py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl font-black shadow-2xl shadow-emerald-100 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
+                                            className="px-12 py-5 bg-primary hover:bg-blue-700 text-white rounded-3xl font-black shadow-2xl shadow-blue-100/50 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
                                         >
                                             {submitting ? <Loader2 className="animate-spin" size={20} /> : <><CheckCircle2 size={20} /> {t('complete_production')}</>}
                                         </button>

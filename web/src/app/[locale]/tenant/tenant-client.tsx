@@ -63,7 +63,7 @@ export function TenantClient() {
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-gray-50">
-                <p className="text-gray-500 font-bold animate-pulse">{t('initializing')}</p>
+                <div className="text-gray-500 font-bold animate-pulse">{t('initializing')}</div>
             </div>
         );
     }
@@ -72,13 +72,13 @@ export function TenantClient() {
         <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
             <div className="w-full max-w-lg space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
-                    <span className="text-2xl font-black text-gray-900 tracking-tighter">{ct('title')}<span className="text-blue-600">ERP</span></span>
+                    <span className="text-2xl font-black text-gray-900 tracking-tighter">{ct('title')}<span className="text-blue-600">{ct('brand_suffix')}</span></span>
                     <LanguageSwitcher />
                 </div>
 
                 <div className="text-center">
                     <h2 className="text-3xl font-black text-gray-900">{t('title')}</h2>
-                    <p className="mt-3 text-gray-500">{t('subtitle')}</p>
+                    <div className="mt-3 text-gray-500">{t('subtitle')}</div>
                 </div>
 
                 {error && (
@@ -97,7 +97,7 @@ export function TenantClient() {
                                 className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Atlas ERP Global"
+                                placeholder="Example Corp"
                             />
                         </div>
                         <div>
@@ -108,9 +108,9 @@ export function TenantClient() {
                                 className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                 value={slug}
                                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
-                                placeholder="atlas-erp-global"
+                                placeholder="example-corp"
                             />
-                            <p className="mt-2 text-xs text-gray-400">{t('slug_hint')}</p>
+                            <div className="mt-2 text-xs text-gray-400">{t('slug_hint')}</div>
                         </div>
                     </div>
 

@@ -337,6 +337,26 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
             data: { status: 'CANCELLED' }
         });
     }
+    async findForPdf(companyId, id) {
+        const where = { id };
+        if (companyId) {
+            where.companyId = companyId;
+        }
+        const order = await this.prisma.manufacturingOrder.findFirst({
+            where,
+            include: {
+                company: true,
+                product: true,
+                formula: true,
+                lines: {
+                    include: { component: true }
+                }
+            }
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Manufacturing order not found');
+        return order;
+    }
 };
 exports.ManufacturingOrdersService = ManufacturingOrdersService;
 exports.ManufacturingOrdersService = ManufacturingOrdersService = __decorate([

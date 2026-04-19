@@ -28,10 +28,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -79,10 +79,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -130,10 +130,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -181,10 +181,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -232,10 +232,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -283,10 +283,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -334,10 +334,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -385,10 +385,10 @@ export declare class FormulaService {
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
             sortOrder: number;
+            formulaId: string;
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            formulaId: string;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;

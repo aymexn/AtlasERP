@@ -39,6 +39,9 @@ export declare class DashboardController {
             totalExpenses: number;
             totalCogs: number;
             netProfit: number;
+            netMargin: number;
+            marginPercent: number;
+            unpaidAmount: number;
             cashPosition: number;
             receipts: number;
         };

@@ -41,6 +41,30 @@ let TenantsService = class TenantsService {
         });
         return user?.company;
     }
+    async updateCompany(userId, dto) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { companyId: true }
+        });
+        if (!user || !user.companyId) {
+            throw new Error('User not associated with a company');
+        }
+        return this.prisma.company.update({
+            where: { id: user.companyId },
+            data: {
+                name: dto.name,
+                address: dto.address,
+                phone: dto.phone,
+                email: dto.email,
+                website: dto.website,
+                logoUrl: dto.logoUrl,
+                nif: dto.nif,
+                ai: dto.ai,
+                rc: dto.rc,
+                rib: dto.rib,
+            },
+        });
+    }
 };
 exports.TenantsService = TenantsService;
 exports.TenantsService = TenantsService = __decorate([
