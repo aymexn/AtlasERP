@@ -41,7 +41,7 @@ export function DataTable<T>({ data, columns, onRowClick, emptyState, isLoading 
                                 <th 
                                     key={index}
                                     className={`
-                                        px-8 py-5 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-gray-100
+                                        px-8 py-5 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-gray-100 whitespace-nowrap
                                         ${column.align === 'right' ? 'text-right' : column.align === 'center' ? 'text-center' : 'text-left'}
                                         ${column.className || ''}
                                     `}

@@ -67,7 +67,12 @@
         "total_ttc": "Total TTC",
         "tax": "TVA (19%)",
         "select_placeholder": "Sélectionner un élément...",
-        "qty": "Qté"
+        "qty": "Qté",
+        "errors": {
+            "fetch_failed": "Échec du chargement des données",
+            "save_failed": "Échec de l'enregistrement"
+        },
+        "missing_fields": "Veuillez remplir tous les champs obligatoires"
     },
     "nav": {
         "dashboard": "Tableau de Bord",
@@ -378,7 +383,9 @@
             "planned": "Planifié",
             "in_progress": "En cours",
             "completed": "Terminé",
-            "cancelled": "Annulé"
+            "cancelled": "Annulé",
+            "validated": "Validé",
+            "all": "Tous les statuts"
         },
         "kpi_active": "Ordres Actifs",
         "kpi_value": "Valorisation OF",
@@ -407,119 +414,75 @@
     "purchases": {
         "title": "Gestion des Achats",
         "subtitle": "Pilotage des fournisseurs et commandes",
-        "suppliers": "Fournisseurs",
-        "total_suppliers": "Total Fournisseurs",
-        "active_suppliers": "Fournisseurs Actifs",
-        "pending_orders": "Commandes en Attente",
-        "new_supplier": "Nouveau Fournisseur",
-        "edit_supplier": "Modifier Fournisseur",
-        "tax_id": "NIF / Registre Commerce",
-        "order_detail": "Détail Bon de Commande",
-        "order_detail_description": "Suivi des lignes et réceptions",
-        "tax": "TVA (19%)",
-        "tax_amount": "Montant TVA (19%)",
         "orders": {
             "title": "Gestion des Achats",
             "subtitle": "Pilotage des ordres de commande fournisseurs",
             "add": "Nouveau BCF",
-            "no_suppliers_found": "Aucun fournisseur trouvé. Créez-en un d'abord.",
             "add_subtitle": "Engagement d'achat industriel",
-            "financial_simulation": "Consolidation Financière",
             "kpi": {
                 "active_orders": "Commandes Ouvertes",
-                "active_orders_subtitle": "Flux actif",
                 "total_cost": "Engagement Financier HT",
-                "total_cost_subtitle": "Valorisation achat",
                 "received": "Reçues & Closes",
-                "received_subtitle": "Cycle terminé",
-                "pending": "Partiellement reçues",
-                "pending_subtitle": "Livraison en cours",
-                "supply_chain_active": "Chaîne active",
-                "confirmed_liabilities": "Engagements confirmés",
-                "closed_pos": "Commandes clôturées",
-                "shortage_risk": "Risque rupture"
+                "pending": "Partiellement reçues"
             },
-            "sections": {
-                "items": "Détails du panier"
-            },
-            "add_item": "Ajouter Article",
-            "fields": {
-                "notes": "Notes Internes"
-            },
-            "placeholders": {
-                "notes": "Conditions logistiques..."
-            },
-            "select_supplier": "Identifier Fournisseur...",
-            "select_warehouse": "Choisir Entrepôt de Réception",
             "form": {
                 "supplier": "Fournisseur *",
                 "order_date": "Date émission",
                 "expected_date": "Livraison prévue",
                 "items_title": "Articles & Lignes de commande",
                 "add_line": "Ajouter Ligne",
-                "product": "Produit",
                 "product_placeholder": "Sélectionner un article...",
-                "quantity": "Quantité",
-                "price_ht": "P.U HT",
                 "notes": "Notes & Conditions",
-                "notes_placeholder": "Précisions logistiques...",
                 "summary_title": "Récapitulatif Financier",
                 "save": "Enregistrer le BCF"
-            },
-            "success": {
-                "created": "Bon de commande généré avec succès"
             },
             "errors": {
                 "no_supplier": "Veuillez sélectionner un fournisseur",
                 "invalid_lines": "Veuillez compléter correctement toutes les lignes"
             },
-            "toast": {
-                "created": "Bon de commande généré"
+            "success": {
+                "created": "BCF créé avec succès"
             }
         },
-        "reference": "Référence BCF",
-        "supplier": "Fournisseur Partenaire",
-        "order_date": "Date Émission",
-        "expected_date": "Date de Livraison Prévue",
-        "total_ttc": "CA Global TTC",
-        "common": {
-            "fields": {
-                "name": "Désignation Article"
-            },
-            "qty": "Quantité",
-            "received": "Reçu"
-        },
-        "errors": {
-            "missing_fields": "Formulaire incomplet"
-        },
-        "status": {
-            "all": "Tous les statuts",
-            "draft": "Brouillon",
-            "sent": "Envoyé",
-            "confirmed": "Validé",
-            "partially_received": "Partiel",
-            "received": "Clôturé",
-            "cancelled": "Annulé",
-            "validated": "Validé",
-            "status": {
-                "all": "Tous les statuts",
-                "draft": "Brouillon",
-                "validated": "Validée"
-            }
+        "suppliers": {
+            "title": "Gestion Fournisseurs",
+            "suppliers": "Gestion Fournisseurs",
+            "subtitle": "Pilotage des partenaires fournisseurs",
+            "identity_and_code": "Identité et Mentions Légales",
+            "communication_and_location": "Coordonnées et Localisation",
+            "procurement_settings": "Conditions Commerciales",
+            "name_required": "Le nom du fournisseur est obligatoire",
+            "name_label": "Raison Sociale",
+            "nif": "NIF",
+            "ai": "AI",
+            "rc": "RC",
+            "code_sku": "Code Fournisseur / SKU",
+            "email_label": "Email Professionnel",
+            "phone_label": "Téléphone Contact",
+            "address_label": "Adresse du Siège",
+            "payment_terms": "Délai de Paiement (jours)",
+            "initial_status": "Statut de Compte",
+            "new_supplier": "Nouveau Fournisseur",
+            "edit_supplier": "Modifier Fournisseur",
+            "total_suppliers": "Total Fournisseurs",
+            "active_suppliers": "Fournisseurs Actifs",
+            "pending_orders": "Commandes en Attente"
         },
         "receptions": {
             "title": "Réception & Stock",
             "subtitle": "Validez les entrées marchandises et mettez à jour le stock",
             "list": "Registre des Réceptions",
+            "status": {
+                "all": "Tous les statuts",
+                "draft": "Brouillon",
+                "validated": "Validé"
+            },
             "kpi": {
                 "total": "Total Réceptions",
-                "total_subtitle": "Volume global",
                 "total_desc": "Volumes entrants",
                 "validated": "Entrées Validées",
-                "validated_subtitle": "Stock à jour",
-                "validated_desc": "Stock mis à jour",
+                "validated_desc": "Stock à jour",
                 "draft": "À traiter",
-                "draft_subtitle": "Attentes validation",
                 "draft_desc": "Vérification quai"
             },
             "fields": {
@@ -541,20 +504,27 @@
                 "created": "Réception créée avec succès"
             }
         },
-        "orders": "Commandes Achats",
-        "orders_count": "{count} BC"
+        "reference": "Référence BCF",
+        "supplier": "Fournisseur Partenaire",
+        "order_date": "Date Émission",
+        "expected_date": "Date de Livraison Prévue",
+        "total_ttc": "CA Global TTC",
+        "new_supplier": "Nouveau Fournisseur",
+        "total_suppliers": "Total Fournisseurs",
+        "active_suppliers": "Fournisseurs Actifs",
+        "pending_orders": "Commandes en Attente"
     },
     "suppliers": {
         "title": "Gestion Fournisseurs",
-        "subtitle": "Pilotage haute-densité des partenaires",
+        "subtitle": "Pilotage des partenaires fournisseurs",
         "identity_and_code": "Identité & Codes fiscaux",
         "communication_and_location": "Coordonnées & Siège",
         "procurement_settings": "Conditions d'Achat",
         "create_subtitle": "Créer un nouveau partenaire fournisseur",
         "status_subtitle": "État du compte fournisseur",
-        "nif": "NIF (Identifiant Fiscal)",
-        "ai": "AI (Article d'Imposition)",
-        "rc": "RC (Registre Commerce)",
+        "nif": "NIF",
+        "ai": "AI",
+        "rc": "RC",
         "code_sku": "CODE SKU",
         "name_label": "Raison Sociale *",
         "email_label": "Email",
@@ -590,13 +560,15 @@
                 "actions": "Pilotage"
             },
             "status": {
-                "draft": "Draft",
-                "validated": "Confirmé",
-                "preparing": "Préparation",
+                "all": "Tous les statuts",
+                "draft": "Brouillon",
+                "validated": "Validé",
+                "in_progress": "En cours",
                 "shipped": "Expédié",
                 "invoiced": "Facturé",
                 "cancelled": "Annulé"
             },
+            "cancel_order": "Annuler la Commande",
             "kpi": {
                 "pending_sales": "BC Ouverts",
                 "pending_sales_subtitle": "Commandes actives",
@@ -707,7 +679,18 @@
             "add_payment": "Enregistrer un paiement",
             "sheet_title": "Enregistrer un Paiement",
             "sheet_description": "Facture #{reference} — Solde restant: {remaining}",
-            "amount_to_pay": "Montant du versement (DA) *"
+            "amount_to_pay": "Montant du versement (DA) *",
+            "total_ttc": "TOTAL TTC",
+            "status": {
+                "draft": "Brouillon",
+                "sent": "Envoyée",
+                "unpaid": "À Payer",
+                "partial": "Solde Partiel",
+                "paid": "Soldée",
+                "cancelled": "Annulée",
+                "all": "Tous les statuts",
+                "validated": "Validé"
+            }
         },
         "payments": {
             "title": "Gestion des Paiements",

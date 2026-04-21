@@ -146,7 +146,7 @@ export default function InventoryRootPage() {
                     title={t('stats.items_tracked')} 
                     value={stats?.totalItems || 0} 
                     icon={Layers} 
-                    variant="secondary" 
+                    variant="slate" 
                     type="count" 
                 />
                 <KpiCard 

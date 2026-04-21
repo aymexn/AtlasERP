@@ -60,7 +60,14 @@
             "deleted": "Deleted successfully",
             "error": "Something went wrong",
             "success": "Operation successful"
-        }
+        },
+        "errors": {
+            "fetch_failed": "Failed to load data",
+            "save_failed": "Failed to save data"
+        },
+        "missing_fields": "Please fill all required fields",
+        "general_info": "General Information",
+        "select_placeholder": "Select an item..."
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -400,122 +407,116 @@
     "purchases": {
         "title": "Purchase Management",
         "subtitle": "Manage suppliers and purchase orders",
-        "suppliers": "Suppliers",
-        "total_suppliers": "Total Suppliers",
-        "active_suppliers": "Active Suppliers",
-        "pending_orders": "Pending Orders",
-        "new_supplier": "New Supplier",
-        "edit_supplier": "Edit Supplier",
-        "tax_id": "Tax ID / Trade Register",
-        "order_detail": "Purchase Order Detail",
-        "order_detail_description": "Track lines and receptions",
         "orders": {
             "title": "Purchase Management",
             "subtitle": "Manage supplier purchase orders",
             "add": "New PO",
             "add_subtitle": "Industrial purchase commitment",
-            "financial_simulation": "Financial Simulation",
             "kpi": {
                 "active_orders": "Open Orders",
                 "total_cost": "Financial Commitment HT",
                 "received": "Received & Closed",
-                "pending": "Partially received",
-                "supply_chain_active": "Supply chain active",
-                "confirmed_liabilities": "Confirmed liabilities",
-                "closed_pos": "Closed orders",
-                "shortage_risk": "Shortage risk"
+                "pending": "Partially received"
             },
-            "sections": {
-                "items": "Order details"
+            "form": {
+                "supplier": "Supplier *",
+                "order_date": "Order Date",
+                "expected_date": "Expected Delivery",
+                "items_title": "Order Items",
+                "add_line": "Add Line",
+                "product_placeholder": "Select a product...",
+                "notes": "Notes",
+                "summary_title": "Financial Summary",
+                "save": "Save Order"
             },
-            "add_item": "Add Item",
+            "errors": {
+                "no_supplier": "Please select a supplier",
+                "invalid_lines": "Please complete all lines correctly"
+            },
+            "success": {
+                "created": "PO created successfully"
+            }
+        },
+        "suppliers": {
+            "title": "Supplier Management",
+            "subtitle": "Manage your supplier partners",
+            "identity_and_code": "Identity & Legal Codes",
+            "communication_and_location": "Contact & Location",
+            "procurement_settings": "Procurement Terms",
+            "name_required": "Supplier name is required",
+            "name_label": "Company Name",
+            "nif": "NIF",
+            "code_sku": "SKU Code",
+            "email_label": "Work Email",
+            "phone_label": "Contact Phone",
+            "address_label": "Headquarters Address",
+            "payment_terms": "Payment Terms (days)",
+            "initial_status": "Account Status",
+            "new_supplier": "New Supplier",
+            "edit_supplier": "Edit Supplier",
+            "total_suppliers": "Total Suppliers",
+            "active_suppliers": "Active Suppliers",
+            "pending_orders": "Pending Orders"
+        },
+        "receptions": {
+            "title": "Receptions & GRN",
+            "subtitle": "Track incoming goods and update stock",
+            "list": "Reception Registry",
+            "status": {
+                "all": "All Statuses",
+                "draft": "Draft",
+                "validated": "Validated"
+            },
+            "kpi": {
+                "total": "Total Receptions",
+                "total_desc": "Incoming volumes",
+                "validated": "Validated Entries",
+                "validated_desc": "Stock updated",
+                "draft": "Pending",
+                "draft_desc": "Quality check"
+            },
             "fields": {
-                "notes": "Internal Notes"
+                "reference": "GRN Ref.",
+                "supplier": "Supplier",
+                "bc": "PO Number",
+                "warehouse": "Destination Warehouse",
+                "reception_date": "Reception Date"
             },
-            "placeholders": {
-                "notes": "Logistics conditions..."
+            "details": {
+                "logistic_info": "Logistics Information",
+                "lines": "Received Items",
+                "note": "Reception Note",
+                "validation_title": "Stock Movement Validation",
+                "validation_warning": "Warning: Validating a reception will update physical stock immediately. This action is irreversible.",
+                "validate_button": "Validate & Enter Stock"
             },
-            "select_supplier": "Select Supplier...",
-            "select_warehouse": "Choose Reception Warehouse",
             "toast": {
-                "created": "Purchase order created"
+                "created": "Reception created successfully"
             }
         },
         "reference": "PO Reference",
-        "supplier": "Supplier",
+        "supplier": "Supplier Partner",
         "order_date": "Emission Date",
-        "total_ttc": "Total TTC",
-        "receptions": "Receptions / Logistics",
-        "no_receptions": "Awaiting reception",
-        "errors": {
-            "missing_fields": "Incomplete form"
-        },
-        "status": {
-            "draft": "Draft",
-            "sent": "Sent",
-            "confirmed": "Confirmed",
-            "partially_received": "Partial",
-            "received": "Closed",
-            "cancelled": "Cancelled",
-            "all": "All statuses"
-        },
-        "receptions": {
-            "title": "Receptions / GRN",
-            "subtitle": "Track incoming goods",
-            "list": "Reception List",
-            "kpi": {
-                "total": "Total Receptions",
-                "validated": "Validated",
-                "draft": "Pending"
-            },
-            "fields": {
-                "reference": "GRN Reference",
-                "bc": "Purchase Order",
-                "supplier": "Supplier",
-                "reception_date": "Reception Date",
-                "warehouse": "Reception Warehouse"
-            },
-            "details": {
-                "lines": "Reception Lines",
-                "logistic_info": "Logistics Information",
-                "note": "GRN Note",
-                "validation_title": "Reception Validation",
-                "validation_warning": "This action is irreversible and will update stock.",
-                "validate_button": "Validate Reception"
-            }
-        },
-        "receptions_module": {
-            "title": "Receptions / GRN",
-            "subtitle": "Track incoming goods",
-            "list": "Reception List",
-            "kpi": {
-                "total": "Total Receptions",
-                "validated": "Validated",
-                "draft": "Pending"
-            },
-            "fields": {
-                "reference": "GRN Reference",
-                "bc": "Purchase Order",
-                "supplier": "Supplier",
-                "reception_date": "Reception Date",
-                "warehouse": "Reception Warehouse"
-            },
-            "details": {
-                "lines": "Reception Lines",
-                "logistic_info": "Logistics Information",
-                "note": "GRN Note",
-                "validation_title": "Reception Validation",
-                "validation_warning": "This action is irreversible and will update stock.",
-                "validate_button": "Validate Reception"
-            }
-        }
+        "expected_date": "Expected Delivery",
+        "total_ttc": "Total TTC"
     },
     "suppliers": {
+        "title": "Supplier Management",
+        "subtitle": "Manage your supplier partners",
         "identity_and_code": "Identity & Legal Codes",
         "communication_and_location": "Contact & Location",
         "procurement_settings": "Procurement Terms",
-        "create_subtitle": "Create a new supplier partner",
-        "status_subtitle": "Supplier account status"
+        "name_required": "Supplier name is required",
+        "name_label": "Company Name *",
+        "nif": "NIF",
+        "ai": "AI",
+        "rc": "RC",
+        "code_sku": "SKU Code",
+        "email_label": "Email",
+        "phone_label": "Phone",
+        "address_label": "Address",
+        "payment_terms": "Payment Terms (days)",
+        "initial_status": "Initial Status"
     },
     "sales": {
         "orders": {
@@ -543,13 +544,13 @@
                 "actions": "Actions"
             },
             "status": {
+                "all": "All Statuses",
                 "draft": "Draft",
                 "validated": "Confirmed",
-                "preparing": "Preparing",
-                "shipped": "Shipped",
                 "invoiced": "Invoiced",
                 "cancelled": "Cancelled"
             },
+            "cancel_order": "Cancel Order",
             "kpi": {
                 "pending_sales": "Open SOs",
                 "confirmed_ca": "Committed Revenue",
@@ -600,6 +601,9 @@
             },
             "hints": {
                 "credit": "Set the maximum allowed credit limit for this customer."
+            },
+            "form": {
+                "subtitle": "Create a new commercial partner"
             }
         }
     },
@@ -630,6 +634,11 @@
                 "total_paid": "Total Received",
                 "total_pending": "Pending Recovery",
                 "recovered_rate": "Rate"
+            },
+            "total_ttc": "TOTAL TTC",
+            "status": {
+                "draft": "Draft",
+                "validated": "Validated"
             }
         },
         "payments": {

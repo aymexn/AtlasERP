@@ -92,7 +92,7 @@ export default function ProductsStockClient() {
                     title={t('stats.items_tracked')} 
                     value={summary?.totalItems || 0} 
                     icon={Layers} 
-                    variant="secondary" 
+                    variant="slate" 
                     type="count" 
                 />
                 <KpiCard 

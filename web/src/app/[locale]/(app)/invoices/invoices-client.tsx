@@ -131,10 +131,11 @@ export function InvoicesClient() {
 
     const getStatusVariant = (status: string) => {
         switch (status) {
-            case 'PAID': return 'active';
+            case 'PAID': return 'success';
             case 'PARTIAL': return 'warning';
-            case 'CANCELLED': return 'inactive';
-            default: return 'primary';
+            case 'CANCELLED': return 'danger';
+            case 'SENT': return 'info';
+            default: return 'slate';
         }
     };
 
@@ -156,13 +157,14 @@ export function InvoicesClient() {
             />
 
             {/* Financial KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <KpiCard 
                     title={t('kpi.total_invoiced')}
                     value={stats.total}
                     icon={TrendingUp}
                     variant="primary"
                     type="currency"
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('kpi.total_paid')}
@@ -170,7 +172,8 @@ export function InvoicesClient() {
                     icon={CheckCircle2}
                     variant="success"
                     type="currency"
-                    subtitle={`${((stats.paid / (stats.total || 1)) * 100).toFixed(1)}% de recouvrement`}
+                    subtitle={`${((stats.paid / (stats.total || 1)) * 100).toFixed(1)}% recovery`}
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('kpi.total_pending')}
@@ -178,6 +181,7 @@ export function InvoicesClient() {
                     icon={Clock}
                     variant="warning"
                     type="currency"
+                    loading={loading}
                 />
             </div>
 

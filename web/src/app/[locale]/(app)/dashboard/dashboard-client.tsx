@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { Link } from '@/navigation';
 import { apiFetch } from '@/lib/api';
 import { useTranslations, useLocale } from 'next-intl';
-import { 
-    LayoutDashboard, 
-    Activity, 
-    PackageCheck, 
-    TrendingUp, 
-    AlertTriangle, 
-    Wallet, 
-    ShieldCheck, 
+import {
+    LayoutDashboard,
+    Activity,
+    PackageCheck,
+    TrendingUp,
+    AlertTriangle,
+    Wallet,
+    ShieldCheck,
     ArrowDownRight,
     Building2,
     ShoppingCart,
@@ -74,7 +74,7 @@ export default function DashboardClient() {
     return (
         <div className="max-w-[1600px] mx-auto space-y-16 pb-20 animate-in fade-in duration-1000">
             {/* Header */}
-            <PageHeader 
+            <PageHeader
                 title={t('title')}
                 subtitle={tenant?.name || t('company_overview' as any)}
                 icon={LayoutDashboard}
@@ -84,20 +84,20 @@ export default function DashboardClient() {
             <section>
                 <SectionHeader title={t('production_overview')} colorClass="bg-primary" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <KpiCard 
+                    <KpiCard
                         title={t('active_orders')}
                         value={stats?.orders?.active || 0}
                         icon={Activity}
                         variant="primary"
                         type="count"
                     />
-                    <KpiCard 
+                    <KpiCard
                         title={t('real_production_cost')}
                         value={stats?.costs?.actual || 0}
                         icon={TrendingUp}
                         variant="info"
                     />
-                    <KpiCard 
+                    <KpiCard
                         title={t('shortage_alerts')}
                         value={stats?.procurement?.pendingCount || 0}
                         icon={AlertTriangle}
@@ -111,19 +111,19 @@ export default function DashboardClient() {
             <section>
                 <SectionHeader title={t('financial_fortress')} colorClass="bg-primary" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <KpiCard 
+                    <KpiCard
                         title={t('total_invoiced')}
                         value={stats?.finances?.totalRevenue || 0}
                         icon={Receipt}
                         variant="success"
                     />
-                    <KpiCard 
+                    <KpiCard
                         title={t('cash_position')}
                         value={stats?.finances?.cashPosition || 0}
                         icon={Wallet}
                         variant="primary"
                     />
-                    <KpiCard 
+                    <KpiCard
                         title={t('profitability')}
                         value={(stats?.finances?.totalRevenue || 0) - (stats?.finances?.totalCogs || 0)}
                         icon={ShieldCheck}
@@ -149,7 +149,7 @@ export default function DashboardClient() {
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-black text-red-400 uppercase tracking-widest">{t('alerts.stock_low')}</div>
-                                    <div className="text-xl font-black text-blue-600">{stats?.procurement?.pendingCount || 0} Articles</div>
+                                    <div className="text-xl font-black text-blue-600" suppressHydrationWarning>{stats?.procurement?.pendingCount || 0} Articles</div>
                                 </div>
                             </div>
                             <Link href="/inventory" className="p-3 hover:bg-red-100 rounded-xl transition-all text-red-500"><ArrowDownRight size={24} /></Link>
@@ -161,7 +161,7 @@ export default function DashboardClient() {
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{t('alerts.pending_invoices')}</div>
-                                    <div className="text-xl font-black text-blue-600">{formatCurrency(stats?.finances?.totalRevenue - stats?.finances?.cashPosition || 0)}</div>
+                                    <div className="text-xl font-black text-blue-600" suppressHydrationWarning>{formatCurrency(stats?.finances?.totalRevenue - stats?.finances?.cashPosition || 0)}</div>
                                 </div>
                             </div>
                             <Link href="/invoices" className="p-3 hover:bg-blue-100 rounded-xl transition-all text-blue-500"><ArrowDownRight size={24} /></Link>
@@ -175,7 +175,7 @@ export default function DashboardClient() {
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('flux.gap')}</div>
-                                <div className="text-3xl font-black text-blue-600">{formatCurrency((stats?.sales?.monthlyRevenue || 0) - (stats?.finances?.cashPosition || 0))}</div>
+                                <div className="text-3xl font-black text-blue-600" suppressHydrationWarning>{formatCurrency((stats?.sales?.monthlyRevenue || 0) - (stats?.finances?.cashPosition || 0))}</div>
                             </div>
                             {(() => {
                                 const gap = (stats?.sales?.monthlyRevenue || 0) - (stats?.finances?.cashPosition || 0);
@@ -187,11 +187,11 @@ export default function DashboardClient() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('flux.invoiced')}</div>
-                                <div className="text-lg font-black text-blue-600">{formatCurrency(stats?.sales?.monthlyRevenue || 0)}</div>
+                                <div className="text-lg font-black text-blue-600" suppressHydrationWarning>{formatCurrency(stats?.sales?.monthlyRevenue || 0)}</div>
                             </div>
                             <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
                                 <div className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{t('flux.collected')}</div>
-                                <div className="text-lg font-black text-blue-600">{formatCurrency(stats?.finances?.cashPosition || 0)}</div>
+                                <div className="text-lg font-black text-blue-600" suppressHydrationWarning>{formatCurrency(stats?.finances?.cashPosition || 0)}</div>
                             </div>
                         </div>
                     </div>
@@ -208,7 +208,7 @@ export default function DashboardClient() {
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('purchases_in_transit')}</span>
-                                <span className="text-2xl font-black text-foreground tracking-tighter">
+                                <span className="text-2xl font-black text-foreground tracking-tighter" suppressHydrationWarning>
                                     {formatCurrency(stats?.procurement?.pendingValue || 0)}
                                 </span>
                             </div>
@@ -216,7 +216,7 @@ export default function DashboardClient() {
                                 {stats?.procurement?.pendingCount || 0} {t('pending_orders')}
                             </Badge>
                         </div>
-                        
+
                         <div className="flex-1 space-y-4">
                             <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('top_suppliers')}</h4>
                             <div className="space-y-3">
@@ -228,7 +228,7 @@ export default function DashboardClient() {
                                             </div>
                                             <span className="text-sm font-bold text-foreground">{s.name}</span>
                                         </div>
-                                        <span className="text-sm font-black text-foreground">{formatCurrency(s.value)}</span>
+                                        <span className="text-sm font-black text-foreground" suppressHydrationWarning>{formatCurrency(s.value)}</span>
                                     </div>
                                 ))}
                                 {(!stats?.procurement?.topSuppliers || stats.procurement.topSuppliers.length === 0) && (
@@ -236,7 +236,7 @@ export default function DashboardClient() {
                                 )}
                             </div>
                         </div>
-                        
+
                         <Link href="/purchases/orders" className="flex items-center justify-center gap-2 w-full py-4 bg-muted text-muted-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all mt-auto">
                             <ShoppingCart size={14} /> {t('access_command_center')}
                         </Link>
@@ -250,7 +250,7 @@ export default function DashboardClient() {
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('monthly_sales')}</span>
-                                <span className="text-2xl font-black text-foreground tracking-tighter">
+                                <span className="text-2xl font-black text-foreground tracking-tighter" suppressHydrationWarning>
                                     {formatCurrency(stats?.sales?.monthlyRevenue || 0)}
                                 </span>
                             </div>
@@ -270,7 +270,7 @@ export default function DashboardClient() {
                                             </div>
                                             <span className="text-sm font-bold text-foreground">{p.name}</span>
                                         </div>
-                                        <span className="text-sm font-black text-foreground">{formatCurrency(p.revenue)}</span>
+                                        <span className="text-sm font-black text-foreground" suppressHydrationWarning>{formatCurrency(p.revenue)}</span>
                                     </div>
                                 ))}
                                 {(!stats?.sales?.topSellingProducts || stats.sales.topSellingProducts.length === 0) && (

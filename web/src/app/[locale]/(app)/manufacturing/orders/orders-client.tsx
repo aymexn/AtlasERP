@@ -326,6 +326,7 @@ export default function OrdersClient() {
                     variant="primary" 
                     type="count" 
                     subtitle={t('status.in_progress')}
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('kpi_value')} 
@@ -334,6 +335,7 @@ export default function OrdersClient() {
                     variant="success" 
                     type="currency" 
                     subtitle="DZD Total"
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('kpi_shortage')} 
@@ -342,6 +344,7 @@ export default function OrdersClient() {
                     variant="danger" 
                     type="count" 
                     subtitle={t('shortage_impact')}
+                    loading={loading}
                 />
             </div>
 

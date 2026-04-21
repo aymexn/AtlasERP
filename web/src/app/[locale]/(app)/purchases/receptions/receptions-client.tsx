@@ -64,7 +64,7 @@ export default function ReceptionsClient() {
         try {
             setLoading(true);
             const [receptionsData, warehousesData] = await Promise.all([
-                apiFetch('/purchase-receptions'),
+                apiFetch('/stock-receptions'),
                 apiFetch('/warehouses')
             ]);
 
@@ -98,7 +98,7 @@ export default function ReceptionsClient() {
 
         try {
             setSubmitting(true);
-            await apiFetch('/purchase-receptions', {
+            await apiFetch('/stock-receptions', {
                 method: 'POST',
                 body: JSON.stringify({
                     purchaseOrderId: selectedOrder.id,
@@ -119,7 +119,7 @@ export default function ReceptionsClient() {
     const handleValidate = async (id: string) => {
         try {
             setSubmitting(true);
-            await apiFetch(`/purchase-receptions/${id}/validate`, { method: 'POST' });
+            await apiFetch(`/stock-receptions/${id}/validate`, { method: 'POST' });
             toast.success(ct('save_success'));
             setIsModalOpen(false);
             loadData();

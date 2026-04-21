@@ -109,6 +109,12 @@ export function sanitizeData(data: any): any {
     Object.keys(data).forEach(key => {
         if (metadataFields.includes(key)) return;
         
+        // Don't strip industrial codes even if they are empty or nested
+        if (['nif', 'ai', 'rc', 'taxId'].includes(key)) {
+            clean[key] = data[key];
+            return;
+        }
+        
         const value = data[key];
         
         // Strip out object relations (those would be nested objects with an 'id' that aren't arrays)

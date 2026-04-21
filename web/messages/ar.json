@@ -56,10 +56,16 @@
             "name": "الاسم"
         },
         "toast": {
-            "created": "تم الإنشاء بنجاح",
-            "deleted": "تم الحذف بنجاح",
-            "error": "حدث خطأ ما"
-        }
+            "error": "حدث خطأ ما",
+            "success": "تمت العملية بنجاح"
+        },
+        "errors": {
+            "fetch_failed": "فشل تحميل البيانات",
+            "save_failed": "فشل حفظ البيانات"
+        },
+        "missing_fields": "يرجى ملء جميع الحقول المطلوبة",
+        "general_info": "معلومات عامة",
+        "select_placeholder": "اختر عنصراً..."
     },
     "nav": {
         "dashboard": "لوحة التحكم",
@@ -399,15 +405,6 @@
     "purchases": {
         "title": "إدارة المشتريات",
         "subtitle": "إدارة الموردين وطلبات الشراء",
-        "suppliers": "الموردين",
-        "total_suppliers": "إجمالي الموردين",
-        "active_suppliers": "الموردون النشطون",
-        "pending_orders": "الطلبات المعلقة",
-        "new_supplier": "مورد جديد",
-        "edit_supplier": "تعديل المورد",
-        "tax_id": "الرقم الضريبي / السجل التجاري",
-        "order_detail": "تفاصيل طلب الشراء",
-        "order_detail_description": "تتبع السطور والاستلامات",
         "orders": {
             "title": "إدارة المشتريات",
             "subtitle": "إدارة طلبات الشراء من الموردين",
@@ -415,98 +412,91 @@
             "add_subtitle": "التزام شراء صناعي",
             "kpi": {
                 "active_orders": "الطلبات المفتوحة",
-                "total_cost": "الالتزام المالي",
+                "total_cost": "الالتزام المالي HT",
                 "received": "مستلمة ومغلقة",
-                "pending": "مستلمة جزئياً",
-                "supply_chain_active": "سلسلة التوريد نشطة",
-                "confirmed_liabilities": "الالتزامات المؤكدة",
-                "closed_pos": "الطلبات المغلقة",
-                "shortage_risk": "خطر النقص"
+                "pending": "مستلمة جزئياً"
             },
-            "sections": {
-                "items": "تفاصيل الطلب"
+            "form": {
+                "supplier": "المورد *",
+                "order_date": "تاريخ الطلب",
+                "expected_date": "التسليم المتوقع",
+                "items_title": "عناصر الطلب",
+                "add_line": "إضافة سطر",
+                "product_placeholder": "اختر منتجاً...",
+                "notes": "ملاحظات",
+                "summary_title": "ملخص مالي",
+                "save": "حفظ الطلب"
             },
-            "add_item": "إضافة منتج",
+            "errors": {
+                "no_supplier": "يرجى اختيار مورد",
+                "invalid_lines": "يرجى إكمال جميع الأسطر بشكل صحيح"
+            },
+            "success": {
+                "created": "تم إنشاء طلب الشراء بنجاح"
+            }
+        },
+        "suppliers": {
+            "title": "إدارة الموردين",
+            "subtitle": "إدارة شركاء الموردين",
+            "identity_and_code": "الهوية والبيانات القانونية",
+            "communication_and_location": "الاتصال والموقع",
+            "procurement_settings": "الشروط التجارية",
+            "name_required": "اسم المورد مطلوب",
+            "name_label": "الاسم التجاري",
+            "nif": "الرقم الضريبي",
+            "code_sku": "رمز المورد / SKU",
+            "email_label": "البريد الإلكتروني",
+            "phone_label": "هاتف الاتصال",
+            "address_label": "عنوان المقر",
+            "payment_terms": "أجل الدفع (أيام)",
+            "initial_status": "حالة الحساب",
+            "new_supplier": "مورد جديد",
+            "edit_supplier": "تعديل المورد",
+            "total_suppliers": "إجمالي الموردين",
+            "active_suppliers": "الموردون النشطون",
+            "pending_orders": "الطلبات المعلقة"
+        },
+        "receptions": {
+            "title": "الاستلام والمخزون",
+            "subtitle": "التحقق من دخول البضائع وتحديث المخزون",
+            "list": "سجل الاستلامات",
+            "status": {
+                "all": "جميع الحالات",
+                "draft": "مسودة",
+                "validated": "مؤكد"
+            },
+            "kpi": {
+                "total": "إجمالي الاستلامات",
+                "total_desc": "الكميات الواردة",
+                "validated": "استلامات مؤكدة",
+                "validated_desc": "تم تحديث المخزون",
+                "draft": "قيد المعالجة",
+                "draft_desc": "تحت التحقق"
+            },
             "fields": {
-                "notes": "ملاحظات داخلية"
+                "reference": "مرجع الاستلام",
+                "supplier": "المورد",
+                "bc": "رقم طلب الشراء",
+                "warehouse": "مستودع الوجهة",
+                "reception_date": "تاريخ الاستلام"
             },
-            "placeholders": {
-                "notes": "شروط الشحن..."
+            "details": {
+                "logistic_info": "معلومات لوجستية",
+                "lines": "المواد المستلمة",
+                "note": "ملاحظة الاستلام (الحالة، الطرود...)",
+                "validation_title": "تأكيد حركة المخزون",
+                "validation_warning": "تنبيه: تأكيد الاستلام سيحدث مستويات المخزون فوراً. هذا الإجراء لا يمكن التراجع عنه.",
+                "validate_button": "تأكيد ودخول المخزون"
             },
-            "select_supplier": "اختر مورداً...",
-            "select_warehouse": "اختر مستودع الاستلام",
             "toast": {
-                "created": "تم إنشاء طلب الشراء"
+                "created": "تم إنشاء الاستلام بنجاح"
             }
         },
         "reference": "مرجع طلب الشراء",
-        "supplier": "المورد",
+        "supplier": "شريك مورد",
         "order_date": "تاريخ الإصدار",
-        "total_ttc": "الإجمالي شامل الضريبة",
-        "receptions": "الاستلامات",
-        "no_receptions": "في انتظار الاستلام",
-        "errors": {
-            "missing_fields": "النموذج غير مكتمل"
-        },
-        "status": {
-            "draft": "مسودة",
-            "sent": "مُرسل",
-            "confirmed": "مؤكد",
-            "partially_received": "جزئي",
-            "received": "مُغلق",
-            "cancelled": "ملغى",
-            "all": "جميع الحالات"
-        },
-        "receptions": {
-            "title": "استلامات البضائع",
-            "subtitle": "تتبع البضائع الواردة",
-            "list": "قائمة الاستلامات",
-            "kpi": {
-                "total": "إجمالي الاستلامات",
-                "validated": "مُتحقق منها",
-                "draft": "في الانتظار"
-            },
-            "fields": {
-                "reference": "مرجع وصل الاستلام",
-                "bc": "طلب الشراء",
-                "supplier": "المورد",
-                "reception_date": "تاريخ الاستلام",
-                "warehouse": "مستودع الاستلام"
-            },
-            "details": {
-                "lines": "سطور الاستلام",
-                "logistic_info": "معلومات لوجستية",
-                "note": "ملاحظة الاستلام",
-                "validation_title": "التحقق من الاستلام",
-                "validation_warning": "هذا الإجراء لا يمكن التراجع عنه وسيحدث المخزون.",
-                "validate_button": "التحقق من الاستلام"
-            }
-        },
-        "receptions_module": {
-            "title": "استلامات البضائع",
-            "subtitle": "تتبع البضائع الواردة",
-            "list": "قائمة الاستلامات",
-            "kpi": {
-                "total": "إجمالي الاستلامات",
-                "validated": "مُتحقق منها",
-                "draft": "في الانتظار"
-            },
-            "fields": {
-                "reference": "مرجع وصل الاستلام",
-                "bc": "طلب الشراء",
-                "supplier": "المورد",
-                "reception_date": "تاريخ الاستلام",
-                "warehouse": "مستودع الاستلام"
-            },
-            "details": {
-                "lines": "سطور الاستلام",
-                "logistic_info": "معلومات لوجستية",
-                "note": "ملاحظة الاستلام",
-                "validation_title": "التحقق من الاستلام",
-                "validation_warning": "هذا الإجراء لا يمكن التراجع عنه وسيحدث المخزون.",
-                "validate_button": "التحقق من الاستلام"
-            }
-        }
+        "expected_date": "تاريخ التسليم المتوقع",
+        "total_ttc": "الإجمالي شامل الضريبة"
     },
     "sales": {
         "orders": {
@@ -534,13 +524,13 @@
                 "actions": "الإجراءات"
             },
             "status": {
+                "all": "جميع الحالات",
                 "draft": "مسودة",
                 "validated": "مؤكد",
-                "preparing": "قيد التحضير",
-                "shipped": "مشحون",
                 "invoiced": "مفوتر",
                 "cancelled": "ملغى"
             },
+            "cancel_order": "إلغاء الطلب",
             "kpi": {
                 "pending_sales": "طلبات مفتوحة",
                 "confirmed_ca": "رقم أعمال ملتزم",
@@ -591,7 +581,19 @@
             },
             "hints": {
                 "credit": "حدد الحد الائتماني المسموح به لهذا العميل."
-            }
+            },
+            "subtitle": "إدارة شركاء التوريد",
+            "name_required": "اسم المورد مطلوب",
+            "identity_and_code": "الهوية والأكواد القانونية",
+            "communication_and_location": "الاتصال والموقع",
+            "procurement_settings": "شروط الشراء",
+            "name_label": "اسم الشركة",
+            "code_sku": "رمز SKU",
+            "email_label": "البريد الإلكتروني",
+            "phone_label": "الهاتف",
+            "address_label": "العنوان",
+            "payment_terms": "شروط الدفع (أيام)",
+            "initial_status": "الحالة الأولية"
         }
     },
     "finances": {
@@ -621,6 +623,11 @@
                 "total_paid": "إجمالي المحصل",
                 "total_pending": "المتبقي للتحصيل",
                 "recovered_rate": "المعدل"
+            },
+            "total_ttc": "TOTAL TTC",
+            "status": {
+                "draft": "مسودة",
+                "validated": "مؤكد"
             }
         },
         "payments": {

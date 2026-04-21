@@ -120,6 +120,36 @@ export function SalesOrdersClient() {
         }
     };
 
+    const handleValidateOrder = async (id: string) => {
+        if (!confirm(ct('confirm'))) return;
+        setIsSubmitting(true);
+        try {
+            await salesOrdersService.validate(id);
+            toast.success(ct('save_success'));
+            setIsDetailsOpen(false);
+            loadData();
+        } catch (err: any) {
+            toast.error(err.message || ct('error'));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleCancelOrder = async (id: string) => {
+        if (!confirm(ct('delete_confirm'))) return;
+        setIsSubmitting(true);
+        try {
+            await salesOrdersService.cancel(id);
+            toast.success(ct('save_success'));
+            setIsDetailsOpen(false);
+            loadData();
+        } catch (err: any) {
+            toast.error(err.message || ct('error'));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const openOrderDetails = async (order: SalesOrder) => {
         setSelectedOrder(order);
         setIsDetailsOpen(true);
@@ -211,7 +241,7 @@ export function SalesOrdersClient() {
             align: 'right' as const,
             className: "min-w-[140px] whitespace-nowrap",
             accessor: (order: SalesOrder) => (
-                <div className="text-sm font-black text-gray-900">{formatCurrency(order.totalAmountTtc)}</div>
+                <div className="text-sm font-black text-gray-900 pr-4">{formatCurrency(order.totalAmountTtc)}</div>
             )
         },
         {
@@ -262,10 +292,10 @@ export function SalesOrdersClient() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <KpiCard title={t('kpi.pending_sales')} value={orders.filter(o => o.status !== 'CANCELLED' && o.status !== 'INVOICED').length} icon={Receipt} variant="secondary" type="count" />
-                <KpiCard title={t('kpi.confirmed_ca')} value={orders.filter(o => ['SHIPPED', 'INVOICED'].includes(o.status)).reduce((acc, o) => acc + Number(o.totalAmountHt), 0)} icon={TrendingUp} variant="success" />
-                <KpiCard title={t('title')} value={orders.length} icon={ShoppingCart} variant="primary" type="count" />
-                <KpiCard title={t('kpi.critical_stock')} value={products.filter(p => Number(p.stockQuantity) <= Number(p.minStock)).length} icon={AlertTriangle} variant="danger" type="count" />
+                <KpiCard title={t('kpi.pending_sales')} value={orders.filter(o => o.status !== 'CANCELLED' && o.status !== 'INVOICED').length} icon={Receipt} variant="slate" type="count" loading={loading} />
+                <KpiCard title={t('kpi.confirmed_ca')} value={orders.filter(o => ['SHIPPED', 'INVOICED'].includes(o.status)).reduce((acc, o) => acc + Number(o.totalAmountHt), 0)} icon={TrendingUp} variant="success" loading={loading} />
+                <KpiCard title={t('title')} value={orders.length} icon={ShoppingCart} variant="primary" type="count" loading={loading} />
+                <KpiCard title={t('kpi.critical_stock')} value={products.filter(p => Number(p.stockQuantity) <= Number(p.minStock)).length} icon={AlertTriangle} variant="danger" type="count" loading={loading} />
             </div>
 
             <div className="space-y-4">
@@ -370,16 +400,42 @@ export function SalesOrdersClient() {
                             </div>
                         </div>
                         <div className="p-8 bg-gray-50 border-t border-gray-100 flex flex-col gap-3">
-                            {selectedOrder.status === 'VALIDATED' || selectedOrder.status === 'PREPARING' ? (
-                                <button onClick={() => handleShipOrder(selectedOrder.id)} disabled={isSubmitting} className="w-full py-5 bg-primary text-white rounded-4xl font-black text-lg shadow-xl shadow-blue-100/50 hover:bg-blue-700 hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-3">{isSubmitting ? <Loader2 className="animate-spin" /> : <><Truck size={24} />{t('ship')}</>}</button>
-                            ) : selectedOrder.status === 'SHIPPED' ? (
+                            {selectedOrder.status === 'DRAFT' && (
+                                <div className="flex gap-3">
+                                    <button onClick={() => handleValidateOrder(selectedOrder.id)} disabled={isSubmitting} className="flex-1 py-5 bg-primary text-white rounded-4xl font-black text-lg shadow-xl shadow-blue-100/50 hover:bg-blue-700 hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-3">
+                                        {isSubmitting ? <Loader2 className="animate-spin" /> : <><CheckCircle2 size={24} />{ct('confirm')}</>}
+                                    </button>
+                                    <button onClick={() => handleCancelOrder(selectedOrder.id)} disabled={isSubmitting} className="px-8 py-5 bg-white text-danger border border-danger/10 rounded-4xl font-black text-lg hover:bg-danger/5 transition-all active:scale-95 flex items-center justify-center gap-3">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {(selectedOrder.status === 'VALIDATED' || selectedOrder.status === 'PREPARING') && (
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={() => handleShipOrder(selectedOrder.id)} disabled={isSubmitting} className="w-full py-5 bg-primary text-white rounded-4xl font-black text-lg shadow-xl shadow-blue-100/50 hover:bg-blue-700 hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-3">
+                                        {isSubmitting ? <Loader2 className="animate-spin" /> : <><Truck size={24} />{t('ship')}</>}
+                                    </button>
+                                    <button onClick={() => handleCancelOrder(selectedOrder.id)} disabled={isSubmitting} className="w-full py-3 bg-transparent text-danger/60 hover:text-danger rounded-xl font-black text-xs uppercase tracking-widest transition-all">
+                                        {t('cancel_order' as any) || ct('cancel')}
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {selectedOrder.status === 'SHIPPED' && (
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-center justify-center gap-3 p-5 bg-blue-50/50 rounded-3xl border border-blue-100/50"><CheckCircle2 className="text-primary" /><div className="text-sm font-black text-slate-900 uppercase tracking-tight">{t('delivery_validated')} {new Date(selectedOrder.updatedAt).toLocaleDateString(locale as string)}</div></div>
                                     <button onClick={() => handleCreateInvoice(selectedOrder.id)} disabled={isSubmitting} className="w-full py-5 bg-blue-600 text-white rounded-4xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-blue-700 hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-3">{isSubmitting ? <Loader2 className="animate-spin" /> : <><Receipt size={24} />{t('invoice')}</>}</button>
                                 </div>
-                            ) : selectedOrder.status === 'INVOICED' ? (
+                            )}
+
+                            {selectedOrder.status === 'INVOICED' && (
                                 <div className="flex items-center justify-center gap-3 p-5 bg-blue-50 rounded-3xl border border-blue-100"><Receipt className="text-blue-600" /><div className="text-sm font-black text-blue-900 uppercase tracking-tight">{t('status.invoiced')}</div></div>
-                            ) : null}
+                            )}
+
+                            {selectedOrder.status === 'CANCELLED' && (
+                                <div className="flex items-center justify-center gap-3 p-5 bg-red-50 rounded-3xl border border-red-100"><X className="text-red-600" /><div className="text-sm font-black text-red-900 uppercase tracking-tight">{t('status.cancelled')}</div></div>
+                            )}
                         </div>
                     </div>
                 </div>

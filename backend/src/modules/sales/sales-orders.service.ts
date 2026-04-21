@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SalesOrderStatus, Prisma } from '@prisma/client';
+import { InvoicesService } from '../invoices/invoices.service';
 
 @Injectable()
 export class SalesOrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private invoicesService: InvoicesService
+  ) {}
 
   async findAll(companyId: string) {
     return this.prisma.salesOrder.findMany({
@@ -176,10 +180,21 @@ export class SalesOrdersService {
       }
 
       // 5. Update Order Status
-      return tx.salesOrder.update({
+      const updatedOrder = await tx.salesOrder.update({
         where: { id },
         data: { status: 'SHIPPED' }
       });
+
+      // 6. AUTO-INVOICE GENERATION
+      try {
+        await this.invoicesService.createFromSalesOrder(companyId, order.id);
+      } catch (invoiceErr) {
+        // We log but don't fail the shipment transaction if auto-invoicing fails
+        // as the user can still trigger it manually from UI.
+        console.error('Auto-invoicing failed after shipment:', invoiceErr);
+      }
+
+      return updatedOrder;
     });
   }
 

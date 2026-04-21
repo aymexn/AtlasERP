@@ -40,13 +40,25 @@
   --color-card-foreground: var(--card-foreground);
   --border-color-default: var(--border);
   --radius-xl: var(--radius);
+  --radius-4xl: 2.5rem;
+  --color-royal: #2563eb;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
   letter-spacing: -0.01em;
+}
+
+/* Arabic Legibility Optimization */
+[dir="rtl"] body {
+  font-size: 1.05em;
+  line-height: 1.6;
+}
+
+[dir="rtl"] .font-black {
+  font-weight: 900;
 }
 
 /* Custom Scrollbar for Premium Feel */

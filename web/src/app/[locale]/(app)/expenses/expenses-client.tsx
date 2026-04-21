@@ -166,13 +166,14 @@ export function ExpensesClient() {
                 }}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <KpiCard 
                     title={t('stats.total')}
                     value={stats.total}
                     icon={TrendingDown}
                     variant="danger"
                     type="currency"
+                    loading={loading}
                 />
             </div>
 
@@ -246,8 +247,8 @@ export function ExpensesClient() {
                             {
                                 header: "MONTANT",
                                 align: 'right' as const,
-                                className: "text-right min-w-[140px] whitespace-nowrap",
-                                accessor: (exp: any) => <span className="text-sm font-black text-danger">{formatCurrency(exp.amount)}</span>
+                                className: "text-right min-w-[160px] whitespace-nowrap",
+                                accessor: (exp: any) => <span className="text-sm font-black text-rose-600 tracking-tight">{formatCurrency(exp.amount)}</span>
                             },
                             {
                                 header: '',

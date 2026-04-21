@@ -11,7 +11,12 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         transform: true,
     }));
-    app.enableCors();
+    app.enableCors({
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+        allowedHeaders: 'Content-Type,Accept,Authorization',
+    });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('AtlasERP API')
         .setDescription('The AtlasERP multi-tenant API documentation')
@@ -21,9 +26,9 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api', app, document);
     const port = process.env.PORT || 3000;
-    await app.listen(port);
-    console.log(`AtlasERP Backend running on: http://localhost:${port}`);
-    console.log(`Swagger documentation available at: http://localhost:${port}/api`);
+    await app.listen(port, '127.0.0.1');
+    console.log(`AtlasERP Backend running on: http://127.0.0.1:${port}`);
+    console.log(`Swagger documentation available at: http://127.0.0.1:${port}/api`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

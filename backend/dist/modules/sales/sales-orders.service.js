@@ -13,9 +13,11 @@ exports.SalesOrdersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const invoices_service_1 = require("../invoices/invoices.service");
 let SalesOrdersService = class SalesOrdersService {
-    constructor(prisma) {
+    constructor(prisma, invoicesService) {
         this.prisma = prisma;
+        this.invoicesService = invoicesService;
     }
     async findAll(companyId) {
         return this.prisma.salesOrder.findMany({
@@ -156,10 +158,17 @@ let SalesOrdersService = class SalesOrdersService {
                     }
                 });
             }
-            return tx.salesOrder.update({
+            const updatedOrder = await tx.salesOrder.update({
                 where: { id },
                 data: { status: 'SHIPPED' }
             });
+            try {
+                await this.invoicesService.createFromSalesOrder(companyId, order.id);
+            }
+            catch (invoiceErr) {
+                console.error('Auto-invoicing failed after shipment:', invoiceErr);
+            }
+            return updatedOrder;
         });
     }
     async validateOrder(companyId, id) {
@@ -222,6 +231,7 @@ let SalesOrdersService = class SalesOrdersService {
 exports.SalesOrdersService = SalesOrdersService;
 exports.SalesOrdersService = SalesOrdersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        invoices_service_1.InvoicesService])
 ], SalesOrdersService);
 //# sourceMappingURL=sales-orders.service.js.map

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { 
-    Users, Plus, Search, Loader2, Mail, Phone, MapPin, 
-    Edit2, Trash2, Building2, Store, ShieldCheck, 
+import {
+    Users, Plus, Search, Loader2, Mail, Phone, MapPin,
+    Edit2, Trash2, Building2, Store, ShieldCheck,
     CreditCard, Save, X, Tag, Info, Briefcase
 } from 'lucide-react';
 import { Supplier } from '@/services/suppliers';
@@ -25,7 +25,7 @@ export default function SuppliersClient() {
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     // Modal & Form State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -85,8 +85,8 @@ export default function SuppliersClient() {
             setSubmitting(true);
             const isEdit = !!currentSupplier.id;
             const endpoint = `/suppliers${isEdit ? `/${currentSupplier.id}` : ''}`;
-            
-            const payload = {
+
+            const payload: any = {
                 name: currentSupplier.name,
                 code: currentSupplier.code || undefined,
                 nif: currentSupplier.nif || undefined,
@@ -95,23 +95,28 @@ export default function SuppliersClient() {
                 email: currentSupplier.email || undefined,
                 phone: currentSupplier.phone || undefined,
                 address: currentSupplier.address || undefined,
-                city: currentSupplier.city || undefined,
+                city: currentSupplier.city || 'Alger',
                 country: currentSupplier.country || 'DZ',
-                paymentTermsDays: Number(currentSupplier.paymentTermsDays) || 30,
-                isActive: currentSupplier.isActive ?? true,
+                paymentTermsDays: currentSupplier.paymentTermsDays ? Number(currentSupplier.paymentTermsDays) : 30,
                 notes: currentSupplier.notes || undefined
             };
+
+            // isActive is only allowed for Patch (Update), not Post (Create)
+            if (isEdit) {
+                payload.isActive = currentSupplier.isActive ?? true;
+            }
 
             await apiFetch(endpoint, {
                 method: isEdit ? 'PATCH' : 'POST',
                 body: JSON.stringify(payload)
             });
 
-            toast.success(ct('save_success'));
+            toast.success(ct('save_success') || "Enregistré avec succès");
             setIsModalOpen(false);
             loadSuppliers();
         } catch (error: any) {
-            toast.error(error.message || ct('toast.error'));
+            console.error('Save failed:', error);
+            toast.error(error.message || "Erreur lors de la sauvegarde");
         } finally {
             setSubmitting(false);
         }
@@ -138,15 +143,15 @@ export default function SuppliersClient() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <Loader2 className="animate-spin text-primary" size={40} />
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{ct('loading')}</p>
+                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{ct('loading')}</div>
             </div>
         );
     }
 
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in duration-700">
-            <PageHeader 
-                title={t('suppliers')}
+            <PageHeader
+                title={t('suppliers.title')}
                 subtitle={st('subtitle') || t('subtitle')}
                 icon={Building2}
                 action={{
@@ -156,23 +161,23 @@ export default function SuppliersClient() {
                 }}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <KpiCard title={t('total_suppliers')} value={stats.total} icon={Users} variant="primary" type="count" />
-                <KpiCard title={t('active_suppliers')} value={stats.active} icon={ShieldCheck} variant="success" type="count" />
-                <KpiCard title={t('pending_orders')} value={stats.withOrders} icon={Building2} variant="warning" type="count" />
-                <KpiCard title={ct('amount')} value={stats.totalPurchased} icon={CreditCard} variant="info" type="currency" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <KpiCard title={t('total_suppliers')} value={stats.total} icon={Users} variant="primary" type="count" loading={loading} />
+                <KpiCard title={t('active_suppliers')} value={stats.active} icon={ShieldCheck} variant="success" type="count" loading={loading} />
+                <KpiCard title={t('pending_orders')} value={stats.withOrders} icon={Building2} variant="warning" type="count" loading={loading} />
+                <KpiCard title={ct('amount')} value={stats.totalPurchased} icon={CreditCard} variant="info" type="currency" loading={loading} />
             </div>
 
-            <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-[2.5rem] overflow-hidden bg-white">
+            <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-4xl overflow-hidden bg-white">
                 <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 p-8">
                     <CardTitle className="text-xl font-black text-slate-800 flex items-center gap-3">
                         <Store className="w-6 h-6 text-primary" />
-                        {t('suppliers')}
+                        {t('suppliers.title')}
                     </CardTitle>
                     <div className="relative w-full max-w-sm">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder={ct('search')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -181,7 +186,7 @@ export default function SuppliersClient() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <DataTable 
+                    <DataTable
                         data={filteredSuppliers}
                         isLoading={loading}
                         onRowClick={handleEdit}
@@ -215,7 +220,7 @@ export default function SuppliersClient() {
                                 )
                             },
                             {
-                                header: t('orders' as any),
+                                header: t('orders.title'),
                                 accessor: (s: any) => (
                                     <Badge variant="confirmed">
                                         {s._count?.purchaseOrders || 0} BC
@@ -237,13 +242,13 @@ export default function SuppliersClient() {
                                 align: 'right',
                                 accessor: (s) => (
                                     <div className="flex items-center justify-end gap-2 pr-4">
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); handleEdit(s); }}
                                             className="p-2.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-all"
                                         >
                                             <Edit2 size={18} />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); handleDelete(s.id); }}
                                             className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                                         >
@@ -257,71 +262,96 @@ export default function SuppliersClient() {
                 </CardContent>
             </Card>
 
+            {/* Clean Supplier Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="bg-white rounded-4xl w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-all border border-slate-100">
-                        <div className="p-8 pb-4 flex items-center justify-between border-b border-slate-50 bg-slate-50/50">
-                            <div>
-                                <h2 className="text-2xl font-black text-slate-800 tracking-tighter">
-                                    {currentSupplier?.id ? t('edit_supplier') : t('new_supplier')}
-                                </h2>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">
-                                    {currentSupplier?.name || "Nouveau Partenaire"}
-                                </p>
+                    <div className="bg-white rounded-4xl w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 flex flex-col">
+                        {/* Clean Header */}
+                        <div className="p-8 pb-4 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-slate-100 rounded-xl">
+                                    <Building2 className="text-slate-900" size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase">
+                                        {currentSupplier?.id ? t('suppliers.edit') : t('suppliers.add')}
+                                    </h2>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                                        {currentSupplier?.name || "Nouveau dossier fournisseur"}
+                                    </p>
+                                </div>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                            <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 text-slate-400 hover:text-red-600 transition-colors bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <div className="flex px-8 mt-4 gap-6 border-b border-slate-50 overflow-x-auto scrollbar-hide">
+                        {/* Minimalist Tabs */}
+                        <div className="flex px-8 mt-4 gap-8 border-b border-slate-50 overflow-x-auto scrollbar-hide">
                             {[
-                                { id: 'identity', label: st('identity_and_code'), icon: Tag },
-                                { id: 'contact', label: st('communication_and_location'), icon: Info },
-                                { id: 'commercial', label: st('procurement_settings'), icon: Briefcase },
+                                { id: 'identity', label: t('suppliers.sections.identity') },
+                                { id: 'contact', label: t('suppliers.sections.communication') },
+                                { id: 'commercial', label: t('suppliers.sections.commercial') },
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
-                                    className={`flex items-center gap-2 py-4 border-b-2 transition-all font-bold text-sm whitespace-nowrap ${activeTab === tab.id
-                                        ? 'border-primary text-primary'
-                                        : 'border-transparent text-slate-400 hover:text-slate-600'
+                                    className={`py-4 border-b-2 transition-all font-black text-[11px] uppercase tracking-widest whitespace-nowrap ${activeTab === tab.id
+                                        ? 'border-blue-600 text-blue-600'
+                                        : 'border-transparent text-slate-300 hover:text-slate-500'
                                         }`}
                                 >
-                                    <tab.icon size={16} />
                                     {tab.label}
                                 </button>
                             ))}
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[65vh] overflow-y-auto">
+                        {/* Form Content */}
+                        <form id="supplier-form" onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[55vh] flex-1">
                             {activeTab === 'identity' && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                <div className="space-y-7 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="space-y-2.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('suppliers.fields.name')}</label>
+                                        <input
+                                            required
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900"
+                                            value={currentSupplier?.name || ''}
+                                            onChange={(e) => setCurrentSupplier({ ...currentSupplier, name: e.target.value })}
+                                        />
+                                    </div>
+
                                     <div className="grid grid-cols-2 gap-6">
-                                        <div className="col-span-2 space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('name_label')}</label>
-                                            <input 
-                                                required
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900"
-                                                value={currentSupplier?.name || ''}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, name: e.target.value})}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-2.5">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('nif')}</label>
-                                            <input 
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-mono font-black text-slate-700"
+                                            <input
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
                                                 value={currentSupplier?.nif || ''}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, nif: e.target.value})}
+                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, nif: e.target.value })}
                                             />
                                         </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-2.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('ai') || "AI"}</label>
+                                            <input
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
+                                                value={currentSupplier?.ai || ''}
+                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, ai: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('rc') || "RC"}</label>
+                                            <input
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
+                                                value={currentSupplier?.rc || ''}
+                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, rc: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2.5">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('code_sku')}</label>
-                                            <input 
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-mono font-black text-slate-700"
+                                            <input
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
                                                 value={currentSupplier?.code || ''}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, code: e.target.value})}
+                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, code: e.target.value })}
                                             />
                                         </div>
                                     </div>
@@ -329,80 +359,85 @@ export default function SuppliersClient() {
                             )}
 
                             {activeTab === 'contact' && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2 col-span-2 md:col-span-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('email_label')}</label>
-                                            <input 
-                                                type="email"
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900"
-                                                value={currentSupplier?.email || ''}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, email: e.target.value})}
-                                            />
-                                        </div>
-                                        <div className="space-y-2 col-span-2 md:col-span-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('phone_label')}</label>
-                                            <input 
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900"
-                                                value={currentSupplier?.phone || ''}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, phone: e.target.value})}
-                                            />
-                                        </div>
-                                        <div className="col-span-2 space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('address_label')}</label>
-                                            <textarea 
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 min-h-[100px]"
-                                                value={currentSupplier?.address || ''}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, address: e.target.value})}
-                                            />
-                                        </div>
+                                <div className="grid grid-cols-2 gap-7 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="space-y-2.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('email_label')}</label>
+                                        <input
+                                            type="email"
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900"
+                                            value={currentSupplier?.email || ''}
+                                            onChange={(e) => setCurrentSupplier({ ...currentSupplier, email: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('suppliers.fields.phone')}</label>
+                                        <input
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900"
+                                            value={currentSupplier?.phone || ''}
+                                            onChange={(e) => setCurrentSupplier({ ...currentSupplier, phone: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="col-span-2 space-y-2.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('suppliers.fields.address')}</label>
+                                        <textarea
+                                            rows={4}
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900 resize-none min-h-[100px]"
+                                            value={currentSupplier?.address || ''}
+                                            onChange={(e) => setCurrentSupplier({ ...currentSupplier, address: e.target.value })}
+                                        />
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'commercial' && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('payment_terms')}</label>
-                                            <input 
+                                <div className="space-y-7 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-between">
+                                        <div>
+                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">{st('payment_terms')}</h4>
+                                            <p className="text-[10px] text-slate-400 font-bold">Délai standard de règlement</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <input
                                                 type="number"
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900"
+                                                className="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-600 transition-all font-black text-center text-blue-600"
                                                 value={currentSupplier?.paymentTermsDays ?? 30}
-                                                onChange={(e) => setCurrentSupplier({...currentSupplier, paymentTermsDays: parseInt(e.target.value) || 0})}
+                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, paymentTermsDays: parseInt(e.target.value) || 30 })}
                                             />
+                                            <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">Jours</span>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('initial_status')}</label>
-                                            <div className="flex items-center gap-4 h-14 px-5 bg-slate-50 border-2 border-slate-100 rounded-2xl">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setCurrentSupplier({ ...currentSupplier, isActive: !currentSupplier?.isActive })}
-                                                    className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${currentSupplier?.isActive ? 'bg-primary' : 'bg-slate-300'}`}
-                                                >
-                                                    <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${currentSupplier?.isActive ? 'translate-x-6' : 'translate-x-0'} shadow-sm`} />
-                                                </button>
-                                                <span className="text-sm font-black text-slate-600 uppercase tracking-widest">{currentSupplier?.isActive ? ct('active') : ct('inactive')}</span>
-                                            </div>
+                                    </div>
+
+                                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-between">
+                                        <div>
+                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">{st('initial_status')}</h4>
+                                            <p className="text-[10px] text-slate-400 font-bold">Visibilité dans le catalogue</p>
                                         </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentSupplier({ ...currentSupplier, isActive: !currentSupplier?.isActive })}
+                                            className={`relative w-14 h-7 rounded-full p-1 transition-colors duration-300 ${currentSupplier?.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                                        >
+                                            <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-300 transform ${currentSupplier?.isActive ? 'translate-x-7' : 'translate-x-0'} shadow-md`} />
+                                        </button>
                                     </div>
                                 </div>
                             )}
                         </form>
 
-                        <div className="p-8 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-4">
-                            <button 
-                                onClick={() => setIsModalOpen(false)}
-                                className="px-8 py-4 bg-white border border-slate-200 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
-                            >
-                                {ct('cancel')}
-                            </button>
+                        {/* Clean Footer with Blue Pill */}
+                        <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="px-12 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-3 disabled:opacity-50"
+                                className="w-full py-5 bg-blue-600 text-white rounded-full text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                             >
-                                {submitting ? <Loader2 className="animate-spin" size={18} /> : (currentSupplier?.id ? <><Edit2 size={18} /> {ct('save')}</> : <><Plus size={18} /> {ct('save')}</>)}
+                                {submitting ? <Loader2 className="animate-spin" size={18} /> : (currentSupplier?.id ? t('suppliers.edit') : t('suppliers.add'))}
+                            </button>
+                            <button 
+                                onClick={() => setIsModalOpen(false)}
+                                className="w-full py-3 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-all"
+                            >
+                                {ct('cancel')}
                             </button>
                         </div>
                     </div>

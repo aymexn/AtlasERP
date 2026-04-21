@@ -72,6 +72,18 @@ export const salesOrdersService = {
       method: 'POST',
     });
   },
+  
+  async validate(id: string): Promise<SalesOrder> {
+    return apiFetch(`/sales-orders/${id}/validate`, {
+      method: 'PATCH',
+    });
+  },
+
+  async cancel(id: string): Promise<SalesOrder> {
+    return apiFetch(`/sales-orders/${id}/cancel`, {
+      method: 'PATCH',
+    });
+  },
 
   async getProfitability(id: string): Promise<ProfitabilityReport> {
     return apiFetch(`/sales-orders/${id}/profitability`);

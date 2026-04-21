@@ -3,10 +3,12 @@ import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '../../navigation';
 
-// Manual imports for French-only production
+// Manual imports for messages
 import fr from '../../../messages/fr.json';
+import en from '../../../messages/en.json';
+import ar from '../../../messages/ar.json';
 
-const messageMap: Record<string, any> = { fr };
+const messageMap: Record<string, any> = { fr, en, ar };
 
 export default async function LocaleLayout({
   children,
@@ -17,7 +19,7 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  if (locale !== 'fr') {
+  if (!locales.includes(locale as any)) {
     notFound();
   }
 
@@ -25,8 +27,8 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   // Use manual map to ensure correct messages are provided
-  const messages = messageMap.fr;
-  const direction = 'ltr';
+  const messages = messageMap[locale] || messageMap.fr;
+  const direction = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>

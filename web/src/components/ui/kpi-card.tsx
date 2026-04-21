@@ -4,88 +4,96 @@ import { LucideIcon } from 'lucide-react';
 
 interface KpiCardProps {
     title: string;
-    value: number | string;
+    value?: number | string;
     icon: LucideIcon;
     trend?: {
         value: number;
         label: string;
         isPositive: boolean;
     };
-    variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'secondary';
+    variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'slate';
     type?: 'count' | 'currency';
     subtitle?: string;
+    loading?: boolean;
 }
 
-
-const variantStyles: Record<string, string> = {
-    primary: 'border-blue-100/50',
-    success: 'border-blue-100/50',
-    warning: 'border-amber-100/50',
-    danger: 'border-red-100/50',
-    info: 'border-sky-100/50',
-    secondary: 'border-gray-100/50'
-};
-
-const iconStyles: Record<string, string> = {
-    primary: 'bg-[#2563eb]/10 text-[#2563eb]',
-    success: 'bg-[#2563eb]/10 text-emerald-600',
-    warning: 'bg-[#2563eb]/10 text-amber-600',
-    danger: 'bg-[#2563eb]/10 text-red-600',
-    info: 'bg-[#2563eb]/10 text-[#2563eb]',
-    secondary: 'bg-[#2563eb]/10 text-gray-600'
+const config = {
+    variantStyles: {
+        primary: "bg-blue-50 text-blue-600 border-blue-100",
+        success: "bg-emerald-50 text-emerald-600 border-emerald-100",
+        warning: "bg-amber-50 text-amber-600 border-amber-100",
+        danger: "bg-rose-50 text-rose-600 border-rose-100",
+        info: "bg-indigo-50 text-indigo-600 border-indigo-100",
+        slate: "bg-slate-50 text-slate-600 border-slate-100"
+    }
 };
 
 export const KpiCard: React.FC<KpiCardProps> = ({ 
     title, 
     value, 
     icon: Icon, 
-    variant = 'secondary', 
+    variant = 'primary', 
+    type = 'currency', 
+    subtitle,
     trend,
-    type = 'currency',
-    subtitle
+    loading = false
 }) => {
-
-    const formattedValue = type === 'count' 
-        ? formatNumber(value) 
-        : formatCurrency(value);
-
-    return (
-        <div className={`
-            group relative bg-white p-8 rounded-[24px] border-2 transition-all duration-500
-            hover:shadow-2xl hover:shadow-[#2563eb]/5 hover:-translate-y-1
-            min-w-[240px]
-            ${variantStyles[variant] || variantStyles.secondary}
-        `}>
-            <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] transition-colors group-hover:text-slate-600">
-                        {title}
-                    </h3>
-                    <div className={`p-3 rounded-xl transition-all duration-500 group-hover:scale-110 ${iconStyles[variant] || iconStyles.secondary}`}>
-                        <Icon size={20} strokeWidth={2.5} />
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <div className="text-gray-900 tracking-tighter leading-none" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.75rem)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'visible', textOverflow: 'clip' }}>
-                        {formattedValue}
-                    </div>
-                    {subtitle && (
-                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                            {subtitle}
-                        </div>
-                    )}
-                    {trend && (
-                        <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mt-2 ${trend.isPositive ? 'text-primary' : 'text-red-500'}`}>
-                            <span className="flex items-center justify-center w-4 h-4 rounded-full bg-current opacity-10">
-                                {trend.isPositive ? '↑' : '↓'}
-                            </span>
-                            {trend.value}%
-                        </div>
-                    )}
+    
+    // Skeleton Loader
+    if (loading || value === undefined) {
+        return (
+            <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex items-start gap-5 animate-pulse">
+                <div className="h-11 w-11 rounded-xl bg-slate-50 border border-slate-100 shrink-0" />
+                <div className="space-y-3 flex-1">
+                    <div className="h-2 w-20 bg-slate-100 rounded" />
+                    <div className="h-6 w-32 bg-slate-50 rounded" />
                 </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 flex items-start gap-5 group relative overflow-hidden">
+            {/* Subtle Icon Container */}
+            <div className={`
+                h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 border
+                ${config.variantStyles[variant] || config.variantStyles.primary}
+            `}>
+                <Icon size={20} strokeWidth={2.5} />
+            </div>
+            
+            {/* Content Container */}
+            <div className="flex-1 min-w-0">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider leading-none">
+                    {title}
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-2 flex-nowrap whitespace-nowrap overflow-hidden">
+                    <h3 className={`font-black text-slate-900 tracking-tighter leading-none flex items-baseline flex-nowrap whitespace-nowrap transition-all duration-300 ${
+                        (value?.toString() || '').length > 10 ? 'text-lg' : 
+                        (value?.toString() || '').length > 8 ? 'text-xl' : 'text-2xl'
+                    }`} suppressHydrationWarning>
+                        {type === 'currency' ? (
+                            <>
+                                <span>{formatCurrency(value).replace(' DA', '')}</span>
+                                <span className="text-[11px] font-black text-slate-400 ml-1 tracking-widest opacity-60">DA</span>
+                            </>
+                        ) : formatNumber(value)}
+                    </h3>
+                    {trend && (
+                        <div className={`inline-flex items-center gap-0.5 text-[10px] font-bold ${trend.isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {trend.isPositive ? '↑' : '↓'}{trend.value}%
+                        </div>
+                    )}
+                </div>
+                {subtitle && (
+                    <div className="text-[10px] font-medium text-slate-400 mt-2 line-clamp-1 italic">
+                        {subtitle}
+                    </div>
+                )}
+            </div>
+
+            {/* Micro Decorative Accent */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50/50 blur-2xl rounded-full -mr-8 -mt-8" />
         </div>
     );
 };
-

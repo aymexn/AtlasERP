@@ -200,13 +200,14 @@ export default function OrdersClient() {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KpiCard 
                     title={t('orders.kpi.active_orders')}
                     value={orders.filter(o => !['RECEIVED', 'CANCELLED'].includes(o.status)).length}
                     icon={Truck}
                     variant="primary"
                     type="count"
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('orders.kpi.total_cost')}
@@ -214,6 +215,7 @@ export default function OrdersClient() {
                     icon={Calculator}
                     variant="info"
                     type="currency"
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('orders.kpi.received')}
@@ -221,6 +223,7 @@ export default function OrdersClient() {
                     icon={CheckCircle2}
                     variant="success"
                     type="count"
+                    loading={loading}
                 />
                 <KpiCard 
                     title={t('orders.kpi.pending')}
@@ -228,6 +231,7 @@ export default function OrdersClient() {
                     icon={Clock}
                     variant="warning"
                     type="count"
+                    loading={loading}
                 />
             </div>
 

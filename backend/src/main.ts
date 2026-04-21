@@ -13,8 +13,13 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // Configure CORS
-  app.enableCors();
+  // Configure CORS - "Blindée" configuration for development flow
+  app.enableCors({
+    origin: true, // Accepte tout pendant le dev pour débloquer
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'Content-Type,Accept,Authorization',
+  });
 
   // Configure Swagger
   const config = new DocumentBuilder()
@@ -27,8 +32,10 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`AtlasERP Backend running on: http://localhost:${port}`);
-  console.log(`Swagger documentation available at: http://localhost:${port}/api`);
+  // Force listening on 127.0.0.1 (IPv4) to avoid Node 18+ DNS resolution conflicts
+  await app.listen(port, '127.0.0.1');
+  
+  console.log(`AtlasERP Backend running on: http://127.0.0.1:${port}`);
+  console.log(`Swagger documentation available at: http://127.0.0.1:${port}/api`);
 }
 bootstrap();

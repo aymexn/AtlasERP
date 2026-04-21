@@ -1,8 +1,10 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { InvoicesService } from '../invoices/invoices.service';
 export declare class SalesOrdersService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private invoicesService;
+    constructor(prisma: PrismaService, invoicesService: InvoicesService);
     findAll(companyId: string): Promise<({
         company: {
             id: string;

@@ -86,12 +86,12 @@ const Sidebar = () => {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-8 space-y-10">
                 {/* Dashboard Link */}
-                <div className="px-2">
+                <div className={`flex flex-col items-center gap-4 ${collapsed ? 'px-0' : 'px-2'}`}>
                     <Link
                         href="/dashboard"
                         className={`
-                            flex items-center rounded-xl transition-all group h-12 w-full
-                            ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                            flex items-center rounded-xl transition-all group h-12
+                            ${collapsed ? 'w-10 justify-center' : 'w-full px-4 gap-4'}
                             ${pathname === '/dashboard'
                                 ? 'bg-blue-50 text-primary font-bold shadow-sm'
                                 : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
@@ -99,18 +99,18 @@ const Sidebar = () => {
                         `}
                     >
                         <LayoutDashboard size={20} className="shrink-0" />
-                        {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">{t('dashboard')}</span>}
+                        {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap rtl:font-black">{t('dashboard')}</span>}
                     </Link>
                 </div>
 
                 {groups.map((group, gIdx) => (
                     <div key={gIdx} className="space-y-3">
                         {!collapsed && (
-                            <h3 className="px-7 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] whitespace-nowrap">
+                            <h3 className="px-7 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] whitespace-nowrap rtl:text-slate-400">
                                 {group.title}
                             </h3>
                         )}
-                        <div className="px-2 space-y-1">
+                        <div className={`flex flex-col items-center gap-1 ${collapsed ? 'px-0' : 'px-2'}`}>
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 const isActive = pathname === item.href;
@@ -121,8 +121,8 @@ const Sidebar = () => {
                                         key={item.href}
                                         href={item.href as any}
                                         className={`
-                                            flex items-center rounded-xl transition-all h-12 w-full
-                                            ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                                            flex items-center rounded-xl transition-all h-12
+                                            ${collapsed ? 'w-10 justify-center' : 'w-full px-4 gap-4'}
                                             ${isActive
                                                 ? 'bg-blue-50 text-primary font-bold shadow-sm'
                                                 : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
@@ -130,7 +130,7 @@ const Sidebar = () => {
                                         `}
                                     >
                                         <Icon size={20} className="shrink-0" />
-                                        {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">{item.name}</span>}
+                                        {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap rtl:font-black">{item.name}</span>}
                                     </Link>
                                 );
                             })}
@@ -140,12 +140,12 @@ const Sidebar = () => {
             </nav>
 
             {/* Footer / Toggle & Settings */}
-            <div className="p-2 border-t border-slate-50 space-y-3 bg-slate-50/30">
+            <div className={`p-2 border-t border-slate-50 flex flex-col items-center transition-all bg-slate-50/30 ${collapsed ? 'gap-2' : 'gap-3'}`}>
                 <Link
                     href="/settings"
                     className={`
-                        flex items-center rounded-xl transition-all h-12 w-full
-                        ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                        flex items-center rounded-xl transition-all h-12
+                        ${collapsed ? 'w-10 justify-center' : 'w-full px-4 gap-4'}
                         ${pathname === '/settings'
                             ? 'bg-blue-50 text-primary font-bold shadow-sm'
                             : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
@@ -159,13 +159,13 @@ const Sidebar = () => {
                 <button
                     onClick={() => setCollapsed(!collapsed)}
                     className={`
-                        flex items-center rounded-xl transition-all h-12 w-full group
-                        ${collapsed ? 'justify-center' : 'px-4 gap-4'}
+                        flex items-center rounded-xl transition-all h-12 group
+                        ${collapsed ? 'w-10 justify-center' : 'w-full px-4 gap-4'}
                         text-slate-300 hover:bg-slate-100/50 hover:text-slate-600 font-bold
                     `}
                 >
                     {collapsed ? (
-                        <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight size={20} className="transition-transform" />
                     ) : (
                         <>
                             <ChevronLeft size={20} className="shrink-0 group-hover:-translate-x-0.5 transition-transform" /> 
