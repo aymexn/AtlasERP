@@ -24,6 +24,18 @@ const invoices_module_1 = require("./modules/invoices/invoices.module");
 const payments_module_1 = require("./modules/payments/payments.module");
 const expenses_module_1 = require("./modules/expenses/expenses.module");
 const common_module_1 = require("./common/common.module");
+const audit_module_1 = require("./modules/audit/audit.module");
+const core_1 = require("@nestjs/core");
+const audit_interceptor_1 = require("./common/interceptors/audit.interceptor");
+const notifications_module_1 = require("./modules/notifications/notifications.module");
+const treasury_module_1 = require("./modules/treasury/treasury.module");
+const rbac_module_1 = require("./modules/rbac/rbac.module");
+const analytics_module_1 = require("./modules/analytics/analytics.module");
+const employees_module_1 = require("./modules/hr/employees/employees.module");
+const leaves_module_1 = require("./modules/hr/leaves/leaves.module");
+const payroll_module_1 = require("./modules/hr/payroll/payroll.module");
+const recruitment_module_1 = require("./modules/hr/recruitment/recruitment.module");
+const performance_module_1 = require("./modules/hr/performance/performance.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -45,10 +57,25 @@ exports.AppModule = AppModule = __decorate([
             sales_module_1.SalesModule,
             invoices_module_1.InvoicesModule,
             payments_module_1.PaymentsModule,
-            expenses_module_1.ExpensesModule
+            expenses_module_1.ExpensesModule,
+            audit_module_1.AuditModule,
+            notifications_module_1.NotificationsModule,
+            treasury_module_1.TreasuryModule,
+            rbac_module_1.RbacModule,
+            analytics_module_1.AnalyticsModule,
+            employees_module_1.EmployeesModule,
+            leaves_module_1.LeavesModule,
+            payroll_module_1.PayrollModule,
+            recruitment_module_1.RecruitmentModule,
+            performance_module_1.PerformanceModule
         ],
         controllers: [],
-        providers: [],
+        providers: [
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: audit_interceptor_1.AuditInterceptor,
+            },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

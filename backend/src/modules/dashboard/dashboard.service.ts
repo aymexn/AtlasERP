@@ -1,213 +1,217 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ManufacturingOrderStatus, ArticleType } from '@prisma/client';
+import { CacheService } from '../../common/services/cache.service';
 
 @Injectable()
 export class DashboardService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private cache: CacheService
+    ) { }
 
     async getProductionStats(companyId: string) {
+        const cacheKey = `dashboard_stats_${companyId}`;
+        const cached = await this.cache.get(cacheKey);
+        if (cached) return cached;
+
         const activeStatuses = ['PLANNED', 'IN_PROGRESS'];
-        const orders = await this.prisma.manufacturingOrder.findMany({
-            where: { companyId },
-            include: {
-                lines: {
-                    include: {
-                        component: {
-                            select: {
-                                stockQuantity: true,
-                                minStock: true
-                            }
-                        }
-                    }
-                }
-            }
-        });
 
-        const orderStats = await this.prisma.manufacturingOrder.aggregate({
-            where: { companyId, status: 'COMPLETED' },
-            _sum: { totalActualCost: true, producedQuantity: true }
-        });
+        // Execute all independent queries concurrently to achieve < 200ms
+        const [
+            orders,
+            orderStats,
+            inProgressStats,
+            activeOrders,
+            outOfStockCount,
+            lowStockCount,
+            productsWithoutFormula,
+            recentActivity,
+            pendingPOStats,
+            pendingPOCount,
+            topSuppliers,
+            rawMaterialStockValue,
+            salesRevenue,
+            activeSalesCount,
+            customerCount,
+            allExpenses,
+            allReceipts,
+            salesPerformance,
+            salesLines,
+            invoiceStats,
+            topProducts,
+            recentSalesForChart,
+            recentPurchasesForChart
+        ] = await Promise.all([
+            // Optimized: We don't need all orders just to count them
+            this.prisma.manufacturingOrder.groupBy({
+                by: ['status'],
+                where: { companyId },
+                _count: { _all: true }
+            }),
+            this.prisma.manufacturingOrder.aggregate({
+                where: { companyId, status: 'COMPLETED' },
+                _sum: { totalActualCost: true, producedQuantity: true }
+            }),
+            this.prisma.manufacturingOrder.aggregate({
+                where: { companyId, status: 'IN_PROGRESS' },
+                _sum: { totalEstimatedCost: true }
+            }),
+            // We still need active orders with details for shortages (might need pagination later if 1000s)
+            this.prisma.manufacturingOrder.findMany({
+                where: { companyId, status: { in: ['PLANNED', 'IN_PROGRESS'] } },
+                include: { lines: { include: { component: { select: { stockQuantity: true } } } } },
+                take: 50 // Limit to top 50 active to keep it fast
+            }),
+            // Stock Alerts
+            this.prisma.product.count({
+                where: { companyId, isActive: true, stockQuantity: { lte: 0 } }
+            }),
+            this.prisma.product.count({
+                where: { companyId, isActive: true, stockQuantity: { gt: 0, lte: this.prisma.product.fields.minStock } }
+            }),
+            this.prisma.product.count({
+                where: { companyId, articleType: { in: [ArticleType.FINISHED_PRODUCT, ArticleType.SEMI_FINISHED] }, bomsAsFinishedProduct: { none: { status: 'ACTIVE' } } }
+            }),
+            this.prisma.manufacturingOrder.findMany({
+                where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, include: { product: { select: { name: true } } }
+            }),
+            this.prisma.purchaseOrder.aggregate({
+                where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }, _sum: { totalTtc: true }
+            }),
+            this.prisma.purchaseOrder.count({
+                where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }
+            }),
+            this.prisma.purchaseOrder.groupBy({
+                by: ['supplierId'], where: { companyId, status: 'RECEIVED' }, _sum: { totalTtc: true }, orderBy: { _sum: { totalTtc: 'desc' } }, take: 3
+            }),
+            this.prisma.product.aggregate({
+                where: { companyId, articleType: ArticleType.RAW_MATERIAL }, _sum: { stockValue: true }
+            }),
+            this.prisma.salesOrder.aggregate({
+                where: { companyId, status: { in: ['SHIPPED', 'INVOICED'] }, date: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } }, _sum: { totalAmountHt: true }
+            }),
+            this.prisma.salesOrder.count({
+                where: { companyId, status: { in: ['DRAFT', 'VALIDATED', 'PREPARING'] } }
+            }),
+            this.prisma.customer.count({
+                where: { companyId, isActive: true }
+            }),
+            this.prisma.expense.aggregate({
+                where: { companyId }, _sum: { amount: true }
+            }),
+            this.prisma.payment.aggregate({
+                where: { companyId }, _sum: { amount: true }
+            }),
+            this.prisma.salesOrderLine.aggregate({
+                where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, _sum: { lineTotalHt: true }
+            }),
+            this.prisma.salesOrderLine.findMany({
+                where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, select: { quantity: true, unitCostSnapshot: true }
+            }),
+            // Financial Cash Flow Logic
+            this.prisma.invoice.aggregate({
+                where: { companyId, status: { not: 'CANCELLED' } }, _sum: { totalAmountTtc: true, amountPaid: true }
+            }),
+            this.prisma.salesOrderLine.groupBy({
+                by: ['productId'], where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, _sum: { quantity: true, lineTotalHt: true }, orderBy: { _sum: { lineTotalHt: 'desc' } }, take: 5
+            }),
+            // Sales chart grouping
+            // Sales chart grouping - Optimized with 6 month limit
+            this.prisma.salesOrder.findMany({
+                where: { 
+                    companyId, 
+                    status: { not: 'CANCELLED' },
+                    date: { gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) }
+                },
+                select: { date: true, totalAmountHt: true },
+                orderBy: { date: 'asc' }
+            }),
+            this.prisma.purchaseOrder.findMany({
+                where: { 
+                    companyId, 
+                    status: { not: 'CANCELLED' },
+                    orderDate: { gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) }
+                },
+                select: { orderDate: true, totalTtc: true },
+                orderBy: { orderDate: 'asc' }
+            })
+        ]);
 
-        const inProgressStats = await this.prisma.manufacturingOrder.aggregate({
-            where: { companyId, status: 'IN_PROGRESS' },
-            _sum: { totalEstimatedCost: true }
-        });
 
+
+        const [supplierNames, topProductNames] = await Promise.all([
+            this.prisma.supplier.findMany({
+                where: { id: { in: topSuppliers.map(s => s.supplierId) } },
+                select: { id: true, name: true }
+            }),
+            this.prisma.product.findMany({
+                where: { id: { in: topProducts.map(p => p.productId) } },
+                select: { id: true, name: true }
+            })
+        ]);
+
+        // Costs
         const totalActualCost = Number(orderStats._sum.totalActualCost || 0);
         const totalEstimatedCost = Number(inProgressStats._sum.totalEstimatedCost || 0);
-        const finishedGoodsProduced = Number(orderStats._sum.producedQuantity || 0);
 
-        // Calculate shortages and consumption
-        const activeOrders = await this.prisma.manufacturingOrder.findMany({
-            where: { companyId, status: { in: ['PLANNED', 'IN_PROGRESS'] } },
-            include: {
-                lines: {
-                    include: {
-                        component: {
-                            select: {
-                                stockQuantity: true,
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        // Calculate COGS
+        const totalCogs = salesLines.reduce((acc, line) => acc + (Number(line.quantity) * Number(line.unitCostSnapshot || 0)), 0);
 
-        const componentsInShortage = new Set<string>();
-        activeOrders.forEach(order => {
-            order.lines.forEach(line => {
-                const required = Number(line.requiredQuantity);
-                const available = Number(line.component.stockQuantity);
-                if (available < required) {
-                    componentsInShortage.add(line.componentProductId);
-                }
-            });
-        });
-
-
-        // Urgent low stock items (used in formulas and below min stock)
-        const lowStockComponents = await this.prisma.product.count({
-            where: {
-                companyId,
-                stockQuantity: { lt: this.prisma.product.fields.minStock },
-                formulaComponents: { some: {} } // Used in at least one formula
-            }
-        });
-
-        // Products missing active formulas
-        const productsWithoutFormula = await this.prisma.product.count({
-            where: {
-                companyId,
-                articleType: { in: [ArticleType.FINISHED_PRODUCT, ArticleType.SEMI_FINISHED] },
-                formulas: { none: { status: 'ACTIVE' } }
-            }
-        });
-
-        // Recent MO activity
-        const recentActivity = await this.prisma.manufacturingOrder.findMany({
-            where: { companyId },
-            orderBy: { updatedAt: 'desc' },
-            take: 5,
-            include: { product: { select: { name: true } } }
-        });
-
-        // Procurement Metrics
-        const pendingPOStats = await this.prisma.purchaseOrder.aggregate({
-            where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } },
-            _sum: { totalTtc: true }
-        });
-
-        const pendingPOCount = await this.prisma.purchaseOrder.count({
-            where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }
-        });
-
-        const topSuppliers = await this.prisma.purchaseOrder.groupBy({
-            by: ['supplierId'],
-            where: { companyId, status: { not: 'CANCELLED' } },
-            _sum: { totalTtc: true },
-            orderBy: { _sum: { totalTtc: 'desc' } },
-            take: 3
-        });
-
-        const supplierNames = await this.prisma.supplier.findMany({
-            where: { id: { in: topSuppliers.map(s => s.supplierId) } },
-            select: { id: true, name: true }
-        });
-
-        const rawMaterialStockValue = await this.prisma.product.aggregate({
-            where: { companyId, articleType: ArticleType.RAW_MATERIAL },
-            _sum: { stockValue: true }
-        });
-
-        // Sales Metrics
-        const salesRevenue = await this.prisma.salesOrder.aggregate({
-            where: { 
-                companyId, 
-                status: { in: ['SHIPPED', 'INVOICED'] },
-                date: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } 
-            },
-            _sum: { totalAmountHt: true }
-        });
-
-        const activeSalesCount = await this.prisma.salesOrder.count({
-            where: { companyId, status: { in: ['DRAFT', 'VALIDATED', 'PREPARING'] } }
-        });
-
-        const customerCount = await this.prisma.customer.count({
-            where: { companyId, isActive: true }
-        });
-
-        // Financial Metrics
-        const allExpenses = await this.prisma.expense.aggregate({
-            where: { companyId },
-            _sum: { amount: true }
-        });
-
-        const allReceipts = await this.prisma.payment.aggregate({
-            where: { companyId },
-            _sum: { amount: true }
-        });
-
-        const salesPerformance = await this.prisma.salesOrderLine.aggregate({
-            where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } },
-            _sum: { lineTotalHt: true }
-        });
-
-        // Calculate COGS (Cost of Goods Sold)
-        const salesLines = await this.prisma.salesOrderLine.findMany({
-            where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } },
-            select: { quantity: true, unitCostSnapshot: true }
-        });
-
-        const totalCogs = salesLines.reduce((acc, line) => {
-            return acc + (Number(line.quantity) * Number(line.unitCostSnapshot || 0));
-        }, 0);
-
-        const unpaidInvoices = await this.prisma.invoice.aggregate({
-            where: { companyId, status: { notIn: ['PAID', 'CANCELLED'] } },
-            _sum: { amountRemaining: true }
-        });
-        const unpaidAmount = Number(unpaidInvoices._sum.amountRemaining || 0);
-
+        // Finances - Cash Flow Corrected
+        const invoiced = Number(invoiceStats._sum.totalAmountTtc || 0);
+        const collected = Number(invoiceStats._sum.amountPaid || 0);
+        const netGap = invoiced - collected;
+        
         const totalRevenue = Number(salesPerformance._sum.lineTotalHt || 0);
         const totalExpenses = Number(allExpenses._sum.amount || 0);
-        const totalReceipts = Number(allReceipts._sum.amount || 0);
         const netProfit = totalRevenue - totalCogs - totalExpenses;
-        const cashPosition = totalReceipts - totalExpenses;
         const marginPercent = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-        const topProducts = await this.prisma.salesOrderLine.groupBy({
-            by: ['productId'],
-            where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } },
-            _sum: { quantity: true, lineTotalHt: true },
-            orderBy: { _sum: { lineTotalHt: 'desc' } },
-            take: 5
+        // Combined Chart Logic
+        const allDates = new Set<string>();
+        const salesChartMap = new Map<string, number>();
+        const purchasesChartMap = new Map<string, number>();
+
+        recentSalesForChart.forEach(sale => {
+            const dateStr = sale.date.toISOString().split('T')[0];
+            allDates.add(dateStr);
+            salesChartMap.set(dateStr, (salesChartMap.get(dateStr) || 0) + Number(sale.totalAmountHt || 0));
         });
 
-        // Get product names for top products
-        const topProductNames = await this.prisma.product.findMany({
-            where: { id: { in: topProducts.map(p => p.productId) } },
-            select: { id: true, name: true }
+        recentPurchasesForChart.forEach(po => {
+            const dateStr = po.orderDate.toISOString().split('T')[0];
+            allDates.add(dateStr);
+            purchasesChartMap.set(dateStr, (purchasesChartMap.get(dateStr) || 0) + Number(po.totalTtc || 0));
         });
+        
+        const chartData = Array.from(allDates).sort().map(date => ({
+            date,
+            revenue: salesChartMap.get(date) || 0,
+            procurement: purchasesChartMap.get(date) || 0
+        }));
 
-        // Merge names
         topProducts.forEach((p: any) => {
             p.product = topProductNames.find(pn => pn.id === p.productId);
         });
 
-        return {
+        const result = {
             orders: {
-                active: orders.filter(o => activeStatuses.includes(o.status)).length,
-                planned: orders.filter(o => o.status === 'PLANNED').length,
-                inProgress: orders.filter(o => o.status === 'IN_PROGRESS').length,
-                completed: orders.filter(o => o.status === 'COMPLETED').length,
-                draft: orders.filter(o => o.status === 'DRAFT').length
+                active: (orders as any).filter((o: any) => activeStatuses.includes(o.status)).reduce((acc: number, o: any) => acc + o._count._all, 0),
+                planned: (orders as any).find((o: any) => o.status === 'PLANNED')?._count?._all || 0,
+                inProgress: (orders as any).find((o: any) => o.status === 'IN_PROGRESS')?._count?._all || 0,
+                completed: (orders as any).find((o: any) => o.status === 'COMPLETED')?._count?._all || 0,
+                draft: (orders as any).find((o: any) => o.status === 'DRAFT')?._count?._all || 0
             },
             costs: {
                 estimated: totalEstimatedCost,
                 actual: totalActualCost,
                 variance: totalActualCost - totalEstimatedCost
+            },
+            alerts: {
+                outOfStock: outOfStockCount,
+                lowStock: lowStockCount,
+                missingFormula: productsWithoutFormula
             },
             procurement: {
                 pendingValue: Number(pendingPOStats._sum.totalTtc || 0),
@@ -226,20 +230,25 @@ export class DashboardService {
                     name: p.product?.name || 'Inconnu',
                     quantity: Number(p._sum.quantity || 0),
                     revenue: Number(p._sum.lineTotalHt || 0)
-                }))
+                })),
+                chartData
             },
             finances: {
-                totalRevenue,
+                invoiced,
+                collected,
+                netGap,
+                actualCash: Number(allReceipts._sum.amount || 0),
                 totalExpenses,
+                totalRevenue,
                 totalCogs,
                 netProfit,
-                netMargin: netProfit,
                 marginPercent,
-                unpaidAmount,
-                cashPosition,
-                receipts: totalReceipts
+                cashPosition: Number(allReceipts._sum.amount || 0) - totalExpenses
             },
             recentActivity
         };
+
+        await this.cache.set(cacheKey, result, 300);
+        return result;
     }
 }

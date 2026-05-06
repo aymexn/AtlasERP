@@ -471,7 +471,7 @@ export default function ReceptionsClient() {
                                     disabled={submitting}
                                     className="px-12 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50"
                                 >
-                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <><CheckCircle2 size={18} /> {t('receptions.details.validate_button')}</>}
+                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <><CheckCircle2 size={18} /> VALIDER & ENTRER EN STOCK</>}
                                 </button>
                             )}
                         </div>

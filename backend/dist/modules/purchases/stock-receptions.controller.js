@@ -27,7 +27,7 @@ let StockReceptionsController = class StockReceptionsController {
         return this.stockReceptionsService.findOne(id, req.user.companyId);
     }
     validate(req, id) {
-        return this.stockReceptionsService.validate(id, req.user.companyId);
+        return this.stockReceptionsService.validate(id, req.user.companyId, req.user.userId);
     }
 };
 exports.StockReceptionsController = StockReceptionsController;

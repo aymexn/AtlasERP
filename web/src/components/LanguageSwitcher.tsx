@@ -11,7 +11,7 @@ const LanguageSwitcher = () => {
     const switchLanguage = (newLocale: string) => {
         // router.replace in next-intl handles the locale prefix automatically
         // when using the localized router from '@/navigation'
-        router.replace(pathname, { locale: newLocale });
+        router.replace(pathname as any, { locale: newLocale });
     };
 
     const languages = [

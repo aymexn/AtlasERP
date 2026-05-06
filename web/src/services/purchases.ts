@@ -116,10 +116,10 @@ export const purchasesService = {
   },
 
   getPdfUrl(id: string) {
-    return `/purchase-orders/${id}/pdf`;
+    return `/api/pdf/purchase-order/${id}`;
   },
 
   getReceptionPdfUrl(id: string) {
-    return `/stock-receptions/${id}/pdf`; // Assuming this might exist or be needed
+    return `/api/pdf/delivery-note/${id}`; // Mapping reception to delivery note template logic
   }
 };

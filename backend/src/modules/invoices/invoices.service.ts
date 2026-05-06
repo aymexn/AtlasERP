@@ -1,11 +1,17 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { InvoiceStatus, PaymentMethod, Prisma } from '@prisma/client';
+import { CustomerClassificationService } from '../customers/customer-classification.service';
+import { NotificationService } from '../notifications/notifications.service';
 import * as PDFDocument from 'pdfkit';
 
 @Injectable()
 export class InvoicesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private classificationService: CustomerClassificationService,
+    private notificationService: NotificationService
+  ) {}
 
   async findAll(companyId: string) {
     return this.prisma.invoice.findMany({
@@ -128,6 +134,14 @@ export class InvoicesService {
         data: { status: 'INVOICED' }
       });
 
+      // Trigger Customer Classification Update
+      await this.classificationService.recalculateCustomerStats(companyId, order.customerId);
+
+      // Notify Customer
+      if (invoice.customer?.email) {
+        this.notificationService.notifyInvoiceCreated(invoice, invoice.customer.email).catch(console.error);
+      }
+
       return invoice;
     });
   }
@@ -163,7 +177,7 @@ export class InvoicesService {
           newStatus = 'PAID';
       }
 
-      return tx.invoice.update({
+      const updatedInvoice = await tx.invoice.update({
         where: { id: invoiceId },
         data: {
           amountPaid: newAmountPaid,
@@ -171,6 +185,17 @@ export class InvoicesService {
           status: newStatus
         }
       });
+
+      // Trigger Customer Classification Update
+      await this.classificationService.recalculateCustomerStats(companyId, updatedInvoice.customerId);
+
+      // Notify Customer
+      const customer = await tx.customer.findUnique({ where: { id: updatedInvoice.customerId } });
+      if (customer?.email) {
+        this.notificationService.notifyPaymentReceived(updatedInvoice, customer.email).catch(console.error);
+      }
+
+      return updatedInvoice;
     });
   }
 

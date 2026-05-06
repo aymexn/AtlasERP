@@ -72,7 +72,7 @@ export default function SettingsClient() {
     }, []);
 
     const handleLanguageChange = (newLocale: string) => {
-        router.push(pathname, { locale: newLocale });
+        router.push(pathname as any, { locale: newLocale });
         toast.success(ct('save_success'));
     };
 
@@ -124,7 +124,7 @@ export default function SettingsClient() {
                 </div>
 
                 {/* Content Card */}
-                <div className="flex-1 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-10">
+                <div className="flex-1 bg-white rounded-4xl border border-gray-100 shadow-sm p-10">
                     {activeTab === 'enterprise' && (
                         <div className="space-y-12 animate-in fade-in duration-300">
                             {/* Identity Section */}

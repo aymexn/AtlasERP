@@ -6,9 +6,11 @@ import { PurchaseOrdersController } from './purchase-orders.controller';
 import { StockReceptionsService } from './stock-receptions.service';
 import { StockReceptionsController } from './stock-receptions.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { InventoryModule } from '../inventory/inventory.module';
+import { StockMovementService } from '../inventory/services/stock-movement.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, InventoryModule],
   providers: [
     SuppliersService,
     PurchaseOrdersService,

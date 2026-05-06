@@ -12,14 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PurchaseOrdersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const stock_movement_service_1 = require("../inventory/services/stock-movement.service");
+const create_movement_dto_1 = require("../inventory/dto/create-movement.dto");
 let PurchaseOrdersService = class PurchaseOrdersService {
-    constructor(prisma) {
+    constructor(prisma, stockMovementService) {
         this.prisma = prisma;
+        this.stockMovementService = stockMovementService;
     }
     async generateReference(companyId) {
         const now = new Date();
         const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const prefix = `BC-${yearMonth}-`;
+        const prefix = `BCF-${yearMonth}-`;
         const lastOrder = await this.prisma.purchaseOrder.findFirst({
             where: {
                 companyId,
@@ -30,8 +33,9 @@ let PurchaseOrdersService = class PurchaseOrdersService {
         });
         let sequence = 1;
         if (lastOrder) {
-            const lastSequence = parseInt(lastOrder.reference.split('-')[2]);
-            sequence = lastSequence + 1;
+            const parts = lastOrder.reference.split('-');
+            const lastSequence = parseInt(parts[parts.length - 1]);
+            sequence = isNaN(lastSequence) ? 1 : lastSequence + 1;
         }
         return `${prefix}${String(sequence).padStart(4, '0')}`;
     }
@@ -124,8 +128,9 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                 console.error('Reference Generation Error:', refError);
                 reference = `BC-TEMP-${Date.now()}`;
             }
+            const finalStatus = dto.status || 'DRAFT';
             return await this.prisma.$transaction(async (tx) => {
-                return await tx.purchaseOrder.create({
+                const order = await tx.purchaseOrder.create({
                     data: {
                         companyId,
                         reference,
@@ -133,21 +138,88 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                         orderDate: new Date(dto.orderDate),
                         expectedDate: dto.expectedDate ? new Date(dto.expectedDate) : null,
                         notes: dto.notes,
-                        status: 'DRAFT',
+                        status: finalStatus,
                         totalHt: Number(totalHt.toFixed(2)),
                         totalTva: Number(totalTva.toFixed(2)),
                         totalTtc: Number(totalTtc.toFixed(2)),
                         lines: {
-                            create: lineData
+                            create: lineData.map(l => ({
+                                productId: l.productId,
+                                quantity: Number(l.quantity),
+                                unit: l.unit,
+                                unitPriceHt: Number(l.unitPriceHt),
+                                taxRate: Number(l.taxRate),
+                                totalHt: Number(l.totalHt),
+                                note: l.note,
+                                receivedQty: finalStatus === 'RECEIVED' ? Number(l.quantity) : 0
+                            }))
                         }
                     },
                     include: {
                         supplier: true,
-                        lines: {
-                            include: { product: true }
-                        }
+                        lines: { include: { product: true } }
                     }
                 });
+                if (finalStatus === 'RECEIVED') {
+                    let warehouseId = dto.warehouseId;
+                    if (!warehouseId) {
+                        const defaultWarehouse = await tx.warehouse.findFirst({
+                            where: { companyId, isActive: true },
+                            orderBy: { createdAt: 'asc' }
+                        });
+                        if (!defaultWarehouse)
+                            throw new common_1.BadRequestException('Aucun entrepôt actif trouvé pour l\'entrée en stock.');
+                        warehouseId = defaultWarehouse.id;
+                    }
+                    const now = new Date();
+                    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+                    const receptionPrefix = `REC-${yearMonth}-`;
+                    const lastRec = await tx.stockReception.findFirst({
+                        where: { companyId, reference: { startsWith: receptionPrefix } },
+                        orderBy: { reference: 'desc' },
+                        select: { reference: true }
+                    });
+                    let recSequence = 1;
+                    if (lastRec) {
+                        const parts = lastRec.reference.split('-');
+                        const lastSeq = parseInt(parts[parts.length - 1]);
+                        recSequence = isNaN(lastSeq) ? 1 : lastSeq + 1;
+                    }
+                    const receptionReference = `${receptionPrefix}${String(recSequence).padStart(4, '0')}`;
+                    const reception = await tx.stockReception.create({
+                        data: {
+                            companyId,
+                            reference: receptionReference,
+                            purchaseOrderId: order.id,
+                            warehouseId: warehouseId,
+                            status: 'VALIDATED',
+                            notes: 'Réception automatique lors de l\'achat direct',
+                            lines: {
+                                create: order.lines.map(line => ({
+                                    productId: line.productId,
+                                    purchaseLineId: line.id,
+                                    expectedQty: Number(line.quantity),
+                                    receivedQty: Number(line.quantity),
+                                    unit: line.unit,
+                                    unitCost: Number(line.unitPriceHt)
+                                }))
+                            }
+                        }
+                    });
+                    for (const line of order.lines) {
+                        await this.stockMovementService.createMovement(companyId, null, {
+                            productId: line.productId,
+                            quantity: Number(line.quantity),
+                            type: create_movement_dto_1.MovementType.IN,
+                            warehouseId: warehouseId,
+                            reference: order.reference,
+                            reason: `Réception Directe BCF ${order.reference}`,
+                            unitCost: Number(line.unitPriceHt),
+                            unit: line.unit
+                        }, tx);
+                    }
+                }
+                return order;
             });
         }
         catch (error) {
@@ -247,6 +319,7 @@ let PurchaseOrdersService = class PurchaseOrdersService {
 exports.PurchaseOrdersService = PurchaseOrdersService;
 exports.PurchaseOrdersService = PurchaseOrdersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        stock_movement_service_1.StockMovementService])
 ], PurchaseOrdersService);
 //# sourceMappingURL=purchase-orders.service.js.map

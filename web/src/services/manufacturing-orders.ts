@@ -15,6 +15,8 @@ export interface ManufacturingOrder {
   notes?: string;
   totalEstimatedCost: number | string;
   totalActualCost?: number | string;
+  warehouseId?: string;
+  warehouse?: { id: string; name: string };
   stockReadiness?: 'READY' | 'PARTIAL' | 'BLOCKING' | 'EXECUTED';
   createdAt: string;
   
@@ -51,7 +53,7 @@ export const manufacturingOrdersService = {
     return apiFetch(`/manufacturing-orders/${id}`);
   },
 
-  async create(data: { productId: string; formulaId: string; plannedQuantity: number; plannedDate: string; notes?: string }): Promise<ManufacturingOrder> {
+  async create(data: { productId: string; formulaId: string; warehouseId?: string; plannedQuantity: number; plannedDate: string; notes?: string }): Promise<ManufacturingOrder> {
     return apiFetch('/manufacturing-orders', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -84,6 +86,6 @@ export const manufacturingOrdersService = {
     return apiFetch(`/manufacturing-orders/${id}/cancel`, { method: 'POST' });
   },
   getPdfUrl(id: string) {
-    return `/manufacturing-orders/${id}/pdf`;
+    return `/api/pdf/production-order/${id}`;
   }
 };

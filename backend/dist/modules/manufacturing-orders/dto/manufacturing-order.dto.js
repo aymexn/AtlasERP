@@ -41,6 +41,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateManufacturingOrderDto.prototype, "notes", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateManufacturingOrderDto.prototype, "warehouseId", void 0);
 class UpdateManufacturingOrderDto {
 }
 exports.UpdateManufacturingOrderDto = UpdateManufacturingOrderDto;

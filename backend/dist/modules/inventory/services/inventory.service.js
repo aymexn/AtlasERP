@@ -18,11 +18,12 @@ let InventoryService = class InventoryService {
     }
     async getProductsStock(companyId, warehouseId) {
         if (warehouseId) {
-            return this.prisma.productStock.findMany({
+            const stocks = await this.prisma.productStock.findMany({
                 where: { companyId, warehouseId },
                 include: {
                     product: {
                         select: {
+                            id: true,
                             name: true,
                             sku: true,
                             standardCost: true,
@@ -32,8 +33,32 @@ let InventoryService = class InventoryService {
                     }
                 }
             });
+            const reserved = await this.prisma.manufacturingOrderLine.groupBy({
+                by: ['componentProductId'],
+                where: {
+                    manufacturingOrder: {
+                        companyId,
+                        warehouseId,
+                        status: { in: ['DRAFT', 'PLANNED', 'IN_PROGRESS'] }
+                    }
+                },
+                _sum: {
+                    requiredQuantity: true
+                }
+            });
+            const reservedMap = new Map(reserved.map(r => [r.componentProductId, Number(r._sum.requiredQuantity || 0)]));
+            return stocks.map(s => {
+                const physical = Number(s.quantity);
+                const res = reservedMap.get(s.productId) || 0;
+                return {
+                    ...s,
+                    quantity: physical,
+                    reservedQuantity: res,
+                    availableQuantity: Math.max(0, physical - res)
+                };
+            });
         }
-        return this.prisma.product.findMany({
+        const products = await this.prisma.product.findMany({
             where: { companyId },
             select: {
                 id: true,
@@ -45,6 +70,7 @@ let InventoryService = class InventoryService {
                 unit: true,
                 stockValue: true,
                 standardCost: true,
+                purchasePriceHt: true,
                 family: {
                     select: {
                         name: true,
@@ -52,6 +78,29 @@ let InventoryService = class InventoryService {
                 },
             },
             orderBy: { name: 'asc' },
+        });
+        const globalReserved = await this.prisma.manufacturingOrderLine.groupBy({
+            by: ['componentProductId'],
+            where: {
+                manufacturingOrder: {
+                    companyId,
+                    status: { in: ['DRAFT', 'PLANNED', 'IN_PROGRESS'] }
+                }
+            },
+            _sum: {
+                requiredQuantity: true
+            }
+        });
+        const globalReservedMap = new Map(globalReserved.map(r => [r.componentProductId, Number(r._sum.requiredQuantity || 0)]));
+        return products.map(p => {
+            const physical = Number(p.stockQuantity);
+            const res = globalReservedMap.get(p.id) || 0;
+            return {
+                ...p,
+                stockQuantity: physical,
+                reservedQuantity: res,
+                availableQuantity: Math.max(0, physical - res)
+            };
         });
     }
     async getInventorySummary(companyId) {
@@ -62,10 +111,14 @@ let InventoryService = class InventoryService {
                 stockValue: true,
                 minStock: true,
                 standardCost: true,
+                purchasePriceHt: true,
             },
         });
         const totalItems = products.filter(p => Number(p.stockQuantity) > 0).length;
-        const totalStockValue = products.reduce((sum, p) => sum + (Number(p.stockQuantity) * Number(p.standardCost)), 0);
+        const totalStockValue = products.reduce((sum, p) => {
+            const cost = Number(p.purchasePriceHt || p.standardCost || 0);
+            return sum + (Number(p.stockQuantity) * cost);
+        }, 0);
         const lowStockAlerts = products.filter(p => Number(p.stockQuantity) > 0 && Number(p.stockQuantity) <= Number(p.minStock)).length;
         const outOfStock = products.filter(p => Number(p.stockQuantity) <= 0).length;
         return {

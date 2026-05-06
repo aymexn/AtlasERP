@@ -3,9 +3,10 @@ import { CreateFormulaDto, UpdateFormulaDto, CreateFormulaLineDto, UpdateFormula
 export declare class FormulaService {
     private prisma;
     constructor(prisma: PrismaService);
+    private calculateProductProductionCost;
     private getFormulaWithDetails;
     getProductFormulas(productId: string, companyId: string): Promise<{
-        lines: {
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -24,12 +25,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -41,22 +42,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }[]>;
     getFormula(id: string, companyId: string): Promise<{
-        lines: {
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -75,12 +76,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -92,22 +93,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
-    createFormula(productId: string, companyId: string, dto: CreateFormulaDto): Promise<{
-        lines: {
+    createFormula(productId: string, companyId: string, dto: CreateFormulaDto, tx?: any): Promise<{
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -126,12 +127,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -143,22 +144,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
-    updateFormula(formulaId: string, companyId: string, dto: UpdateFormulaDto): Promise<{
-        lines: {
+    updateFormula(formulaId: string, companyId: string, dto: UpdateFormulaDto, tx?: any): Promise<{
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -177,12 +178,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -194,22 +195,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
     updateFormulaStatus(formulaId: string, companyId: string, status: string): Promise<{
-        lines: {
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -228,12 +229,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -245,22 +246,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
     addLine(formulaId: string, companyId: string, dto: CreateFormulaLineDto): Promise<{
-        lines: {
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -279,12 +280,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -296,22 +297,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
     updateLine(lineId: string, companyId: string, dto: UpdateFormulaLineDto): Promise<{
-        lines: {
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -330,12 +331,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -347,22 +348,22 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
     removeLine(lineId: string, companyId: string): Promise<{
-        lines: {
+        components: {
             calculatedCost: number;
             wastageCost: number;
             costPerUnit: number;
@@ -381,12 +382,12 @@ export declare class FormulaService {
             };
             id: string;
             createdAt: Date;
-            unit: string;
             updatedAt: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string;
             sortOrder: number;
-            formulaId: string;
+            bomId: string;
             componentProductId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
         }[];
@@ -398,18 +399,18 @@ export declare class FormulaService {
             totalLines: number;
         };
         id: string;
+        status: import(".prisma/client").$Enums.FormulaStatus;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         productId: string;
-        code: string | null;
         version: string;
+        code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.FormulaStatus;
     }>;
 }

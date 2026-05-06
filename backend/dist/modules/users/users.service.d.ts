@@ -5,8 +5,9 @@ export declare class UsersService {
     findByEmail(email: string): Promise<{
         id: string;
         email: string;
-        passwordHash: string;
+        passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
         createdAt: Date;
     }>;
@@ -17,16 +18,52 @@ export declare class UsersService {
     }): Promise<{
         id: string;
         email: string;
-        passwordHash: string;
+        passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
         createdAt: Date;
     }>;
     updateCompany(userId: string, companyId: string): Promise<{
         id: string;
         email: string;
-        passwordHash: string;
+        passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
+        companyId: string;
+        createdAt: Date;
+    }>;
+    findAll(): Promise<{
+        id: string;
+        email: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        createdAt: Date;
+        roles: ({
+            role: {
+                id: string;
+                createdAt: Date;
+                name: string;
+                description: string | null;
+                displayName: string;
+                isSystemRole: boolean;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            assignedAt: Date;
+            assignedBy: string | null;
+            expiresAt: Date | null;
+            isActive: boolean;
+            userId: string;
+            roleId: string;
+        })[];
+    }[]>;
+    invite(email: string, roleId: string, invitedBy: string, companyId: string): Promise<{
+        id: string;
+        email: string;
+        passwordHash: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
         createdAt: Date;
     }>;

@@ -17,15 +17,25 @@ import {
     Building2,
     Wallet,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Shield,
+    History,
+    LineChart,
+    AlertCircle,
+    UserPlus,
+    UserCog,
+    PieChart
 } from 'lucide-react';
 import { useState } from 'react';
+import { Can } from '@/components/guards/PermissionGuard';
+import { usePermissions } from '@/contexts/PermissionContext';
 
 const Sidebar = () => {
     const t = useTranslations('nav');
     const ct = useTranslations('common');
     const pathname = usePathname();
     const [collapsed, setCollapsed] = useState(false);
+    const { hasPermission } = usePermissions();
 
     const groups = [
         {
@@ -43,6 +53,13 @@ const Sidebar = () => {
             ]
         },
         {
+            title: 'Analytique',
+            items: [
+                { name: 'Classification ABC', href: '/analytics/abc', icon: PieChart, disabled: false },
+                { name: 'Stock Mort', href: '/analytics/dead-stock', icon: AlertCircle, disabled: false },
+            ]
+        },
+        {
             title: t('groups.commerce'),
             items: [
                 { name: t('items.customers'), href: '/sales/customers', icon: Users, disabled: false },
@@ -56,7 +73,28 @@ const Sidebar = () => {
             title: t('groups.finance'),
             items: [
                 { name: t('items.invoices'), href: '/invoices', icon: Receipt, disabled: false },
+                { name: 'Balance Agée', href: '/treasury/aged-receivables', icon: History, disabled: false },
+                { name: 'Cash Flow', href: '/treasury/forecast', icon: LineChart, disabled: false },
                 { name: t('items.expenses'), href: '/expenses', icon: Wallet, disabled: false },
+            ]
+        },
+        {
+            title: t('hr.title'),
+            items: [
+                { name: t('hr.nav.employees'), href: '/hr/employees', icon: Users, disabled: false },
+                { name: t('hr.nav.leaves'), href: '/hr/leaves', icon: ClipboardList, disabled: false },
+                { name: t('hr.nav.payroll'), href: '/hr/payroll', icon: Wallet, disabled: false },
+                { name: t('hr.nav.recruitment'), href: '/hr/recruitment', icon: UserPlus, disabled: false },
+                { name: t('hr.nav.performance'), href: '/hr/performance', icon: TrendingUp, disabled: false },
+            ]
+        },
+        {
+            title: t('groups.administration'),
+            items: [
+                { name: 'Utilisateurs', href: '/settings/users', icon: UserCog, permission: { module: 'users', resource: 'user', action: 'read' } },
+                { name: 'Habilitations', href: '/settings/roles', icon: Shield, permission: { module: 'roles', resource: 'role', action: 'read' } },
+                { name: 'Audit Log', href: '/settings/audit', icon: History, permission: { module: 'audit', resource: 'log', action: 'read' } },
+                { name: t('items.settings'), href: '/settings', icon: Settings, disabled: false },
             ]
         }
     ];
@@ -111,9 +149,14 @@ const Sidebar = () => {
                             </h3>
                         )}
                         <div className={`flex flex-col items-center gap-1 ${collapsed ? 'px-0' : 'px-2'}`}>
-                            {group.items.map((item) => {
+                            {group.items.map((item: any) => {
                                 const Icon = item.icon;
                                 const isActive = pathname === item.href;
+                                
+                                if (item.permission && !hasPermission(item.permission.module, item.permission.resource, item.permission.action)) {
+                                    return null;
+                                }
+
                                 if (item.disabled) return null;
 
                                 return (
@@ -141,20 +184,8 @@ const Sidebar = () => {
 
             {/* Footer / Toggle & Settings */}
             <div className={`p-2 border-t border-slate-50 flex flex-col items-center transition-all bg-slate-50/30 ${collapsed ? 'gap-2' : 'gap-3'}`}>
-                <Link
-                    href="/settings"
-                    className={`
-                        flex items-center rounded-xl transition-all h-12
-                        ${collapsed ? 'w-10 justify-center' : 'w-full px-4 gap-4'}
-                        ${pathname === '/settings'
-                            ? 'bg-blue-50 text-primary font-bold shadow-sm'
-                            : 'text-slate-400 hover:bg-slate-50 hover:text-primary'
-                        }
-                    `}
-                >
-                    <Settings size={20} className="shrink-0" />
-                    {!collapsed && <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">{t('items.settings')}</span>}
-                </Link>
+                {/* Removed duplicate settings link to use group version */}
+
 
                 <button
                     onClick={() => setCollapsed(!collapsed)}

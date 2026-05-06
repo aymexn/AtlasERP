@@ -12,11 +12,14 @@ import { productsService, Product } from '@/services/products';
 import { purchaseOrdersService } from '@/services/purchase-orders';
 import { ShoppingCart, Sparkles } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/lib/format';
+import { PurchaseNeedModal } from './_components/PurchaseNeedModal';
+import { inventoryService, Warehouse } from '@/services/inventory';
 import { PageHeader } from '@/components/ui/page-header';
 import { KpiCard } from '@/components/ui/kpi-card';
 import { DataTable } from '@/components/ui/data-table';
 import { downloadPdf } from '@/lib/download-pdf';
 import { toast } from 'sonner';
+import { Link } from '@/navigation';
 
 
 
@@ -41,7 +44,10 @@ export default function OrdersClient() {
 
     // Available Active Formulas map for creation form
     const [availableFormulas, setAvailableFormulas] = useState<any[]>([]);
+    const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+    const [warehouseStocks, setWarehouseStocks] = useState<Record<string, number>>({});
     const [isReplenishing, setIsReplenishing] = useState(false);
+    const [isPurchaseNeedModalOpen, setIsPurchaseNeedModalOpen] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -50,19 +56,44 @@ export default function OrdersClient() {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [fetchedOrders, fetchedProducts] = await Promise.all([
+            const [fetchedOrders, fetchedProducts, fetchedWarehouses] = await Promise.all([
                 manufacturingOrdersService.getAll(),
-                productsService.list()
+                productsService.list(),
+                inventoryService.listWarehouses()
             ]);
-
             setOrders(fetchedOrders);
             setProducts(fetchedProducts);
+            setWarehouses(fetchedWarehouses);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const fetchWarehouseStocks = async () => {
+            if (currentOrder?.warehouseId) {
+                try {
+                    const stocks = await inventoryService.getStock(currentOrder.warehouseId);
+                    const stockMap: Record<string, any> = {};
+                    stocks.forEach((s: any) => {
+                        stockMap[s.productId] = {
+                            physical: Number(s.quantity),
+                            available: Number(s.availableQuantity !== undefined ? s.availableQuantity : s.quantity),
+                            reserved: Number(s.reservedQuantity || 0)
+                        };
+                    });
+                    setWarehouseStocks(stockMap);
+                } catch (error) {
+                    console.error("Error fetching warehouse stocks:", error);
+                }
+            } else {
+                setWarehouseStocks({});
+            }
+        };
+        fetchWarehouseStocks();
+    }, [currentOrder?.warehouseId]);
 
     const handleProductSelect = async (productId: string) => {
         const prod = products.find(p => p.id === productId);
@@ -99,15 +130,18 @@ export default function OrdersClient() {
         let totalMatCost = 0;
         let totalShortageCost = 0;
         let shortageCount = 0;
-        let totalComponentsCount = formula.lines?.length || 0;
+        let totalComponentsCount = formula.components?.length || 0;
 
-        const lines = formula.lines?.map((line: any) => {
+        const lines = formula.components?.map((line: any) => {
             const requiredQty = Number(line.quantity) * factor;
             const requiredWithWastage = requiredQty * (1 + (Number(line.wastagePercent) || 0) / 100);
             const costPerUnit = Number(line.component?.standardCost) || Number(line.component?.purchasePriceHt) || 0;
             const lineCost = requiredWithWastage * costPerUnit;
             
-            const availableStock = Number(line.component?.stockQuantity) || 0;
+            // Use warehouse-specific AVAILABLE stock (Physical - Reserved) if available
+            const warehouseId = currentOrder?.warehouseId;
+            const availableStock = warehouseId ? (warehouseStocks[line.componentProductId]?.available || 0) : (Number(line.component?.stockQuantity) || 0);
+            
             const shortageQty = Math.max(0, requiredWithWastage - availableStock);
             const isShortage = shortageQty > 0;
             
@@ -145,6 +179,7 @@ export default function OrdersClient() {
             await manufacturingOrdersService.create({
                 productId: currentOrder.productId,
                 formulaId: currentOrder.formulaId,
+                warehouseId: currentOrder.warehouseId,
                 plannedQuantity: Number(currentOrder.plannedQuantity),
                 plannedDate: currentOrder.plannedDate,
                 notes: currentOrder.notes
@@ -177,6 +212,16 @@ export default function OrdersClient() {
         try {
             setSubmitting(true);
             if (action === 'complete') {
+                const isConfirmed = window.confirm(
+                    `Confirmer la clôture de la production ?\n\n` +
+                    `Ceci va :\n` +
+                    `- Consommer les matières premières dans l'entrepôt ${selectedOrderDetails.warehouse?.name || 'par défaut'}\n` +
+                    `- Entrer le produit fini en stock\n` +
+                    `- Mettre à jour le coût de revient standard de l'article\n\n` +
+                    `Continuer ?`
+                );
+                if (!isConfirmed) return;
+
                 const prodQty = window.prompt(t('prompt_produced_qty'), selectedOrderDetails.plannedQuantity.toString());
                 if (prodQty === null) return;
                 await manufacturingOrdersService.complete(selectedOrderDetails.id, Number(prodQty));
@@ -192,8 +237,11 @@ export default function OrdersClient() {
             // reload detail
             await openOrderDetails(selectedOrderDetails.id);
             await loadData();
+            toast.success(ct('success'));
         } catch(e: any) {
-            alert(e.message || ct('error'));
+            console.error("Action error:", e);
+            const msg = e.message || ct('error');
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }
@@ -206,6 +254,15 @@ export default function OrdersClient() {
         return matchesSearch && matchesStatus;
     });
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!submitting && !isModalOpen) {
+                loadData();
+            }
+        }, 30000); // 30s
+        return () => clearInterval(interval);
+    }, [submitting, isModalOpen]);
+
     const getStatusColor = (status: string) => {
         switch(status) {
             case 'DRAFT': return 'bg-slate-100 text-slate-700 border-slate-200';
@@ -217,17 +274,8 @@ export default function OrdersClient() {
         }
     };
 
-    const handleGeneratePO = async () => {
-        if (!confirm(ct('confirm'))) return;
-        setIsReplenishing(true);
-        try {
-            const res = await purchaseOrdersService.generateFromShortages();
-            toast.success(res.message);
-        } catch (err) {
-            toast.error(ct('toast.error'));
-        } finally {
-            setIsReplenishing(false);
-        }
+    const handleGeneratePO = () => {
+        setIsPurchaseNeedModalOpen(true);
     };
 
     if (loading && orders.length === 0) {
@@ -242,7 +290,7 @@ export default function OrdersClient() {
     return (
         <div className="space-y-6 animate-in fade-in duration-700">
             {/* Header section - Professional ERP Style */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-4xl border border-gray-100 shadow-sm">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
                         <div className="h-12 w-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100">
@@ -349,7 +397,7 @@ export default function OrdersClient() {
             </div>
 
             {/* List - Ops Cockpit */}
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden shadow-gray-200/50">
+            <div className="bg-white rounded-4xl border border-gray-100 shadow-xl overflow-hidden shadow-gray-200/50">
                 <div className="p-8 border-b border-gray-50 flex flex-wrap items-center justify-between gap-6 bg-gray-50/20">
                     <div className="flex items-center gap-6 flex-1 min-w-[300px]">
                         <h3 className="font-black text-gray-900 whitespace-nowrap flex items-center gap-3 text-lg">
@@ -530,6 +578,10 @@ export default function OrdersClient() {
                                                     {t(`status.${selectedOrderDetails?.status.toLowerCase()}`)}
                                                 </span>
                                                 <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
+                                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl uppercase tracking-widest border ${selectedOrderDetails.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}>
+                                                    {selectedOrderDetails.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? t('traffic_insufficient') : t('traffic_ready')}
+                                                </span>
+                                                <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
                                                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                                                     {selectedOrderDetails?.product?.name}
                                                 </span>
@@ -562,7 +614,7 @@ export default function OrdersClient() {
                                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                                         {/* Left Side: Order Configuration Block */}
                                         <div className="lg:col-span-5 space-y-8">
-                                            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8 transition-all hover:shadow-md">
+                                            <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-sm space-y-8 transition-all hover:shadow-md">
                                                 <div>
                                                     <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.25em] flex items-center gap-2 mb-6">
                                                         <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
@@ -628,7 +680,7 @@ export default function OrdersClient() {
                                                                     <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase bg-white px-2 py-1 rounded-lg border border-gray-100">{currentOrder?.unit || 'U'}</span>
                                                                 </div>
                                                             </div>
-                                                            <div className="space-y-2">
+                                                                    <div className="space-y-2">
                                                                 <label className="text-[11px] font-bold text-gray-500 tracking-tight ml-1">{t('planned_date')}</label>
                                                                 <input
                                                                     required
@@ -639,6 +691,24 @@ export default function OrdersClient() {
                                                                 />
                                                             </div>
                                                         </div>
+
+                                                        <div className="space-y-2">
+                                                            <label className="text-[11px] font-bold text-gray-500 tracking-tight ml-1">{t('warehouse_label') || 'Entrepôt Source'}</label>
+                                                            <div className="relative group">
+                                                                <select
+                                                                    required
+                                                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all font-bold text-sm text-gray-900 shadow-sm appearance-none cursor-pointer"
+                                                                    value={currentOrder?.warehouseId || ''}
+                                                                    onChange={(e) => setCurrentOrder({ ...currentOrder, warehouseId: e.target.value })}
+                                                                >
+                                                                    <option value="">Sélectionner l'entrepôt</option>
+                                                                    {warehouses.map(w => (
+                                                                        <option key={w.id} value={w.id}>{w.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400"><ChevronRight size={18} className="rotate-90" /></div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -646,7 +716,7 @@ export default function OrdersClient() {
                                             {/* Production Preview Block */}
                                             {previewData && (
                                                 <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500 delay-150">
-                                                    <div className="bg-linear-to-br from-indigo-600 to-blue-700 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-100 relative overflow-hidden group">
+                                                    <div className="bg-linear-to-br from-indigo-600 to-blue-700 p-8 rounded-4xl text-white shadow-2xl shadow-indigo-100 relative overflow-hidden group">
                                                         <div className="relative z-10">
                                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-70 mb-2">{t('estimated_cost')}</p>
                                                             <p className="text-4xl font-black mb-2 tracking-tighter leading-none">{formatCurrency(previewData.totalMatCost)}</p>
@@ -657,7 +727,7 @@ export default function OrdersClient() {
                                                         </div>
                                                     </div>
 
-                                                    <div className={`p-8 rounded-[2.5rem] border shadow-sm transition-all duration-500 ${previewData.shortageCount > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-blue-50/50/50 border-blue-100/50'}`}>
+                                                    <div className={`p-8 rounded-4xl border shadow-sm transition-all duration-500 ${previewData.shortageCount > 0 ? 'bg-rose-50/50 border-rose-100' : 'bg-blue-50/50/50 border-blue-100/50'}`}>
                                                         <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-50 ${previewData.shortageCount > 0 ? 'text-rose-900' : 'text-slate-900'}`}>{t('stock_readiness')}</p>
                                                         <div className="flex items-center gap-5">
                                                             <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform hover:scale-110 ${previewData.shortageCount > 0 ? 'bg-rose-500 text-white shadow-rose-200' : 'bg-blue-600 text-white shadow-emerald-200'}`}>
@@ -716,7 +786,7 @@ export default function OrdersClient() {
                                                                 <tr>
                                                                     <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-gray-400">{t('component')}</th>
                                                                     <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-gray-400">{t('required')}</th>
-                                                                    <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-gray-400">{t('available')}</th>
+                                                                    <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-gray-400">{t('available_stock') || 'Stock Disponible'}</th>
                                                                     <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-gray-400">{t('status_label')}</th>
                                                                     <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-gray-400 text-right">{t('line_cost')}</th>
                                                                 </tr>
@@ -746,6 +816,9 @@ export default function OrdersClient() {
                                                                                     <span className="text-rose-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-rose-100/50 px-2 py-1 rounded-lg border border-rose-100 w-fit">
                                                                                        <AlertCircle size={10} /> {t('shortage')}: -{line.shortageQty.toFixed(2)}
                                                                                     </span>
+                                                                                    <Link href={{ pathname: '/purchases/orders', query: { productId: line.component?.id, qty: line.shortageQty.toFixed(2) } } as any} className="text-[10px] font-black uppercase flex items-center gap-1.5 text-slate-400 hover:text-blue-600 transition-colors w-fit px-2 py-1.5 hover:bg-slate-100 rounded-lg mt-1 group" title="Créer un Bon de Commande pour cet article">
+                                                                                        <ShoppingCart size={12} className="group-hover:scale-110 transition-transform" /> Quick Buy
+                                                                                    </Link>
                                                                                 </div>
                                                                             ) : (
                                                                                 <span className="text-emerald-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-emerald-100/50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
@@ -790,7 +863,7 @@ export default function OrdersClient() {
                                 <div className="space-y-4">
                                     {/* Command Center Stats - Elite Cards */}
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm col-span-1 lg:col-span-2 hover:shadow-md transition-shadow">
+                                        <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-sm col-span-1 lg:col-span-2 hover:shadow-md transition-shadow">
                                             <div className="flex items-center justify-between mb-4">
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">{t('production_goal')}</p>
                                                 <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${selectedOrderDetails.status === 'COMPLETED' ? 'bg-blue-50/50 text-primary' : 'bg-blue-50 text-blue-600'}`}>
@@ -819,18 +892,26 @@ export default function OrdersClient() {
                                             </div>
                                         </div>
 
-                                        <div className="bg-linear-to-br from-gray-900 to-black p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
+                                        <div className="bg-linear-to-br from-gray-900 to-black p-8 rounded-4xl text-white shadow-2xl relative overflow-hidden group">
                                             <div className="relative z-10">
                                                 <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-3">{t('estimated_cost')}</div>
                                                 <div className="text-3xl font-black mb-1 leading-none tracking-tighter">{formatCurrency(selectedOrderDetails.totalEstimatedCost)}</div>
-                                                <div className="pt-6 border-t border-white/10 mt-6 flex items-center justify-between">
-                                                    <span className="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em]">{t('formula')}</span>
-                                                    <span className="text-[10px] font-black text-blue-400">v{selectedOrderDetails.formula?.version}</span>
+                                                <div className="pt-6 border-t border-white/10 mt-6 flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em]">{t('formula')}</span>
+                                                        <span className="text-[10px] font-black text-blue-400">v{selectedOrderDetails.formula?.version}</span>
+                                                    </div>
+                                                    {(selectedOrderDetails as any).warehouse && (
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em]">{t('warehouse_label') || 'Entrepôt'}</span>
+                                                            <span className="text-[10px] font-black text-blue-200">{(selectedOrderDetails as any).warehouse.name}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className={`p-8 rounded-[2.5rem] border shadow-sm transition-all duration-500 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'bg-rose-50 border-rose-100 shadow-rose-100/20' : 'bg-blue-50/50 border-blue-100/50 shadow-blue-100/50/20') : 'bg-white border-gray-100'}`}>
+                                        <div className={`p-8 rounded-4xl border shadow-sm transition-all duration-500 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'bg-rose-50 border-rose-100 shadow-rose-100/20' : 'bg-blue-50/50 border-blue-100/50 shadow-blue-100/50/20') : 'bg-white border-gray-100'}`}>
                                              <div className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 ${selectedOrderDetails.status === 'COMPLETED' ? (Number(selectedOrderDetails.totalActualCost) > Number(selectedOrderDetails.totalEstimatedCost) ? 'text-rose-600/60' : 'text-primary/60') : 'text-gray-400'}`}>
                                                 {selectedOrderDetails.status === 'COMPLETED' ? t('actual_cost') : t('cost_variance')}
                                             </div>
@@ -861,6 +942,9 @@ export default function OrdersClient() {
                                                     <Layers size={18} />
                                                 </div>
                                                 {t('material_requirements')}
+                                                <span className="text-[10px] font-black text-blue-600/50 normal-case tracking-normal ml-2">
+                                                    (Entrepôt: {selectedOrderDetails.warehouse?.name || 'Par défaut'})
+                                                </span>
                                             </h3>
                                             <button 
                                                 onClick={() => downloadPdf(manufacturingOrdersService.getPdfUrl(selectedOrderDetails.id), `ordre-travail-${selectedOrderDetails.reference}.pdf`)}
@@ -889,13 +973,13 @@ export default function OrdersClient() {
                                                             </td>
                                                             <td className="px-6 py-3">
                                                                 <div className="flex items-baseline gap-1.5">
-                                                                    <span className="font-black text-blue-600 text-base">{Number(line.requiredQuantity).toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</span>
+                                                                    <span className="font-black text-blue-600 text-base">{Number(line.requiredQuantity).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 3 })}</span>
                                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{line.unit}</span>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-3">
                                                                 <div className="flex items-baseline gap-1.5">
-                                                                    <span className={`font-black text-base ${Number(line.consumedQuantity) > 0 ? 'text-gray-900' : 'text-gray-300'}`}>{Number(line.consumedQuantity).toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</span>
+                                                                    <span className={`font-black text-base ${Number(line.consumedQuantity) > 0 ? 'text-gray-900' : 'text-gray-300'}`}>{Number(line.consumedQuantity).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 3 })}</span>
                                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{line.unit}</span>
                                                                 </div>
                                                             </td>
@@ -904,12 +988,25 @@ export default function OrdersClient() {
                                                             </td>
                                                             <td className="px-6 py-3">
                                                                 <div className="flex items-center gap-3">
-                                                                    {line.stockStatus === 'ENOUGH' && <span className="px-3 py-1 rounded-xl bg-blue-50/50 text-primary text-[9px] font-black uppercase tracking-widest border border-blue-100/50">{t('status_enough')}</span>}
-                                                                    {line.stockStatus === 'LOW' && <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest border border-amber-100">{t('status_low')}</span>}
-                                                                    {line.stockStatus === 'INSUFFICIENT' && <span className="px-3 py-1 rounded-xl bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest border border-rose-100">{t('status_insufficient')}</span>}
+                                                                    {line.stockStatus === 'ENOUGH' && (
+                                                                        <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                                                            SUFFISANT
+                                                                        </span>
+                                                                    )}
+                                                                    {line.stockStatus === 'LOW' && (
+                                                                        <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest border border-amber-100">
+                                                                            PARTIEL
+                                                                        </span>
+                                                                    )}
+                                                                    {line.stockStatus === 'INSUFFICIENT' && (
+                                                                        <span className="px-3 py-1 rounded-xl bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest border border-rose-100">
+                                                                            RUPTURE
+                                                                        </span>
+                                                                    )}
+                                                                    
                                                                     {line.shortageQuantity > 0 && (
-                                                                        <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
-                                                                            {t('shortage')}: -{Number(line.shortageQuantity).toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+                                                                        <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
+                                                                            Manquant: -{Number(line.shortageQuantity).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 3 })} {line.unit}
                                                                         </span>
                                                                     )}
                                                                 </div>
@@ -955,7 +1052,8 @@ export default function OrdersClient() {
                                     {selectedOrderDetails.status === 'IN_PROGRESS' && (
                                         <button 
                                             onClick={() => handleAction('complete')} 
-                                            className="px-12 py-5 bg-primary hover:bg-blue-700 text-white rounded-3xl font-black shadow-2xl shadow-blue-100/50 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
+                                            disabled={submitting || selectedOrderDetails.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT')}
+                                            className={`px-12 py-5 text-white rounded-3xl font-black shadow-2xl transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed ${selectedOrderDetails.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? 'bg-gray-400 shadow-none' : 'bg-primary hover:bg-blue-700 shadow-blue-100/50'}`}
                                         >
                                             {submitting ? <Loader2 className="animate-spin" size={20} /> : <><CheckCircle2 size={20} /> {t('complete_production')}</>}
                                         </button>
@@ -974,6 +1072,12 @@ export default function OrdersClient() {
                     </div>
                 </div>
             )}
+            {/* Purchase Need Modal */}
+            <PurchaseNeedModal 
+                isOpen={isPurchaseNeedModalOpen} 
+                onClose={() => setIsPurchaseNeedModalOpen(false)} 
+                onSuccess={loadData}
+            />
         </div>
     );
 }

@@ -15,6 +15,10 @@ export declare class CreateProductDto {
     minStock?: number;
     isActive?: boolean;
     trackStock?: boolean;
+    formulaLines?: {
+        componentId: string;
+        quantity: number;
+    }[];
 }
 export declare class UpdateProductDto {
     name?: string;
@@ -32,4 +36,8 @@ export declare class UpdateProductDto {
     minStock?: number;
     isActive?: boolean;
     trackStock?: boolean;
+    formulaLines?: {
+        componentId: string;
+        quantity: number;
+    }[];
 }

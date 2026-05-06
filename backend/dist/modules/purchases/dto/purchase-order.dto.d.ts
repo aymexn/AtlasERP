@@ -12,6 +12,8 @@ export declare class CreatePurchaseOrderDto {
     expectedDate?: string;
     notes?: string;
     lines: CreatePurchaseOrderLineDto[];
+    status?: string;
+    warehouseId?: string;
 }
 export declare class UpdatePurchaseOrderDto extends CreatePurchaseOrderDto {
 }

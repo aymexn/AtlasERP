@@ -17,14 +17,49 @@ let FormulaService = class FormulaService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async calculateProductProductionCost(productId, companyId, tx) {
+        const prisma = tx || this.prisma;
+        const formula = await prisma.billOfMaterials.findFirst({
+            where: { productId, companyId, isActive: true },
+            include: {
+                components: {
+                    include: {
+                        component: {
+                            select: {
+                                standardCost: true,
+                                purchasePriceHt: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        if (!formula || !formula.components || formula.components.length === 0)
+            return null;
+        let totalCost = 0;
+        for (const line of formula.components) {
+            const costPerUnit = Number(line.component?.standardCost) || Number(line.component?.purchasePriceHt) || 0;
+            const quantity = Number(line.quantity) || 0;
+            const wastagePercent = Number(line.wastagePercent) || 0;
+            const quantityWithWastage = quantity * (1 + (wastagePercent / 100));
+            totalCost += quantityWithWastage * costPerUnit;
+        }
+        const outputQuantity = Number(formula.outputQuantity) || 1;
+        const unitCost = outputQuantity > 0 ? totalCost / outputQuantity : 0;
+        await prisma.product.update({
+            where: { id: productId },
+            data: { standardCost: unitCost }
+        });
+        return unitCost;
+    }
     async getFormulaWithDetails(id, companyId) {
         const whereClause = { id };
         if (companyId)
             whereClause.companyId = companyId;
-        const formula = await this.prisma.productFormula.findFirst({
+        const formula = await this.prisma.billOfMaterials.findFirst({
             where: whereClause,
             include: {
-                lines: {
+                components: {
                     include: {
                         component: {
                             select: {
@@ -50,7 +85,7 @@ let FormulaService = class FormulaService {
             return null;
         let theoreticalMaterialCost = 0;
         let totalWastageImpact = 0;
-        const enrichedLines = formula.lines.map(line => {
+        const enrichedLines = formula.components.map(line => {
             const costPerUnit = Number(line.component?.standardCost) || Number(line.component?.purchasePriceHt) || 0;
             const quantity = Number(line.quantity) || 0;
             const wastagePercent = Number(line.wastagePercent) || 0;
@@ -70,7 +105,7 @@ let FormulaService = class FormulaService {
         const outputUnitCost = outputQuantity > 0 ? theoreticalMaterialCost / outputQuantity : 0;
         return {
             ...formula,
-            lines: enrichedLines,
+            components: enrichedLines,
             costSummary: {
                 theoreticalMaterialCost,
                 totalWastageImpact,
@@ -81,7 +116,7 @@ let FormulaService = class FormulaService {
         };
     }
     async getProductFormulas(productId, companyId) {
-        const formulas = await this.prisma.productFormula.findMany({
+        const formulas = await this.prisma.billOfMaterials.findMany({
             where: { productId, companyId },
             orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }]
         });
@@ -91,8 +126,9 @@ let FormulaService = class FormulaService {
     async getFormula(id, companyId) {
         return this.getFormulaWithDetails(id, companyId);
     }
-    async createFormula(productId, companyId, dto) {
-        const product = await this.prisma.product.findUnique({
+    async createFormula(productId, companyId, dto, tx) {
+        const prisma = tx || this.prisma;
+        const product = await prisma.product.findUnique({
             where: { id: productId, companyId }
         });
         if (!product)
@@ -113,7 +149,7 @@ let FormulaService = class FormulaService {
             if (hasRestricted)
                 throw new common_1.ForbiddenException('Service articles cannot be components');
         }
-        const createdFormula = await this.prisma.productFormula.create({
+        const createdFormula = await prisma.billOfMaterials.create({
             data: {
                 name: formulaData.name,
                 version: formulaData.version,
@@ -126,7 +162,7 @@ let FormulaService = class FormulaService {
                 isActive: formulaData.isActive,
                 product: { connect: { id: productId } },
                 company: { connect: { id: companyId } },
-                lines: lines ? {
+                components: lines ? {
                     create: lines.map(line => ({
                         quantity: line.quantity,
                         unit: line.unit,
@@ -138,17 +174,22 @@ let FormulaService = class FormulaService {
                 } : undefined
             }
         });
+        if (createdFormula.isActive || createdFormula.status === 'ACTIVE') {
+            await this.calculateProductProductionCost(productId, companyId, tx);
+        }
         return this.getFormulaWithDetails(createdFormula.id, companyId);
     }
-    async updateFormula(formulaId, companyId, dto) {
-        const formula = await this.prisma.productFormula.findFirst({
+    async updateFormula(formulaId, companyId, dto, tx) {
+        const prisma = tx || this.prisma;
+        const formula = await prisma.billOfMaterials.findFirst({
             where: { id: formulaId, companyId }
         });
         if (!formula)
             throw new common_1.NotFoundException('Formula not found');
         const { lines, ...formulaData } = dto;
-        return this.prisma.$transaction(async (tx) => {
-            await tx.productFormula.update({
+        const performUpdate = async (currentTx) => {
+            const p = currentTx || this.prisma;
+            await p.billOfMaterials.update({
                 where: { id: formula.id },
                 data: {
                     ...formulaData,
@@ -156,13 +197,13 @@ let FormulaService = class FormulaService {
                 }
             });
             if (lines !== undefined) {
-                await tx.productFormulaLine.deleteMany({
-                    where: { formulaId: formula.id }
+                await p.bOMComponent.deleteMany({
+                    where: { bomId: formula.id }
                 });
                 if (lines.length > 0) {
-                    await tx.productFormulaLine.createMany({
-                        data: lines.map(line => ({
-                            formulaId: formula.id,
+                    await p.bOMComponent.createMany({
+                        data: lines.map((line) => ({
+                            bomId: formula.id,
                             componentProductId: line.componentProductId,
                             quantity: line.quantity,
                             unit: line.unit,
@@ -173,29 +214,40 @@ let FormulaService = class FormulaService {
                     });
                 }
             }
+            const updatedFormula = await p.billOfMaterials.findUnique({ where: { id: formula.id } });
+            if (updatedFormula && (updatedFormula.isActive || updatedFormula.status === 'ACTIVE')) {
+                await this.calculateProductProductionCost(formula.productId, companyId, currentTx);
+            }
             return this.getFormulaWithDetails(formula.id, companyId);
-        });
+        };
+        if (tx) {
+            return performUpdate(tx);
+        }
+        else {
+            return this.prisma.$transaction(async (newTx) => performUpdate(newTx));
+        }
     }
     async updateFormulaStatus(formulaId, companyId, status) {
-        const formula = await this.prisma.productFormula.findFirst({
+        const formula = await this.prisma.billOfMaterials.findFirst({
             where: { id: formulaId, companyId }
         });
         if (!formula)
             throw new common_1.NotFoundException('Formula not found');
         if (status === 'ACTIVE') {
-            await this.prisma.productFormula.updateMany({
+            await this.prisma.billOfMaterials.updateMany({
                 where: { productId: formula.productId, companyId, id: { not: formula.id } },
                 data: { status: 'ARCHIVED', isActive: false }
             });
         }
-        await this.prisma.productFormula.update({
+        await this.prisma.billOfMaterials.update({
             where: { id: formula.id },
             data: { status: status, isActive: status === 'ACTIVE' }
         });
+        await this.calculateProductProductionCost(formula.productId, companyId);
         return this.getFormulaWithDetails(formula.id, companyId);
     }
     async addLine(formulaId, companyId, dto) {
-        const formula = await this.prisma.productFormula.findFirst({
+        const formula = await this.prisma.billOfMaterials.findFirst({
             where: { id: formulaId, companyId }
         });
         if (!formula)
@@ -211,45 +263,45 @@ let FormulaService = class FormulaService {
         if (component.id === formula.productId) {
             throw new common_1.ForbiddenException('A product cannot be a component of its own formula');
         }
-        await this.prisma.productFormulaLine.create({
+        await this.prisma.bOMComponent.create({
             data: {
                 quantity: dto.quantity,
                 unit: dto.unit,
                 wastagePercent: dto.wastagePercent,
                 sortOrder: dto.sortOrder,
                 note: dto.note,
-                formula: { connect: { id: formula.id } },
+                bom: { connect: { id: formula.id } },
                 component: { connect: { id: dto.componentProductId } }
             }
         });
         return this.getFormulaWithDetails(formula.id, companyId);
     }
     async updateLine(lineId, companyId, dto) {
-        const line = await this.prisma.productFormulaLine.findUnique({
+        const line = await this.prisma.bOMComponent.findUnique({
             where: { id: lineId },
-            include: { formula: true }
+            include: { bom: true }
         });
-        if (!line || line.formula.companyId !== companyId) {
+        if (!line || line.bom.companyId !== companyId) {
             throw new common_1.NotFoundException('Formula line not found');
         }
-        await this.prisma.productFormulaLine.update({
+        await this.prisma.bOMComponent.update({
             where: { id: lineId },
             data: dto
         });
-        return this.getFormulaWithDetails(line.formulaId, companyId);
+        return this.getFormulaWithDetails(line.bomId, companyId);
     }
     async removeLine(lineId, companyId) {
-        const line = await this.prisma.productFormulaLine.findUnique({
+        const line = await this.prisma.bOMComponent.findUnique({
             where: { id: lineId },
-            include: { formula: true }
+            include: { bom: true }
         });
-        if (!line || line.formula.companyId !== companyId) {
+        if (!line || line.bom.companyId !== companyId) {
             throw new common_1.NotFoundException('Formula line not found');
         }
-        await this.prisma.productFormulaLine.delete({
+        await this.prisma.bOMComponent.delete({
             where: { id: lineId }
         });
-        return this.getFormulaWithDetails(line.formulaId, companyId);
+        return this.getFormulaWithDetails(line.bomId, companyId);
     }
 };
 exports.FormulaService = FormulaService;

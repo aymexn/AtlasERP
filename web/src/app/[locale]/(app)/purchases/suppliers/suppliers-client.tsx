@@ -5,8 +5,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
     Users, Plus, Search, Loader2, Mail, Phone, MapPin,
     Edit2, Trash2, Building2, Store, ShieldCheck,
-    CreditCard, Save, X, Tag, Info, Briefcase
+    CreditCard, Save, X, Tag, Info, Briefcase, Printer
 } from 'lucide-react';
+import { downloadPdf } from '@/lib/download-pdf';
 import { Supplier } from '@/services/suppliers';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/page-header';
@@ -95,7 +96,7 @@ export default function SuppliersClient() {
                 email: currentSupplier.email || undefined,
                 phone: currentSupplier.phone || undefined,
                 address: currentSupplier.address || undefined,
-                city: currentSupplier.city || 'Alger',
+                city: currentSupplier.city || undefined,
                 country: currentSupplier.country || 'DZ',
                 paymentTermsDays: currentSupplier.paymentTermsDays ? Number(currentSupplier.paymentTermsDays) : 30,
                 notes: currentSupplier.notes || undefined
@@ -248,6 +249,13 @@ export default function SuppliersClient() {
                                         >
                                             <Edit2 size={18} />
                                         </button>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); downloadPdf(`/api/pdf/supplier-card/${s.id}`, `Fiche_${s.name.replace(/\s+/g, '_')}.pdf`); }}
+                                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                            title="Imprimer Fiche Partenaire"
+                                        >
+                                            <Printer size={18} />
+                                        </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDelete(s.id); }}
                                             className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
@@ -267,22 +275,20 @@ export default function SuppliersClient() {
                 <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
                     <div className="bg-white rounded-4xl w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 flex flex-col">
-                        {/* Clean Header */}
-                        <div className="p-8 pb-4 flex items-center justify-between shrink-0">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-slate-100 rounded-xl">
-                                    <Building2 className="text-slate-900" size={24} />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-slate-800 tracking-tighter uppercase">
-                                        {currentSupplier?.id ? t('suppliers.edit') : t('suppliers.add')}
-                                    </h2>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                                        {currentSupplier?.name || "Nouveau dossier fournisseur"}
-                                    </p>
-                                </div>
+                        {/* Premium Minimalist Header */}
+                        <div className="p-10 pb-4 flex items-center justify-between shrink-0">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">
+                                    {currentSupplier?.id ? t('suppliers.edit') : "NOUVEAU FOURNISSEUR"}
+                                </h2>
+                                <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                    {"Formulaire fiscal de création et d'identification"}
+                                </p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 text-slate-400 hover:text-red-600 transition-colors bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                            <button 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="h-10 w-10 bg-slate-100 text-slate-400 hover:text-slate-900 transition-all rounded-full flex items-center justify-center border border-slate-200 shadow-sm"
+                            >
                                 <X size={20} />
                             </button>
                         </div>
@@ -300,7 +306,7 @@ export default function SuppliersClient() {
                                     className={`py-4 border-b-2 transition-all font-black text-[11px] uppercase tracking-widest whitespace-nowrap ${activeTab === tab.id
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-slate-300 hover:text-slate-500'
-                                        }`}
+                                    }`}
                                 >
                                     {tab.label}
                                 </button>
@@ -312,20 +318,24 @@ export default function SuppliersClient() {
                             {activeTab === 'identity' && (
                                 <div className="space-y-7 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="space-y-2.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('suppliers.fields.name')}</label>
-                                        <input
-                                            required
-                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900"
-                                            value={currentSupplier?.name || ''}
-                                            onChange={(e) => setCurrentSupplier({ ...currentSupplier, name: e.target.value })}
-                                        />
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">{t('suppliers.fields.name')}</label>
+                                        <div className="relative group">
+                                            <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={20} />
+                                            <input
+                                                required
+                                                placeholder="Ex: Atlas Peintures"
+                                                className="w-full pl-14 pr-5 py-5 bg-slate-50 border-2 border-transparent rounded-[2rem] outline-none focus:border-blue-600 focus:bg-white transition-all font-black text-slate-900 text-lg shadow-sm"
+                                                value={currentSupplier?.name || ''}
+                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, name: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4">
                                         <div className="space-y-2.5">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('nif')}</label>
                                             <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
                                                 value={currentSupplier?.nif || ''}
                                                 onChange={(e) => setCurrentSupplier({ ...currentSupplier, nif: e.target.value })}
                                             />
@@ -333,7 +343,7 @@ export default function SuppliersClient() {
                                         <div className="space-y-2.5">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('ai') || "AI"}</label>
                                             <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
                                                 value={currentSupplier?.ai || ''}
                                                 onChange={(e) => setCurrentSupplier({ ...currentSupplier, ai: e.target.value })}
                                             />
@@ -341,18 +351,22 @@ export default function SuppliersClient() {
                                         <div className="space-y-2.5">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('rc') || "RC"}</label>
                                             <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
+                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
                                                 value={currentSupplier?.rc || ''}
                                                 onChange={(e) => setCurrentSupplier({ ...currentSupplier, rc: e.target.value })}
                                             />
                                         </div>
                                         <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('code_sku')}</label>
-                                            <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700"
-                                                value={currentSupplier?.code || ''}
-                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, code: e.target.value })}
-                                            />
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 leading-none">{st('code_sku')}</label>
+                                            <div className="relative">
+                                                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                                <input
+                                                    placeholder="Automatique"
+                                                    className="w-full pl-11 pr-5 py-4 bg-slate-100/50 border-2 border-dashed border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-500 h-14"
+                                                    value={currentSupplier?.code || ''}
+                                                    onChange={(e) => setCurrentSupplier({ ...currentSupplier, code: e.target.value })}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -424,21 +438,24 @@ export default function SuppliersClient() {
                             )}
                         </form>
 
-                        {/* Clean Footer with Blue Pill */}
-                        <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
-                            <button
-                                onClick={handleSubmit}
-                                disabled={submitting}
-                                className="w-full py-5 bg-blue-600 text-white rounded-full text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
-                            >
-                                {submitting ? <Loader2 className="animate-spin" size={18} /> : (currentSupplier?.id ? t('suppliers.edit') : t('suppliers.add'))}
-                            </button>
-                            <button 
-                                onClick={() => setIsModalOpen(false)}
-                                className="w-full py-3 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-all"
-                            >
-                                {ct('cancel')}
-                            </button>
+                        {/* Standardized Footer */}
+                        <div className="p-10 pt-4 flex flex-col gap-4">
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 py-5 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-all"
+                                >
+                                    {ct('cancel')}
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={submitting}
+                                    className="flex-2 py-5 bg-blue-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                                >
+                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <span>{ct('save')}</span>}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

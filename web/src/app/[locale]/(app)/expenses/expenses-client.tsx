@@ -187,19 +187,12 @@ export function ExpensesClient() {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => {
-                                toast.promise(
-                                    downloadPdf(`${API_URL}/expenses/export/pdf`, 'depenses-recap.pdf'),
-                                    {
-                                        loading: 'Génération de l\'export...',
-                                        success: 'Export terminé',
-                                        error: 'Erreur lors de l\'export'
-                                    }
-                                );
+                                downloadPdf('/api/pdf/expenses', 'Recapitulatif_Depenses.pdf');
                             }}
-                            className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all active:scale-95"
+                            className="flex items-center gap-3 px-6 py-3 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
                         >
-                            <Download size={14} />
-                            {ct('export_pdf')}
+                            <FileText size={14} />
+                            Exporter Recap (PDF)
                         </button>
                         <div className="relative w-64">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />

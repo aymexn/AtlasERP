@@ -28,4 +28,70 @@ export class UsersService {
             data: { companyId },
         });
     }
+
+    async findAll() {
+        return this.prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                status: true,
+                createdAt: true,
+                roles: {
+                    include: {
+                        role: true,
+                    },
+                    where: {
+                        isActive: true,
+                    },
+                },
+            },
+        });
+    }
+
+    async invite(email: string, roleId: string, invitedBy: string, companyId: string) {
+        return this.prisma.$transaction(async (tx) => {
+            // 1. Create user in PENDING status
+            const user = await tx.user.create({
+                data: {
+                    email,
+                    status: 'PENDING',
+                    companyId,
+                    // passwordHash remains null
+                },
+            });
+
+            // 2. Assign role
+            await tx.userRole.create({
+                data: {
+                    userId: user.id,
+                    roleId,
+                    assignedBy: invitedBy,
+                },
+            });
+
+            // 3. Audit Log (General)
+            await tx.auditLog.create({
+                data: {
+                    companyId,
+                    userId: invitedBy,
+                    action: 'INVITE_USER',
+                    entity: 'User',
+                    entityId: user.id,
+                    newValues: { email, roleId },
+                },
+            });
+
+            // 4. Permission Audit Log
+            await tx.permissionAuditLog.create({
+                data: {
+                    userId: invitedBy,
+                    actionType: 'user_invited',
+                    roleId,
+                    targetUserId: user.id,
+                },
+            });
+
+            return user;
+        });
+    }
 }

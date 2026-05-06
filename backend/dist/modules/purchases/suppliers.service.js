@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SuppliersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const stock_movement_service_1 = require("../inventory/services/stock-movement.service");
 let SuppliersService = class SuppliersService {
-    constructor(prisma) {
+    constructor(prisma, stockMovementService) {
         this.prisma = prisma;
+        this.stockMovementService = stockMovementService;
     }
     async list(companyId) {
         console.log(`[SuppliersService.list] Fetching for companyId: ${companyId}`);
@@ -38,6 +40,12 @@ let SuppliersService = class SuppliersService {
             console.error('SuppliersService.list Error:', error);
             throw error;
         }
+    }
+    async generateReference(companyId) {
+        const count = await this.prisma.supplier.count({
+            where: { companyId }
+        });
+        return `FR-${(count + 1).toString().padStart(4, '0')}`;
     }
     async findOne(id, companyId) {
         if (!id || !companyId)
@@ -71,11 +79,15 @@ let SuppliersService = class SuppliersService {
                     throw new common_1.BadRequestException(`Un fournisseur avec le code ${dto.code} existe déjà.`);
                 }
             }
+            const data = {
+                ...dto,
+                companyId,
+            };
+            if (!data.code) {
+                data.code = await this.generateReference(companyId);
+            }
             return await this.prisma.supplier.create({
-                data: {
-                    ...dto,
-                    companyId,
-                },
+                data,
             });
         }
         catch (error) {
@@ -146,6 +158,7 @@ let SuppliersService = class SuppliersService {
 exports.SuppliersService = SuppliersService;
 exports.SuppliersService = SuppliersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        stock_movement_service_1.StockMovementService])
 ], SuppliersService);
 //# sourceMappingURL=suppliers.service.js.map

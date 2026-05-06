@@ -19,8 +19,8 @@ export declare class PaymentsService {
         date: Date;
         notes: string | null;
         amount: Prisma.Decimal;
-        method: import(".prisma/client").$Enums.PaymentMethod;
         invoiceId: string;
+        method: import(".prisma/client").$Enums.PaymentMethod;
     })[]>;
     recordPayment(companyId: string, data: any): Promise<{
         id: string;
@@ -31,7 +31,7 @@ export declare class PaymentsService {
         date: Date;
         notes: string | null;
         amount: Prisma.Decimal;
-        method: import(".prisma/client").$Enums.PaymentMethod;
         invoiceId: string;
+        method: import(".prisma/client").$Enums.PaymentMethod;
     }>;
 }

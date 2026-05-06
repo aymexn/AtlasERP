@@ -11,6 +11,7 @@
         "inventory_export": "Export Inventaire",
         "create": "Nouveau",
         "save": "Enregistrer",
+        "submitting": "Enregistrement...",
         "confirm": "Confirmer",
         "cancel": "Annuler",
         "delete": "Supprimer",
@@ -65,14 +66,14 @@
         "total_ht": "Total HT",
         "tva": "TVA",
         "total_ttc": "Total TTC",
-        "tax": "TVA (19%)",
         "select_placeholder": "Sélectionner un élément...",
-        "qty": "Qté",
         "errors": {
             "fetch_failed": "Échec du chargement des données",
             "save_failed": "Échec de l'enregistrement"
         },
-        "missing_fields": "Veuillez remplir tous les champs obligatoires"
+        "missing_fields": "Veuillez remplir tous les champs obligatoires",
+        "select_all": "Tout Sélectionner",
+        "deselect_all": "Tout Désélectionner"
     },
     "nav": {
         "dashboard": "Tableau de Bord",
@@ -80,7 +81,8 @@
             "catalogue": "Catalogue & Articles",
             "production": "Opérations & Stocks",
             "commerce": "Flux Commerciaux",
-            "finance": "Gestion Financière"
+            "finance": "Gestion Financière",
+            "administration": "Administration"
         },
         "items": {
             "products": "Produits",
@@ -108,6 +110,7 @@
         "real_production_cost": "Coût de Production",
         "shortage_alerts": "Alertes Ruptures",
         "total_invoiced": "CA Facturé",
+        "actual_cash": "Trésorerie Réelle",
         "cash_position": "Position Cash",
         "profitability": "Profitabilité",
         "margin_percent": "Marge brute",
@@ -120,6 +123,7 @@
         "no_supplier_data": "Aucune donnée fournisseur",
         "no_sales_data": "Aucune donnée de vente",
         "monthly_sales": "Volume Mensuel",
+        "articles": "Articles",
         "all_clear": "Aucune alerte en cours",
         "alerts": {
             "title": "Alertes Opérationnelles",
@@ -131,9 +135,38 @@
             "gap": "Écart net",
             "invoiced": "Facturé",
             "collected": "Encaissé",
+            "recovery": "recouvrement",
+            "receivables": "Valeur à recouvrer",
             "stable": "Stable",
             "positive": "Positif",
             "negative": "Négatif"
+        },
+        "chart": {
+            "procurement": "Achats / Dépenses",
+            "revenue": "Chiffre d'Affaires"
+        }
+    },
+    "finances": {
+        "invoices": {
+            "list_title": "Liste des Factures Clients",
+            "sheet_title": "Règlement de Facture",
+            "sheet_description": "Enregistrez un paiement entrant pour cette facture.",
+            "amount_to_pay": "Montant à percevoir",
+            "total_ttc": "Total TTC",
+            "status": {
+                "sent": "Envoyée",
+                "draft": "Brouillon",
+                "paid": "Payée",
+                "partial": "Partiel"
+            }
+        },
+        "payments": {
+            "methods": {
+                "cash": "Espèces",
+                "check": "Chèque",
+                "transfer": "Virement"
+            },
+            "validate": "Valider le Paiement"
         }
     },
     "products": {
@@ -211,6 +244,7 @@
             "active": "Active",
             "draft": "Brouillon",
             "archived": "Archivée",
+            "calculated": "Coût calculé via formulation",
             "no_description": "Sans description technique",
             "components": "Composants",
             "empty": "Aucune nomenclature active",
@@ -339,6 +373,7 @@
         "product": "Produit Principal",
         "planned_qty": "Volume Prévu",
         "planned_date": "Date Production",
+        "warehouse_label": "Entrepôt Source",
         "status_label": "État du flux Production",
         "cost_variance": "Variance Coût",
         "variance": "Variance Réelle",
@@ -350,6 +385,7 @@
         "component": "Composant",
         "required": "Quantité Requise",
         "available": "Stock Virtuel",
+        "available_stock": "Stock Disponible",
         "line_cost": "Coût Ligne",
         "shortage": "Manquant",
         "ready": "Disponibilité : OK",
@@ -384,8 +420,7 @@
             "in_progress": "En cours",
             "completed": "Terminé",
             "cancelled": "Annulé",
-            "validated": "Validé",
-            "all": "Tous les statuts"
+            "validated": "Validé"
         },
         "kpi_active": "Ordres Actifs",
         "kpi_value": "Valorisation OF",
@@ -396,7 +431,8 @@
         "traffic_blocking": "BLOQUANT (RUPTURE)",
         "traffic_partial": "PARTIEL (RISQUE)",
         "traffic_ready": "PRÊT",
-        "status_enough": "Sufisant",
+        "traffic_insufficient": "STOCK INSUFFISANT",
+        "status_enough": "SUFFISANT",
         "prompt_produced_qty": "Saisir la quantité réellement produite :",
         "confirm_start_production": "Lancer la production ? Les stocks seront mis à jour.",
         "confirm_cancel": "Annuler cet ordre de fabrication ?",
@@ -409,7 +445,21 @@
             "v10": "V1.0 High-Density"
         },
         "estimated_cost": "Coût Estimé",
-        "ops_details": "Fiche de production"
+        "ops_details": "Fiche de production",
+        "purchase_need_title": "Analyse des Besoins d'Achat",
+        "purchase_need_subtitle": "Algorithme de réapprovisionnement intelligent",
+        "analyzing_stock": "Analyse des stocks en cours...",
+        "stock_optimal": "Stocks optimaux",
+        "no_reorder_needed": "Tous vos niveaux de stock sont supérieurs aux seuils minimaux.",
+        "items_flagged": "articles nécessitent un réapprovisionnement",
+        "current_stock": "Stock Actuel",
+        "min_stock": "Stock Min",
+        "suggested_qty": "Qté Suggérée",
+        "supplier": "Fournisseur",
+        "no_supplier": "Pas de fournisseur",
+        "selected_items": "articles sélectionnés",
+        "generate_pos": "Générer les Bons de Commande",
+        "select_at_least_one": "Veuillez sélectionner au moins un article"
     },
     "purchases": {
         "title": "Gestion des Achats",
@@ -466,7 +516,19 @@
             "edit_supplier": "Modifier Fournisseur",
             "total_suppliers": "Total Fournisseurs",
             "active_suppliers": "Fournisseurs Actifs",
-            "pending_orders": "Commandes en Attente"
+            "pending_orders": "Commandes en Attente",
+            "add": "Nouveau Fournisseur",
+            "edit": "Modifier Fournisseur",
+            "sections": {
+                "identity": "Identité",
+                "communication": "Contact",
+                "commercial": "Commerce"
+            },
+            "fields": {
+                "name": "Raison Sociale",
+                "phone": "Téléphone",
+                "address": "Adresse"
+            }
         },
         "receptions": {
             "title": "Réception & Stock",
@@ -600,7 +662,9 @@
             "stats": {
                 "total": "Total Clients",
                 "active": "Clients Actifs",
-                "credit": "Encours Global Autorisé"
+                "credit": "Encours Global Autorisé",
+                "revenue": "Chiffre d'Affaires Total",
+                "delay": "Délai Moyen Paiement"
             },
             "fields": {
                 "name": "Raison Sociale",
@@ -609,37 +673,73 @@
                 "email": "Email",
                 "phone": "Téléphone",
                 "address": "Adresse",
-                "creditLimit": "Encours Autorisé"
+                "creditLimit": "Encours Autorisé",
+                "segment": "Segment",
+                "type": "Type de Client",
+                "behavior": "Comportement Paiement",
+                "risk": "Niveau de Risque",
+                "revenue": "CA Total",
+                "delay": "Retard Moyen (Jours)",
+                "nif_label": "NIF",
+                "no_contact": "Aucun contact",
+                "none": "Aucun"
             },
             "sections": {
                 "identity": "Identité et Mentions Légales",
                 "communication": "Coordonnées et Localisation",
-                "commercial": "Conditions Commerciales"
+                "commercial": "Conditions Commerciales",
+                "intelligence": "Intelligence & Analytique"
+            },
+            "intelligence": {
+                "kpi_revenue_all_time": "Chiffre d'Affaires Total",
+                "kpi_revenue_this_year": "Revenu (Année en cours)",
+                "kpi_outstanding": "Solde Restant (À Recouvrer)"
             },
             "status": {
                 "active": "Client Actif",
                 "standard": "Standard"
+            },
+            "segments": {
+                "A": "Or A (> 5M DA)",
+                "B": "Argent B (1.5M - 5M DA)",
+                "C": "Standard C (< 1.5M DA)"
+            },
+            "types": {
+                "PROMOTER": "Promoteur",
+                "WHOLESALER": "Grossiste",
+                "RETAILER": "Détaillant",
+                "GOVERNMENT": "Secteur Public",
+                "INDIVIDUAL": "Particulier"
+            },
+            "behaviors": {
+                "EXCELLENT": "Excellent (<= 15j)",
+                "GOOD": "Bon (<= 30j)",
+                "AVERAGE": "Moyen (<= 60j)",
+                "POOR": "Médiocre (> 60j)"
+            },
+            "risks": {
+                "LOW": "Risque Faible",
+                "MEDIUM": "Risque Modéré",
+                "HIGH": "Risque Élevé"
+            },
+            "dashboard": {
+                "title": "Tableau de Bord Performance",
+                "revenue_trend": "Performance Revenus (12 Mois)",
+                "top_products": "Top Produits Achetés",
+                "open_orders": "Commandes Clients Ouvertes",
+                "unpaid_invoices": "Factures Impayées & Partielles",
+                "dossier": "Télécharger Fiche",
+                "statement": "Imprimer Relevé",
+                "kpi_revenue_all": "CA Global (Historique)",
+                "kpi_revenue_year": "CA (Année en cours)",
+                "kpi_outstanding": "Encours (Créances)",
+                "kpi_delay": "Retard de Paiement Moyen"
             },
             "hints": {
                 "credit": "Définissez le montant maximum d'encours autorisé pour ce client."
             },
             "form": {
                 "subtitle": "Créez un nouveau partenaire commercial"
-            },
-            "fields": {
-                "name": "Raison Sociale",
-                "name_placeholder": "Raison sociale complète",
-                "contact": "Contact",
-                "contact_placeholder": "Nom du responsable",
-                "taxId": "NIF / Registre Commerce",
-                "taxid_placeholder": "NIF / Registre Commerce",
-                "email": "Email",
-                "phone": "Téléphone",
-                "address": "Adresse",
-                "creditLimit": "Encours Autorisé",
-                "nif_label": "NIF",
-                "no_contact": "Aucun contact",
-                "none": "Aucun"
             }
         }
     },
@@ -657,7 +757,10 @@
                 "partial": "Solde Partiel",
                 "paid": "Soldée",
                 "cancelled": "Annulée",
-                "all": "Tous les statuts"
+                "all": "Tous les statuts",
+                "draft": "Brouillon",
+                "sent": "Envoyée",
+                "validated": "Validé"
             },
             "fields": {
                 "customer": "Client",
@@ -680,17 +783,7 @@
             "sheet_title": "Enregistrer un Paiement",
             "sheet_description": "Facture #{reference} — Solde restant: {remaining}",
             "amount_to_pay": "Montant du versement (DA) *",
-            "total_ttc": "TOTAL TTC",
-            "status": {
-                "draft": "Brouillon",
-                "sent": "Envoyée",
-                "unpaid": "À Payer",
-                "partial": "Solde Partiel",
-                "paid": "Soldée",
-                "cancelled": "Annulée",
-                "all": "Tous les statuts",
-                "validated": "Validé"
-            }
+            "total_ttc": "TOTAL TTC"
         },
         "payments": {
             "title": "Gestion des Paiements",
@@ -749,6 +842,7 @@
                 "materials": "Matières et Fournitures",
                 "logistics": "Logistique",
                 "consulting": "Conseil et Services",
+                "maintenance": "Maintenance",
                 "other": "Autre"
             },
             "sections": {
@@ -845,5 +939,96 @@
         "manual_fix": "Procédure Relance :",
         "max_reached": "Limite ATTEINTE ({count}/{max})",
         "retry_btn": "Relancer flux ({count}/{max})"
+    },
+    "treasury": {
+        "title": "Trésorerie",
+        "aged_receivables": "Balance Agée",
+        "collections": "Recouvrement",
+        "forecast": "Prévisionnel",
+        "summary": "Résumé de Trésorerie",
+        "total_outstanding": "Encours Total",
+        "current": "Courant (0-30j)",
+        "late_30": "Retard (30-60j)",
+        "late_60": "Retard (60-90j)",
+        "late_90": "Critique (90j+)",
+        "risk_score": "Score de Risque",
+        "reminders": "Relances",
+        "behavior": "Comportement",
+        "actions": {
+            "send_reminder": "Envoyer Rappel",
+            "log_activity": "Log Activité",
+            "block_credit": "Bloquer Crédit"
+        }
+    },
+    "hr": {
+        "title": "Ressources Humaines",
+        "subtitle": "Gestion du capital humain et de la paie",
+        "nav": {
+            "employees": "Employés",
+            "leaves": "Congés",
+            "payroll": "Paie",
+            "recruitment": "Recrutement",
+            "performance": "Performance"
+        },
+        "employees": {
+            "title": "Répertoire du Personnel",
+            "add": "Nouvel Employé",
+            "search": "Rechercher un employé...",
+            "status": {
+                "active": "Actif",
+                "suspended": "Suspendu",
+                "terminated": "Sorti",
+                "on_leave": "En Congé"
+            },
+            "tabs": {
+                "personal": "Personnel",
+                "contract": "Contrat",
+                "leaves": "Congés",
+                "payroll": "Paie",
+                "documents": "Documents"
+            }
+        },
+        "leaves": {
+            "title": "Gestion des Absences",
+            "request": "Demander un Congé",
+            "balance": "Solde de Congés",
+            "pending": "En attente",
+            "approved": "Approuvé",
+            "rejected": "Refusé",
+            "types": {
+                "annual": "Congé Annuel",
+                "sick": "Maladie",
+                "maternity": "Maternité",
+                "unpaid": "Sans Solde"
+            }
+        },
+        "payroll": {
+            "title": "Gestion de la Paie",
+            "periods": "Périodes de Paie",
+            "calculate": "Calculer la Paie",
+            "generate_payslips": "Générer Bulletins",
+            "net_to_pay": "Net à Payer",
+            "gross_salary": "Salaire Brut"
+        },
+        "recruitment": {
+            "title": "Recrutement",
+            "jobs": "Offres d'Emploi",
+            "candidates": "Candidats",
+            "pipeline": "Pipeline",
+            "stages": {
+                "applied": "Postulé",
+                "screening": "Sélection",
+                "interview": "Entretien",
+                "offer": "Offre",
+                "hired": "Recruté"
+            }
+        },
+        "performance": {
+            "title": "Évaluation & Performance",
+            "cycles": "Cycles d'Évaluation",
+            "reviews": "Évaluations",
+            "rating": "Note Finale",
+            "objectives": "Objectifs"
+        }
     }
 }

@@ -15,6 +15,19 @@ import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { CommonModule } from './common/common.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { TreasuryModule } from './modules/treasury/treasury.module';
+import { RbacModule } from './modules/rbac/rbac.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { EmployeesModule } from './modules/hr/employees/employees.module';
+import { LeavesModule } from './modules/hr/leaves/leaves.module';
+import { PayrollModule } from './modules/hr/payroll/payroll.module';
+import { RecruitmentModule } from './modules/hr/recruitment/recruitment.module';
+import { PerformanceModule } from './modules/hr/performance/performance.module';
+
 
 @Module({
     imports: [
@@ -33,9 +46,24 @@ import { CommonModule } from './common/common.module';
         SalesModule,
         InvoicesModule,
         PaymentsModule,
-        ExpensesModule
+        ExpensesModule,
+        AuditModule,
+        NotificationsModule,
+        TreasuryModule,
+        RbacModule,
+        AnalyticsModule,
+        EmployeesModule,
+        LeavesModule,
+        PayrollModule,
+        RecruitmentModule,
+        PerformanceModule
     ],
     controllers: [],
-    providers: [],
+    providers: [
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: AuditInterceptor,
+        },
+    ],
 })
 export class AppModule { }

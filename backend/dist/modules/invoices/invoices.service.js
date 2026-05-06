@@ -13,9 +13,13 @@ exports.InvoicesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const customer_classification_service_1 = require("../customers/customer-classification.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let InvoicesService = class InvoicesService {
-    constructor(prisma) {
+    constructor(prisma, classificationService, notificationService) {
         this.prisma = prisma;
+        this.classificationService = classificationService;
+        this.notificationService = notificationService;
     }
     async findAll(companyId) {
         return this.prisma.invoice.findMany({
@@ -113,6 +117,10 @@ let InvoicesService = class InvoicesService {
                 where: { id: order.id },
                 data: { status: 'INVOICED' }
             });
+            await this.classificationService.recalculateCustomerStats(companyId, order.customerId);
+            if (invoice.customer?.email) {
+                this.notificationService.notifyInvoiceCreated(invoice, invoice.customer.email).catch(console.error);
+            }
             return invoice;
         });
     }
@@ -144,7 +152,7 @@ let InvoicesService = class InvoicesService {
             if (newAmountRemaining.lte(0)) {
                 newStatus = 'PAID';
             }
-            return tx.invoice.update({
+            const updatedInvoice = await tx.invoice.update({
                 where: { id: invoiceId },
                 data: {
                     amountPaid: newAmountPaid,
@@ -152,6 +160,12 @@ let InvoicesService = class InvoicesService {
                     status: newStatus
                 }
             });
+            await this.classificationService.recalculateCustomerStats(companyId, updatedInvoice.customerId);
+            const customer = await tx.customer.findUnique({ where: { id: updatedInvoice.customerId } });
+            if (customer?.email) {
+                this.notificationService.notifyPaymentReceived(updatedInvoice, customer.email).catch(console.error);
+            }
+            return updatedInvoice;
         });
     }
     async cancel(companyId, id) {
@@ -168,6 +182,8 @@ let InvoicesService = class InvoicesService {
 exports.InvoicesService = InvoicesService;
 exports.InvoicesService = InvoicesService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        customer_classification_service_1.CustomerClassificationService,
+        notifications_service_1.NotificationService])
 ], InvoicesService);
 //# sourceMappingURL=invoices.service.js.map

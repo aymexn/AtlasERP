@@ -11,6 +11,7 @@
         "inventory_export": "Export Inventory",
         "create": "New",
         "save": "Save",
+        "submitting": "Submitting...",
         "confirm": "Confirm",
         "cancel": "Cancel",
         "delete": "Delete",
@@ -67,7 +68,12 @@
         },
         "missing_fields": "Please fill all required fields",
         "general_info": "General Information",
-        "select_placeholder": "Select an item..."
+        "total_ht": "Total HT",
+        "tva": "VAT",
+        "total_ttc": "Total TTC",
+        "select_placeholder": "Select an item...",
+        "select_all": "Select All",
+        "deselect_all": "Deselect All"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -75,7 +81,8 @@
             "catalogue": "Catalogue & Items",
             "production": "Operations & Stocks",
             "commerce": "Commercial Flows",
-            "finance": "Financial Management"
+            "finance": "Financial Management",
+            "administration": "Administration"
         },
         "items": {
             "products": "Products",
@@ -103,6 +110,7 @@
         "real_production_cost": "Production Cost",
         "shortage_alerts": "Shortage Alerts",
         "total_invoiced": "Invoiced Revenue",
+        "actual_cash": "Actual Cash",
         "cash_position": "Cash Position",
         "profitability": "Profitability",
         "margin_percent": "Gross Margin",
@@ -115,6 +123,7 @@
         "no_supplier_data": "No supplier data",
         "no_sales_data": "No sales data",
         "monthly_sales": "Monthly Volume",
+        "articles": "Articles",
         "all_clear": "No active alerts",
         "alerts": {
             "title": "Operational Alerts",
@@ -126,9 +135,38 @@
             "gap": "Net gap",
             "invoiced": "Invoiced",
             "collected": "Collected",
+            "recovery": "recovery",
+            "receivables": "Receivables",
             "stable": "Stable",
             "positive": "Positive",
             "negative": "Negative"
+        },
+        "chart": {
+            "procurement": "Purchases / Expenses",
+            "revenue": "Revenue"
+        }
+    },
+    "finances": {
+        "invoices": {
+            "list_title": "Customer Invoices",
+            "sheet_title": "Invoice Payment",
+            "sheet_description": "Record an incoming payment for this invoice.",
+            "amount_to_pay": "Amount to collect",
+            "total_ttc": "Total TTC",
+            "status": {
+                "sent": "Sent",
+                "draft": "Draft",
+                "paid": "Paid",
+                "partial": "Partial"
+            }
+        },
+        "payments": {
+            "methods": {
+                "cash": "Cash",
+                "check": "Check",
+                "transfer": "Transfer"
+            },
+            "validate": "Record Payment"
         }
     },
     "products": {
@@ -334,6 +372,7 @@
         "product": "Main Product",
         "planned_qty": "Planned Volume",
         "planned_date": "Production Date",
+        "warehouse_label": "Source Warehouse",
         "status_label": "Production flow status",
         "cost_variance": "Cost Variance",
         "variance": "Actual Variance",
@@ -345,6 +384,7 @@
         "component": "Component",
         "required": "Required Quantity",
         "available": "Virtual Stock",
+        "available_stock": "Available Stock",
         "line_cost": "Line Cost",
         "shortage": "Missing",
         "ready": "Availability: OK",
@@ -389,7 +429,7 @@
         "traffic_blocking": "BLOCKING (SHORTAGE)",
         "traffic_partial": "PARTIAL (RISK)",
         "traffic_ready": "READY",
-        "status_enough": "Sufficient",
+        "status_enough": "SUFFICIENT",
         "prompt_produced_qty": "Enter the actually produced quantity:",
         "confirm_start_production": "Launch production? Stock will be updated.",
         "confirm_cancel": "Cancel this manufacturing order?",
@@ -402,7 +442,17 @@
             "v10": "V1.0 High-Density"
         },
         "estimated_cost": "Estimated Cost",
-        "ops_details": "Production sheet"
+        "ops_details": "Production sheet",
+        "purchase_need_title": "Inventory Needs Analysis",
+        "purchase_need_subtitle": "Intelligent Reordering Algorithm",
+        "analyzing_stock": "Analyzing stock levels and velocity...",
+        "items_flagged": "products require reordering",
+        "selected_items": "items selected",
+        "generate_pos": "Generate Purchase Orders",
+        "current_stock": "Current Stock",
+        "min_stock": "Min. Threshold",
+        "suggested_qty": "Suggested Qty",
+        "no_supplier": "No Supplier Assigned"
     },
     "purchases": {
         "title": "Purchase Management",
@@ -579,7 +629,9 @@
             "stats": {
                 "total": "Total Customers",
                 "active": "Active Customers",
-                "credit": "Total Credit Limit"
+                "credit": "Total Credit Limit",
+                "revenue": "Total Revenue",
+                "delay": "Avg Payment Delay"
             },
             "fields": {
                 "name": "Company Name",
@@ -588,16 +640,65 @@
                 "email": "Email",
                 "phone": "Phone",
                 "address": "Address",
-                "creditLimit": "Credit Limit"
+                "creditLimit": "Credit Limit",
+                "segment": "Segment",
+                "type": "Customer Type",
+                "behavior": "Payment Behavior",
+                "risk": "Risk Level",
+                "revenue": "Revenue",
+                "delay": "Payment Delay (Days)",
+                "no_contact": "No contact"
             },
             "sections": {
                 "identity": "Identity & Legal",
                 "communication": "Communication & Location",
-                "commercial": "Commercial Terms"
+                "commercial": "Commercial Terms",
+                "intelligence": "Intelligence & Analytics"
+            },
+            "intelligence": {
+                "kpi_revenue_all_time": "Total Revenue (All Time)",
+                "kpi_revenue_this_year": "Revenue (This Year)",
+                "kpi_outstanding": "Outstanding Balance"
             },
             "status": {
                 "active": "Active Customer",
                 "standard": "Standard"
+            },
+            "segments": {
+                "A": "Gold A (> 5M)",
+                "B": "Silver B (1.5M - 5M)",
+                "C": "Standard C (< 1.5M)"
+            },
+            "types": {
+                "PROMOTER": "Promoter",
+                "WHOLESALER": "Wholesaler",
+                "RETAILER": "Retailer",
+                "GOVERNMENT": "Government",
+                "INDIVIDUAL": "Individual"
+            },
+            "behaviors": {
+                "EXCELLENT": "Excellent (<= 15d)",
+                "GOOD": "Good (<= 30d)",
+                "AVERAGE": "Average (<= 60d)",
+                "POOR": "Poor (> 60d)"
+            },
+            "risks": {
+                "LOW": "Low Risk",
+                "MEDIUM": "Medium Risk",
+                "HIGH": "High Risk"
+            },
+            "dashboard": {
+                "title": "Performance Dashboard",
+                "revenue_trend": "Revenue Performance (12 Months)",
+                "top_products": "Top Purchased Products",
+                "open_orders": "Open Sales Orders",
+                "unpaid_invoices": "Unpaid & Partial Invoices",
+                "dossier": "Download Dossier",
+                "statement": "Download Statement",
+                "kpi_revenue_all": "Total Revenue (All Time)",
+                "kpi_revenue_year": "Revenue (This Year)",
+                "kpi_outstanding": "Outstanding Balance",
+                "kpi_delay": "Avg Payment Delay"
             },
             "hints": {
                 "credit": "Set the maximum allowed credit limit for this customer."
@@ -621,7 +722,9 @@
                 "partial": "Partial",
                 "paid": "Paid",
                 "cancelled": "Cancelled",
-                "all": "All statuses"
+                "all": "All statuses",
+                "draft": "Draft",
+                "validated": "Validated"
             },
             "fields": {
                 "customer": "Customer",
@@ -635,11 +738,7 @@
                 "total_pending": "Pending Recovery",
                 "recovered_rate": "Rate"
             },
-            "total_ttc": "TOTAL TTC",
-            "status": {
-                "draft": "Draft",
-                "validated": "Validated"
-            }
+            "total_ttc": "TOTAL TTC"
         },
         "payments": {
             "title": "Payment Management",
@@ -780,5 +879,96 @@
         "manual_fix": "Restart procedure:",
         "max_reached": "Limit REACHED ({count}/{max})",
         "retry_btn": "Restart ({count}/{max})"
+    },
+    "treasury": {
+        "title": "Treasury",
+        "aged_receivables": "Aged Receivables",
+        "collections": "Collections",
+        "forecast": "Forecast",
+        "summary": "Treasury Summary",
+        "total_outstanding": "Total Outstanding",
+        "current": "Current (0-30d)",
+        "late_30": "Late (30-60d)",
+        "late_60": "Late (60-90d)",
+        "late_90": "Critical (90d+)",
+        "risk_score": "Risk Score",
+        "reminders": "Reminders",
+        "behavior": "Behavior",
+        "actions": {
+            "send_reminder": "Send Reminder",
+            "log_activity": "Log Activity",
+            "block_credit": "Block Credit"
+        }
+    },
+    "hr": {
+        "title": "Human Resources",
+        "subtitle": "Human capital and payroll management",
+        "nav": {
+            "employees": "Employees",
+            "leaves": "Leaves",
+            "payroll": "Payroll",
+            "recruitment": "Recruitment",
+            "performance": "Performance"
+        },
+        "employees": {
+            "title": "Employee Directory",
+            "add": "New Employee",
+            "search": "Search employees...",
+            "status": {
+                "active": "Active",
+                "suspended": "Suspended",
+                "terminated": "Terminated",
+                "on_leave": "On Leave"
+            },
+            "tabs": {
+                "personal": "Personal",
+                "contract": "Contract",
+                "leaves": "Leaves",
+                "payroll": "Payroll",
+                "documents": "Documents"
+            }
+        },
+        "leaves": {
+            "title": "Leave Management",
+            "request": "Request Leave",
+            "balance": "Leave Balance",
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "types": {
+                "annual": "Annual Leave",
+                "sick": "Sick Leave",
+                "maternity": "Maternity Leave",
+                "unpaid": "Unpaid Leave"
+            }
+        },
+        "payroll": {
+            "title": "Payroll Management",
+            "periods": "Payroll Periods",
+            "calculate": "Calculate Payroll",
+            "generate_payslips": "Generate Payslips",
+            "net_to_pay": "Net to Pay",
+            "gross_salary": "Gross Salary"
+        },
+        "recruitment": {
+            "title": "Recruitment",
+            "jobs": "Job Postings",
+            "candidates": "Candidates",
+            "pipeline": "Pipeline",
+            "stages": {
+                "applied": "Applied",
+                "screening": "Screening",
+                "interview": "Interview",
+                "offer": "Offer",
+                "hired": "Hired"
+            }
+        },
+        "performance": {
+            "title": "Appraisal & Performance",
+            "cycles": "Appraisal Cycles",
+            "reviews": "Reviews",
+            "rating": "Final Rating",
+            "objectives": "Objectives"
+        }
     }
 }

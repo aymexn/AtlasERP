@@ -13,8 +13,11 @@ import {
     ArrowRight,
     Loader2,
     CheckCircle2,
-    XCircle
+    XCircle,
+    FileText,
+    Download
 } from 'lucide-react';
+import { downloadPdf } from '@/lib/download-pdf';
 import { Link } from '@/navigation';
 import { PageHeader } from '@/components/ui/page-header';
 import { KpiCard } from '@/components/ui/kpi-card';
@@ -112,7 +115,7 @@ export default function ProductsStockClient() {
             </div>
 
             {/* Main Content Area */}
-            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white">
+            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-4xl overflow-hidden bg-white">
                 <CardHeader className="p-10 border-b border-slate-50 flex flex-wrap items-center justify-between gap-8">
                     <div className="flex items-center gap-6">
                         <div className="relative w-80">
@@ -146,6 +149,14 @@ export default function ProductsStockClient() {
                             ))}
                         </div>
                     </div>
+
+                    <button 
+                        onClick={() => downloadPdf('/api/pdf/inventory', `Inventaire_${new Date().toISOString().slice(0,10)}.pdf`)}
+                        className="flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                    >
+                        <FileText size={16} />
+                        Exporter l'Inventaire (PDF)
+                    </button>
                 </CardHeader>
 
                 <div className="overflow-x-auto">
@@ -179,8 +190,27 @@ export default function ProductsStockClient() {
                                     </td>
                                     <td className="px-10 py-6 text-right">
                                         <div className="flex flex-col items-end">
-                                            <span className="font-black text-primary text-base">{formatCurrency(Number(item.stockValue))}</span>
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase mt-1">{t('movements.fields.unit_cost')}: {formatCurrency(Number(item.standardCost))}</span>
+                                            {(() => {
+                                                const cost = Number(item.purchasePriceHt || item.standardCost || 0);
+                                                const value = Number(item.stockQuantity) * cost;
+                                                return (
+                                                    <>
+                                                        <span className="font-black text-primary text-base">
+                                                            {formatCurrency(value)}
+                                                        </span>
+                                                        {cost === 0 ? (
+                                                            <span className="text-[9px] font-black text-red-500 uppercase mt-1 px-2 py-0.5 bg-red-50 rounded-lg border border-red-100 flex items-center gap-1">
+                                                                <AlertCircle size={10} />
+                                                                Coût non défini
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-wider opacity-60">
+                                                                {t('movements.fields.unit_cost')}: {formatCurrency(cost)}
+                                                            </span>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </td>
                                     <td className="px-10 py-6 text-right">

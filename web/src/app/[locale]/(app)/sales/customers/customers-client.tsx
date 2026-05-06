@@ -7,34 +7,37 @@ import {
     Loader2, X, Building2, Shield, TrendingUp, Fingerprint, Info, 
     ChevronRight, Briefcase, Tag, History, CreditCard, MoreVertical, 
     FileSearch, LayoutGrid, Settings, DollarSign, Edit2, Trash2, 
-    ArrowRight, Filter, FileText, Download, UserPlus
+    ArrowRight, Filter, FileText, Download, UserPlus, Printer, BarChart2,
+    Clock
 } from 'lucide-react';
+import { downloadPdf } from '@/lib/download-pdf';
 import { toast } from 'sonner';
-import { customersService, Customer } from '@/services/customers';
+import { customersService, Customer, CustomerSegment, CustomerType, PaymentBehavior, RiskLevel } from '@/services/customers';
 import { formatCurrency } from '@/lib/format';
-import { useParams } from 'next/navigation';
+import { useRouter } from '@/navigation';
 import { PageHeader } from '@/components/ui/page-header';
 import { KpiCard } from '@/components/ui/kpi-card';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
-import { 
-    Sheet, 
-    SheetContent, 
-    SheetHeader, 
-    SheetTitle, 
-    SheetDescription 
-} from '@/components/ui/sheet';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function CustomersClient() {
     const t = useTranslations('sales');
     const ct = useTranslations('common');
-    const locale = useLocale();
+    const router = useRouter();
     
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     
+    // Filters
+    const [filters, setFilters] = useState({
+        segment: '' as any,
+        customerType: '' as any,
+        paymentBehavior: '' as any,
+        riskLevel: '' as any
+    });
+
     // Modal & Form State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'identity' | 'contact' | 'commercial'>('identity');
@@ -45,12 +48,15 @@ export default function CustomersClient() {
     useEffect(() => {
         setIsMounted(true);
         loadCustomers();
-    }, []);
+    }, [filters]);
 
     const loadCustomers = async () => {
         try {
             setLoading(true);
-            const data = await customersService.getAll();
+            const activeFilters = Object.fromEntries(
+                Object.entries(filters).filter(([_, v]) => v !== '')
+            );
+            const data = await customersService.getAll(activeFilters);
             setCustomers(data || []);
         } catch (err) {
             toast.error(ct('toast.error'));
@@ -102,9 +108,29 @@ export default function CustomersClient() {
 
     const stats = useMemo(() => ({
         total: customers.length,
-        totalCredit: customers.reduce((acc, c) => acc + Number(c.creditLimit || 0), 0),
-        activeCount: customers.length // Simplified for now
+        totalRevenue: customers.reduce((acc, c) => acc + Number(c.totalRevenue || 0), 0),
+        avgDelay: customers.length > 0 
+            ? Math.round(customers.reduce((acc, c) => acc + (c.avgPaymentDelay || 0), 0) / customers.length) 
+            : 0
     }), [customers]);
+
+    const getSegmentBadge = (segment?: string) => {
+        switch (segment) {
+            case 'A': return <Badge variant="active" className="bg-amber-100 text-amber-700 border-amber-200">GOLD A</Badge>;
+            case 'B': return <Badge variant="active" className="bg-slate-100 text-slate-700 border-slate-200">SILVER B</Badge>;
+            case 'C': return <Badge variant="secondary">STANDARD C</Badge>;
+            default: return <Badge variant="secondary">---</Badge>;
+        }
+    };
+
+    const getRiskColor = (risk?: string) => {
+        switch (risk) {
+            case 'HIGH': return 'text-red-600 bg-red-50';
+            case 'MEDIUM': return 'text-amber-600 bg-amber-50';
+            case 'LOW': return 'text-green-600 bg-green-50';
+            default: return 'text-slate-400 bg-slate-50';
+        }
+    };
 
     if (!isMounted || (loading && customers.length === 0)) {
         return (
@@ -124,7 +150,7 @@ export default function CustomersClient() {
                 action={{
                     label: t('customers.add'),
                     onClick: () => {
-                        setEditingCustomer({ creditLimit: 0 });
+                        setEditingCustomer({ creditLimit: 0, customerType: 'RETAILER' });
                         setActiveTab('identity');
                         setIsModalOpen(true);
                     },
@@ -142,47 +168,94 @@ export default function CustomersClient() {
                     type="count"
                 />
                 <KpiCard 
-                    title={t('customers.stats.active')}
-                    value={stats.activeCount}
+                    title={t('customers.stats.revenue')}
+                    value={stats.totalRevenue}
                     icon={TrendingUp}
                     variant="success"
-                    type="count"
+                    type="currency"
                 />
                 <KpiCard 
-                    title={t('customers.stats.credit')}
-                    value={stats.totalCredit}
-                    icon={CreditCard}
+                    title={t('customers.stats.delay')}
+                    value={stats.avgDelay}
+                    icon={Clock}
                     variant="warning"
-                    type="currency"
+                    type="count"
+                    subtitle="jours en moyenne"
                 />
             </div>
 
             {/* Main Area */}
             <Card className="border-none shadow-xl shadow-gray-200/40">
-                <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 px-8">
-                    <CardTitle className="text-xl font-black text-gray-800 flex items-center gap-3">
-                        <Building2 className="w-6 h-6 text-primary" />
-                        {t('customers.title')}
-                    </CardTitle>
-                    <div className="relative group w-full max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors w-4 h-4" />
-                        <input 
-                            type="text" 
-                            placeholder={ct('search')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm font-bold shadow-inner"
-                        />
+                <CardHeader className="flex flex-col gap-6 border-b border-gray-50 pb-6 px-8">
+                    <div className="flex flex-row items-center justify-between w-full">
+                        <CardTitle className="text-xl font-black text-gray-800 flex items-center gap-3">
+                            <Building2 className="w-6 h-6 text-primary" />
+                            {t('customers.title')}
+                        </CardTitle>
+                        <div className="relative group w-full max-w-sm">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors w-4 h-4" />
+                            <input 
+                                type="text" 
+                                placeholder={ct('search')}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm font-bold shadow-inner"
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Filter Bar */}
+                    <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg">
+                            <Filter size={14} className="text-slate-400" />
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Filters:</span>
+                        </div>
+                        <select 
+                            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 outline-none focus:border-primary transition-all"
+                            value={filters.segment}
+                            onChange={(e) => setFilters({...filters, segment: e.target.value})}
+                        >
+                            <option value="">All Segments</option>
+                            <option value="A">Segment A (Gold)</option>
+                            <option value="B">Segment B (Silver)</option>
+                            <option value="C">Segment C (Standard)</option>
+                        </select>
+                        <select 
+                            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 outline-none focus:border-primary transition-all"
+                            value={filters.customerType}
+                            onChange={(e) => setFilters({...filters, customerType: e.target.value})}
+                        >
+                            <option value="">All Types</option>
+                            <option value="PROMOTER">Promoter</option>
+                            <option value="WHOLESALER">Wholesaler</option>
+                            <option value="RETAILER">Retailer</option>
+                            <option value="GOVERNMENT">Government</option>
+                            <option value="INDIVIDUAL">Individual</option>
+                        </select>
+                        <select 
+                            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 outline-none focus:border-primary transition-all"
+                            value={filters.paymentBehavior}
+                            onChange={(e) => setFilters({...filters, paymentBehavior: e.target.value})}
+                        >
+                            <option value="">All Behaviors</option>
+                            <option value="EXCELLENT">Excellent</option>
+                            <option value="GOOD">Good</option>
+                            <option value="AVERAGE">Average</option>
+                            <option value="POOR">Poor</option>
+                        </select>
+                        <button 
+                            onClick={() => setFilters({segment: '', customerType: '', paymentBehavior: '', riskLevel: ''})}
+                            className="text-[10px] font-black text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+                        >
+                            Reset
+                        </button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <DataTable 
                         data={filteredCustomers}
                         isLoading={loading}
-                        onRowClick={(c) => {
-                            setEditingCustomer(c);
-                            setIsModalOpen(true);
-                        }}
+                        onRowClick={(c) => router.push({ pathname: '/sales/customers/[id]', params: { id: c.id } })}
                         columns={[
                             {
                                 header: t('customers.fields.name'),
@@ -192,23 +265,28 @@ export default function CustomersClient() {
                                             {c.name.charAt(0)}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-gray-900 font-bold">{c.name}</span>
-                                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{c.contact || t('customers.fields.no_contact')}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-900 font-bold">{c.name}</span>
+                                                {getSegmentBadge(c.segment)}
+                                            </div>
+                                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{c.customerType || 'RETAILER'} • {c.contact || t('customers.fields.no_contact')}</span>
                                         </div>
                                     </div>
                                 )
                             },
                             {
-                                header: t('customers.sections.communication'),
+                                header: 'Performance',
                                 accessor: (c) => (
-                                    <div className="flex flex-col gap-1 text-xs">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <Mail size={12} className="text-gray-400" />
-                                            <span>{c.email || t('customers.fields.none')}</span>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-black text-slate-700">{formatCurrency(c.totalRevenue || 0)}</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('customers.fields.revenue')}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-gray-400">
-                                            <Fingerprint size={12} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">{t('customers.fields.nif_label')}{c.taxId || t('customers.fields.none')}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${getRiskColor(c.riskLevel)}`}>
+                                                {c.riskLevel || 'LOW'} RISK
+                                            </span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.avgPaymentDelay || 0}d {t('customers.fields.delay').split(' ')[0]}</span>
                                         </div>
                                     </div>
                                 )
@@ -219,7 +297,7 @@ export default function CustomersClient() {
                                 accessor: (c) => (
                                     <div className="flex flex-col items-end">
                                         <span className="text-sm font-black text-gray-900">{formatCurrency(c.creditLimit || 0)}</span>
-                                        <Badge variant={Number(c.creditLimit) > 0 ? "active" : "secondary" as any}>
+                                        <Badge variant={Number(c.creditLimit) > 0 ? "active" : "default"}>
                                             {Number(c.creditLimit) > 0 ? t('customers.status.active') : t('customers.status.standard')}
                                         </Badge>
                                     </div>
@@ -231,13 +309,31 @@ export default function CustomersClient() {
                                 accessor: (c) => (
                                     <div className="flex items-center justify-end gap-2">
                                         <button 
+                                            onClick={(e) => { e.stopPropagation(); router.push({ pathname: '/sales/customers/[id]', params: { id: c.id } }); }}
+                                            className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-all"
+                                            title="View Dashboard"
+                                        >
+                                            <BarChart2 size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); setEditingCustomer(c); setIsModalOpen(true); }}
+                                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                            title="Edit Profile"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); downloadPdf(`/api/pdf/customer-statement/${c.id}`, `Releve_${c.name.replace(/\s+/g, '_')}.pdf`); }}
+                                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                            title="Imprimer Relevé"
+                                        >
+                                            <Printer size={16} />
+                                        </button>
+                                        <button 
                                             onClick={(e) => { e.stopPropagation(); handleDelete(c.id); }}
-                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                         >
                                             <Trash2 size={16} />
-                                        </button>
-                                        <button className="p-2 text-gray-400 hover:text-primary hover:bg-blue-50/50 rounded-lg transition-all">
-                                            <ChevronRight size={20} />
                                         </button>
                                     </div>
                                 )
@@ -302,12 +398,18 @@ export default function CustomersClient() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('customers.fields.contact')}</label>
-                                            <input 
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer Type</label>
+                                            <select 
                                                 className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900"
-                                                value={editingCustomer?.contact || ''}
-                                                onChange={(e) => setEditingCustomer({...editingCustomer, contact: e.target.value})}
-                                            />
+                                                value={editingCustomer?.customerType || 'RETAILER'}
+                                                onChange={(e) => setEditingCustomer({...editingCustomer, customerType: e.target.value as CustomerType})}
+                                            >
+                                                <option value="PROMOTER">Promoter</option>
+                                                <option value="WHOLESALER">Wholesaler</option>
+                                                <option value="RETAILER">Retailer</option>
+                                                <option value="GOVERNMENT">Government</option>
+                                                <option value="INDIVIDUAL">Individual</option>
+                                            </select>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('customers.fields.taxId')}</label>
@@ -399,3 +501,4 @@ export default function CustomersClient() {
         </div>
     );
 }
+

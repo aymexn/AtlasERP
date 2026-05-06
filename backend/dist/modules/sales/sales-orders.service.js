@@ -14,10 +14,12 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const invoices_service_1 = require("../invoices/invoices.service");
+const stock_movement_service_1 = require("../inventory/services/stock-movement.service");
 let SalesOrdersService = class SalesOrdersService {
-    constructor(prisma, invoicesService) {
+    constructor(prisma, invoicesService, stockMovementService) {
         this.prisma = prisma;
         this.invoicesService = invoicesService;
+        this.stockMovementService = stockMovementService;
     }
     async findAll(companyId) {
         return this.prisma.salesOrder.findMany({
@@ -118,57 +120,34 @@ let SalesOrdersService = class SalesOrdersService {
             throw new common_1.NotFoundException('Order not found');
         if (order.status === 'SHIPPED')
             throw new common_1.BadRequestException('Order already shipped');
+        const warehouse = await this.prisma.warehouse.findFirst({
+            where: { companyId, isActive: true },
+            orderBy: { createdAt: 'asc' }
+        });
+        if (!warehouse)
+            throw new common_1.BadRequestException('No active warehouse found to consume stock.');
+        await this.stockMovementService.completeSalesOrder(companyId, userId, id, warehouse.id);
         return await this.prisma.$transaction(async (tx) => {
-            for (const line of order.lines) {
-                const prod = line.product;
-                const shipQty = new client_1.Prisma.Decimal(line.quantity);
-                const currentStock = new client_1.Prisma.Decimal(prod.stockQuantity);
-                if (!order.company.allowNegativeStock && currentStock.lt(shipQty)) {
-                    throw new common_1.BadRequestException(`Insufficient stock for ${prod.name}. Available: ${currentStock}, Requested: ${shipQty}`);
-                }
-                const newStockQty = currentStock.minus(shipQty);
-                const currentCost = new client_1.Prisma.Decimal(prod.standardCost || 0);
-                await tx.product.update({
-                    where: { id: prod.id },
-                    data: {
-                        stockQuantity: newStockQty,
-                        stockValue: newStockQty.mul(currentCost),
-                    }
-                });
-                await tx.stockMovement.create({
-                    data: {
-                        companyId,
-                        productId: prod.id,
-                        type: 'OUT',
-                        quantity: shipQty,
-                        unit: line.unit,
-                        unitCost: currentCost,
-                        totalCost: shipQty.mul(currentCost),
-                        reference: `EXP-CLI-${order.reference}`,
-                        reason: `Shipment for Sales Order ${order.reference}`,
-                        createdBy: userId,
-                        salesOrderId: order.id
-                    }
-                });
+            const shippedOrder = await tx.salesOrder.findUnique({
+                where: { id },
+                include: { lines: { include: { product: true } } }
+            });
+            for (const line of shippedOrder.lines) {
                 await tx.salesOrderLine.update({
                     where: { id: line.id },
                     data: {
-                        shippedQuantity: shipQty,
-                        unitCostSnapshot: currentCost
+                        shippedQuantity: line.quantity,
+                        unitCostSnapshot: line.product.standardCost || 0
                     }
                 });
             }
-            const updatedOrder = await tx.salesOrder.update({
-                where: { id },
-                data: { status: 'SHIPPED' }
-            });
             try {
                 await this.invoicesService.createFromSalesOrder(companyId, order.id);
             }
             catch (invoiceErr) {
                 console.error('Auto-invoicing failed after shipment:', invoiceErr);
             }
-            return updatedOrder;
+            return tx.salesOrder.findUnique({ where: { id } });
         });
     }
     async validateOrder(companyId, id) {
@@ -232,6 +211,7 @@ exports.SalesOrdersService = SalesOrdersService;
 exports.SalesOrdersService = SalesOrdersService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        invoices_service_1.InvoicesService])
+        invoices_service_1.InvoicesService,
+        stock_movement_service_1.StockMovementService])
 ], SalesOrdersService);
 //# sourceMappingURL=sales-orders.service.js.map

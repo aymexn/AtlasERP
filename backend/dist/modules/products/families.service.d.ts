@@ -13,13 +13,13 @@ export declare class FamiliesService {
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     })[]>;
     create(companyId: string, dto: CreateFamilyDto): Promise<{
         parent: {
@@ -31,13 +31,13 @@ export declare class FamiliesService {
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     }>;
     update(id: string, companyId: string, dto: UpdateFamilyDto): Promise<{
         parent: {
@@ -49,25 +49,25 @@ export declare class FamiliesService {
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     }>;
     remove(id: string, companyId: string): Promise<{
         id: string;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     }>;
 }

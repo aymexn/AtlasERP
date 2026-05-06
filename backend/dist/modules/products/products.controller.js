@@ -54,6 +54,9 @@ let ProductsController = class ProductsController {
     remove(id, req) {
         return this.productsService.remove(id, req.user.companyId);
     }
+    recalculateCost(id, req) {
+        return this.productsService.recalculateCost(id, req.user.companyId);
+    }
 };
 exports.ProductsController = ProductsController;
 __decorate([
@@ -110,6 +113,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':id/recalculate-cost'),
+    (0, swagger_1.ApiOperation)({ summary: 'Recalculate product standard cost based on active formula' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ProductsController.prototype, "recalculateCost", null);
 exports.ProductsController = ProductsController = __decorate([
     (0, swagger_1.ApiTags)('Products'),
     (0, swagger_1.ApiBearerAuth)(),

@@ -33,10 +33,10 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
-        const formula = await this.prisma.productFormula.findFirst({
+        const formula = await this.prisma.billOfMaterials.findFirst({
             where: { id: createDto.formulaId, companyId, productId: createDto.productId },
             include: {
-                lines: {
+                components: {
                     include: { component: true }
                 }
             }
@@ -50,7 +50,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         const formulaOutput = formula.outputQuantity;
         const scaleFactor = plannedQty.dividedBy(formulaOutput);
         let totalEstimatedCost = new client_1.Prisma.Decimal(0);
-        const orderLines = formula.lines.map(line => {
+        const orderLines = formula.components.map(line => {
             const requiredQty = line.quantity.mul(scaleFactor);
             const standardCost = line.component.standardCost || new client_1.Prisma.Decimal(0);
             const purchasePrice = line.component.purchasePriceHt || new client_1.Prisma.Decimal(0);
@@ -60,7 +60,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
             totalEstimatedCost = totalEstimatedCost.add(estimatedLineCost);
             return {
                 componentProductId: line.componentProductId,
-                formulaLineId: line.id,
+                bomComponentId: line.id,
                 requiredQuantity: requiredQty,
                 unit: line.unit,
                 wastagePercent: line.wastagePercent,
@@ -78,6 +78,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                 unit: formula.outputUnit,
                 plannedDate: new Date(createDto.plannedDate),
                 notes: createDto.notes,
+                warehouseId: createDto.warehouseId,
                 totalEstimatedCost,
                 lines: {
                     create: orderLines
@@ -112,20 +113,49 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
             },
             orderBy: { createdAt: 'desc' },
         });
-        return orders.map(order => {
+        const warehouseIds = [...new Set(orders.map(o => o.warehouseId).filter(Boolean))];
+        const warehouseStockMaps = new Map();
+        for (const wid of warehouseIds) {
+            const stocks = await this.prisma.productStock.findMany({ where: { companyId, warehouseId: wid } });
+            const reserved = await this.prisma.manufacturingOrderLine.groupBy({
+                by: ['componentProductId'],
+                where: {
+                    manufacturingOrder: {
+                        companyId,
+                        warehouseId: wid,
+                        status: { in: ['DRAFT', 'PLANNED', 'IN_PROGRESS'] }
+                    }
+                },
+                _sum: { requiredQuantity: true }
+            });
+            const resMap = new Map(reserved.map(r => [r.componentProductId, Number(r._sum.requiredQuantity || 0)]));
+            const availMap = new Map();
+            stocks.forEach(s => availMap.set(s.productId, Math.max(0, Number(s.quantity) - (resMap.get(s.productId) || 0))));
+            warehouseStockMaps.set(wid, availMap);
+        }
+        const enrichedOrders = [];
+        for (const order of orders) {
             const orderJson = JSON.parse(JSON.stringify(order));
             let blockingShortage = false;
             let partialShortage = false;
-            orderJson.lines.forEach((line) => {
+            const targetWarehouseId = order.warehouseId;
+            const stockMap = targetWarehouseId ? warehouseStockMaps.get(targetWarehouseId) : null;
+            for (const line of orderJson.lines) {
+                let available = 0;
+                if (stockMap) {
+                    available = stockMap.get(line.componentProductId) || 0;
+                }
+                else {
+                    available = Number(line.component.stockQuantity);
+                }
                 const required = Number(line.requiredQuantity);
-                const available = Number(line.component.stockQuantity);
                 if (available <= 0 && required > 0) {
                     blockingShortage = true;
                 }
                 else if (available < required) {
                     partialShortage = true;
                 }
-            });
+            }
             if (['COMPLETED', 'CANCELLED'].includes(order.status)) {
                 orderJson.stockReadiness = 'EXECUTED';
             }
@@ -138,8 +168,9 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
             else {
                 orderJson.stockReadiness = 'READY';
             }
-            return orderJson;
-        });
+            enrichedOrders.push(orderJson);
+        }
+        return enrichedOrders;
     }
     async findOne(companyId, id) {
         const order = await this.prisma.manufacturingOrder.findFirst({
@@ -147,6 +178,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
             include: {
                 product: true,
                 formula: true,
+                warehouse: true,
                 lines: {
                     include: { component: true }
                 }
@@ -155,12 +187,34 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         if (!order)
             throw new common_1.NotFoundException('Manufacturing order not found');
         const orderWithStock = JSON.parse(JSON.stringify(order));
-        for (const line of orderWithStock.lines) {
-            const stockRes = await this.prisma.product.findUnique({
-                where: { id: line.componentProductId },
-                select: { stockQuantity: true }
+        let targetWarehouseId = order.warehouseId;
+        let resolvedWarehouse = order.warehouse;
+        if (!targetWarehouseId) {
+            const warehouse = await this.prisma.warehouse.findFirst({
+                where: { companyId, isActive: true },
+                orderBy: { createdAt: 'asc' }
             });
-            const currentStock = Number(stockRes?.stockQuantity || 0);
+            targetWarehouseId = warehouse?.id || null;
+            resolvedWarehouse = warehouse;
+        }
+        orderWithStock.warehouse = resolvedWarehouse;
+        const stocks = await this.prisma.productStock.findMany({ where: { companyId, warehouseId: targetWarehouseId } });
+        const reserved = await this.prisma.manufacturingOrderLine.groupBy({
+            by: ['componentProductId'],
+            where: {
+                manufacturingOrder: {
+                    companyId,
+                    warehouseId: targetWarehouseId,
+                    status: { in: ['DRAFT', 'PLANNED', 'IN_PROGRESS'] }
+                }
+            },
+            _sum: { requiredQuantity: true }
+        });
+        const resMap = new Map(reserved.map(r => [r.componentProductId, Number(r._sum.requiredQuantity || 0)]));
+        const availMap = new Map();
+        stocks.forEach(s => availMap.set(s.productId, Math.max(0, Number(s.quantity) - (resMap.get(s.productId) || 0))));
+        for (const line of orderWithStock.lines) {
+            const currentStock = availMap.get(line.componentProductId) || 0;
             const required = Number(line.requiredQuantity);
             line.availableStock = currentStock;
             line.shortageQuantity = Math.max(0, required - currentStock);
@@ -218,10 +272,30 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         if (!['PLANNED', 'DRAFT'].includes(order.status)) {
             throw new common_1.BadRequestException(`Cannot start production from ${order.status} status.`);
         }
+        const warehouseId = order.warehouseId;
+        if (!warehouseId)
+            throw new common_1.BadRequestException('Warehouse must be assigned to start production.');
+        const stocks = await this.prisma.productStock.findMany({ where: { companyId, warehouseId } });
+        const reserved = await this.prisma.manufacturingOrderLine.groupBy({
+            by: ['componentProductId'],
+            where: {
+                manufacturingOrder: {
+                    companyId,
+                    warehouseId,
+                    status: { in: ['DRAFT', 'PLANNED', 'IN_PROGRESS'] }
+                }
+            },
+            _sum: { requiredQuantity: true }
+        });
+        const resMap = new Map(reserved.map(r => [r.componentProductId, Number(r._sum.requiredQuantity || 0)]));
         const shortages = [];
         for (const line of order.lines) {
-            if (Number(line.component.stockQuantity) < Number(line.requiredQuantity)) {
-                shortages.push(`${line.component.name} (Required: ${line.requiredQuantity}, Available: ${line.component.stockQuantity})`);
+            const stock = stocks.find(s => s.productId === line.componentProductId);
+            const physical = Number(stock?.quantity || 0);
+            const res = resMap.get(line.componentProductId) || 0;
+            const available = Math.max(0, physical - res);
+            if (available < Number(line.requiredQuantity)) {
+                shortages.push(`${line.component.name} (Required: ${line.requiredQuantity}, Available: ${available})`);
             }
         }
         if (shortages.length > 0) {
@@ -247,82 +321,20 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
             throw new common_1.NotFoundException('Manufacturing order not found');
         if (order.status !== 'IN_PROGRESS')
             throw new common_1.BadRequestException('Order must be in IN_PROGRESS status to complete');
-        return await this.prisma.$transaction(async (tx) => {
-            const producedQty = new client_1.Prisma.Decimal(dto.producedQuantity);
-            let totalActualCost = new client_1.Prisma.Decimal(0);
-            for (const line of order.lines) {
-                const requiredQty = Number(line.requiredQuantity);
-                if (requiredQty > 0) {
-                    await tx.manufacturingOrderLine.update({
-                        where: { id: line.id },
-                        data: { consumedQuantity: line.requiredQuantity }
-                    });
-                    const comp = line.component;
-                    const unitCost = Number(comp.standardCost) > 0 ? Number(comp.standardCost) :
-                        (Number(comp.purchasePriceHt) > 0 ? Number(comp.purchasePriceHt) : 0);
-                    const currentStock = Number(comp.stockQuantity);
-                    const newStockQty = currentStock - requiredQty;
-                    const newStockVal = newStockQty * unitCost;
-                    await tx.product.update({
-                        where: { id: comp.id },
-                        data: {
-                            stockQuantity: newStockQty,
-                            stockValue: newStockVal
-                        }
-                    });
-                    await tx.stockMovement.create({
-                        data: {
-                            companyId,
-                            productId: comp.id,
-                            type: 'OUT',
-                            quantity: requiredQty,
-                            unit: line.unit,
-                            unitCost,
-                            totalCost: requiredQty * unitCost,
-                            reference: `MO-OUT-${order.reference}`,
-                            reason: `Atomic Consumption for MO ${order.reference}`,
-                            createdBy: userId,
-                            date: new Date()
-                        }
-                    });
-                    totalActualCost = totalActualCost.add(requiredQty * unitCost);
-                }
-            }
-            const actualUnitCost = producedQty.gt(0) ? totalActualCost.dividedBy(producedQty) : new client_1.Prisma.Decimal(0);
-            const currentProdStock = Number(order.product.stockQuantity);
-            const newProdStockQty = currentProdStock + Number(producedQty);
-            const newProdStockVal = Number(order.product.stockValue) + Number(totalActualCost);
-            await tx.product.update({
-                where: { id: order.productId },
-                data: {
-                    stockQuantity: newProdStockQty,
-                    stockValue: newProdStockVal
-                }
+        let warehouseId = order.warehouseId;
+        if (!warehouseId) {
+            const warehouse = await this.prisma.warehouse.findFirst({
+                where: { companyId, isActive: true },
+                orderBy: { createdAt: 'asc' }
             });
-            await tx.stockMovement.create({
-                data: {
-                    companyId,
-                    productId: order.productId,
-                    type: 'IN',
-                    quantity: producedQty,
-                    unit: order.unit,
-                    unitCost: actualUnitCost,
-                    totalCost: totalActualCost,
-                    reference: `MO-IN-${order.reference}`,
-                    reason: `Atomic Production Output from MO ${order.reference}`,
-                    createdBy: userId,
-                    date: new Date()
-                }
-            });
-            return await tx.manufacturingOrder.update({
-                where: { id },
-                data: {
-                    status: 'COMPLETED',
-                    completedAt: new Date(),
-                    producedQuantity: producedQty,
-                    totalActualCost: totalActualCost
-                }
-            });
+            if (!warehouse)
+                throw new common_1.BadRequestException('No active warehouse found for production.');
+            warehouseId = warehouse.id;
+        }
+        await this.stockMovementService.completeManufacturingOrder(companyId, userId, id, warehouseId);
+        return await this.prisma.manufacturingOrder.findUnique({
+            where: { id },
+            include: { product: true, lines: true }
         });
     }
     async cancel(companyId, id) {

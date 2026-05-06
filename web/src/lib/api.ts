@@ -157,8 +157,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Handle local Next.js API routes vs External Backend
+    const isLocalApi = endpoint.startsWith('/api/');
+    const baseUrl = isLocalApi ? '' : API_URL;
+
     try {
-        const { response, wasRetried } = await fetchWithRetry(`${API_URL}${endpoint}`, {
+        const { response, wasRetried } = await fetchWithRetry(`${baseUrl}${endpoint}`, {
             ...options,
             headers,
             body: finalBody,

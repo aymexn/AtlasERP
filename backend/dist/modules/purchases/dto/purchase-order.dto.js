@@ -78,6 +78,16 @@ __decorate([
     (0, class_transformer_1.Type)(() => CreatePurchaseOrderLineDto),
     __metadata("design:type", Array)
 ], CreatePurchaseOrderDto.prototype, "lines", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePurchaseOrderDto.prototype, "status", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePurchaseOrderDto.prototype, "warehouseId", void 0);
 class UpdatePurchaseOrderDto extends CreatePurchaseOrderDto {
 }
 exports.UpdatePurchaseOrderDto = UpdatePurchaseOrderDto;

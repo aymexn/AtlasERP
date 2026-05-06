@@ -1,6 +1,8 @@
 import Sidebar from '@/components/Sidebar';
 import Topbar from '@/components/Topbar';
 import AuthWrapper from '@/components/AuthWrapper';
+import ShortcutProvider from '@/components/ShortcutProvider';
+import { PermissionProvider } from '@/contexts/PermissionContext';
 import { getLocale } from 'next-intl/server';
 
 export default async function AppLayout({
@@ -10,29 +12,33 @@ export default async function AppLayout({
 }) {
     return (
         <AuthWrapper>
-            <div className="flex min-h-screen bg-gray-50/50 flex-row" dir="ltr">
-                {/* Fixed Sidebar */}
-                <Sidebar />
+            <PermissionProvider>
+                <ShortcutProvider>
+                    <div className="flex min-h-screen bg-gray-50/50 flex-row" dir="ltr">
+                        {/* Fixed Sidebar */}
+                        <Sidebar />
 
-                {/* Main Content Area */}
-                <div className="flex-1 flex flex-col min-w-0">
-                    <Topbar />
-                    <main className="flex-1 p-8 overflow-y-auto">
-                        <div className="max-w-7xl mx-auto w-full">
-                            {children}
-                        </div>
-                    </main>
+                        {/* Main Content Area */}
+                        <div className="flex-1 flex flex-col min-w-0">
+                            <Topbar />
+                            <main className="flex-1 p-8 overflow-y-auto">
+                                <div className="max-w-7xl mx-auto w-full">
+                                    {children}
+                                </div>
+                            </main>
 
-                    {/* Modern Footer (Simple) */}
-                    <footer className="p-8 border-t border-gray-100 flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-gray-400">
-                        <span>© 2026 Atlas Intelligence ERP</span>
-                        <div className="flex gap-6">
-                            <span className="hover:text-blue-600 cursor-pointer transition-colors">Documentation</span>
-                            <span className="hover:text-blue-600 cursor-pointer transition-colors">Support</span>
+                            {/* Modern Footer (Simple) */}
+                            <footer className="p-8 border-t border-gray-100 flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-gray-400">
+                                <span>© 2026 Atlas Intelligence ERP</span>
+                                <div className="flex gap-6">
+                                    <span className="hover:text-blue-600 cursor-pointer transition-colors">Documentation</span>
+                                    <span className="hover:text-blue-600 cursor-pointer transition-colors">Support</span>
+                                </div>
+                            </footer>
                         </div>
-                    </footer>
-                </div>
-            </div>
+                    </div>
+                </ShortcutProvider>
+            </PermissionProvider>
         </AuthWrapper>
     );
 }

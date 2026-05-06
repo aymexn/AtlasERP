@@ -10,14 +10,14 @@ export declare class TenantsService {
         name: string;
         slug: string;
         address: string | null;
-        phone: string | null;
-        website: string | null;
+        ai: string | null;
+        allowNegativeStock: boolean;
         logoUrl: string | null;
         nif: string | null;
-        ai: string | null;
+        phone: string | null;
         rc: string | null;
         rib: string | null;
-        allowNegativeStock: boolean;
+        website: string | null;
     }>;
     findByUserId(userId: string): Promise<{
         id: string;
@@ -26,14 +26,14 @@ export declare class TenantsService {
         name: string;
         slug: string;
         address: string | null;
-        phone: string | null;
-        website: string | null;
+        ai: string | null;
+        allowNegativeStock: boolean;
         logoUrl: string | null;
         nif: string | null;
-        ai: string | null;
+        phone: string | null;
         rc: string | null;
         rib: string | null;
-        allowNegativeStock: boolean;
+        website: string | null;
     }>;
     updateCompany(userId: string, dto: any): Promise<{
         id: string;
@@ -42,13 +42,13 @@ export declare class TenantsService {
         name: string;
         slug: string;
         address: string | null;
-        phone: string | null;
-        website: string | null;
+        ai: string | null;
+        allowNegativeStock: boolean;
         logoUrl: string | null;
         nif: string | null;
-        ai: string | null;
+        phone: string | null;
         rc: string | null;
         rib: string | null;
-        allowNegativeStock: boolean;
+        website: string | null;
     }>;
 }

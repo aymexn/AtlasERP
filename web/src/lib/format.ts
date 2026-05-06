@@ -25,14 +25,14 @@ export function formatCurrency(amount: number | string | any): string {
 
     if (isNaN(num)) return '0 DA';
 
-    // Standard fr-FR: narrow no-break space (U+202F) as thousands, configure for ZERO decimals
+    // Standard fr-FR: uses non-breaking space (U+00A0) as thousands
     const formatted = new Intl.NumberFormat('fr-FR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
     }).format(num);
 
-    // Replace narrow NBSP and regular NBSP with regular space for cross-browser consistency
-    return formatted.replace(/\u202f/g, ' ').replace(/\u00a0/g, ' ') + ' DA';
+    // Ensure we use a clean non-breaking space for consistency
+    return formatted.replace(/\u202f/g, '\u00a0') + ' DA';
 }
 
 /**

@@ -11,6 +11,7 @@
         "inventory_export": "تصدير المخزون",
         "create": "جديد",
         "save": "حفظ",
+        "submitting": "جاري الحفظ...",
         "confirm": "تأكيد",
         "cancel": "إلغاء",
         "delete": "حذف",
@@ -73,7 +74,8 @@
             "catalogue": "الكتالوج والمنتجات",
             "production": "العمليات والمخزون",
             "commerce": "التدفقات التجارية",
-            "finance": "الإدارة المالية"
+            "finance": "الإدارة المالية",
+            "administration": "الإدارة"
         },
         "items": {
             "products": "المنتجات",
@@ -101,6 +103,7 @@
         "real_production_cost": "تكلفة الإنتاج",
         "shortage_alerts": "تنبيهات النقص",
         "total_invoiced": "إجمالي المفوتر",
+        "actual_cash": "السيولة الفعلية",
         "cash_position": "الوضعية النقدية",
         "profitability": "الربحية",
         "margin_percent": "هامش الربح",
@@ -113,6 +116,7 @@
         "no_supplier_data": "لا توجد بيانات الموردين",
         "no_sales_data": "لا توجد بيانات مبيعات",
         "monthly_sales": "الحجم الشهري",
+        "articles": "منتجات",
         "all_clear": "لا توجد تنبيهات نشطة",
         "alerts": {
             "title": "تنبيهات تشغيلية",
@@ -124,6 +128,8 @@
             "gap": "الفجوة الصافية",
             "invoiced": "المفوتر",
             "collected": "المحصل",
+            "recovery": "تحصيل",
+            "receivables": "مبالغ للتحصيل",
             "stable": "مستقر",
             "positive": "إيجابي",
             "negative": "سلبي"
@@ -568,7 +574,8 @@
                 "email": "البريد الإلكتروني",
                 "phone": "الهاتف",
                 "address": "العنوان",
-                "creditLimit": "حد الائتمان"
+                "creditLimit": "حد الائتمان",
+                "no_contact": "لا يوجد جهة اتصال"
             },
             "sections": {
                 "identity": "الهوية والبيانات القانونية",
@@ -581,19 +588,7 @@
             },
             "hints": {
                 "credit": "حدد الحد الائتماني المسموح به لهذا العميل."
-            },
-            "subtitle": "إدارة شركاء التوريد",
-            "name_required": "اسم المورد مطلوب",
-            "identity_and_code": "الهوية والأكواد القانونية",
-            "communication_and_location": "الاتصال والموقع",
-            "procurement_settings": "شروط الشراء",
-            "name_label": "اسم الشركة",
-            "code_sku": "رمز SKU",
-            "email_label": "البريد الإلكتروني",
-            "phone_label": "الهاتف",
-            "address_label": "العنوان",
-            "payment_terms": "شروط الدفع (أيام)",
-            "initial_status": "الحالة الأولية"
+            }
         }
     },
     "finances": {
@@ -610,7 +605,9 @@
                 "partial": "مدفوعة جزئياً",
                 "paid": "مدفوعة",
                 "cancelled": "ملغاة",
-                "all": "جميع الحالات"
+                "all": "جميع الحالات",
+                "draft": "مسودة",
+                "validated": "مؤكد"
             },
             "fields": {
                 "customer": "العميل",
@@ -624,11 +621,7 @@
                 "total_pending": "المتبقي للتحصيل",
                 "recovered_rate": "المعدل"
             },
-            "total_ttc": "TOTAL TTC",
-            "status": {
-                "draft": "مسودة",
-                "validated": "مؤكد"
-            }
+            "total_ttc": "TOTAL TTC"
         },
         "payments": {
             "title": "إدارة المدفوعات",
@@ -769,5 +762,25 @@
         "manual_fix": "إجراء إعادة التشغيل:",
         "max_reached": "تم الوصول للحد ({count}/{max})",
         "retry_btn": "إعادة التشغيل ({count}/{max})"
+    },
+    "treasury": {
+        "title": "الخزينة",
+        "aged_receivables": "ميزان الأعمار",
+        "collections": "التحصيل",
+        "forecast": "التوقعات المالية",
+        "summary": "ملخص الخزينة",
+        "total_outstanding": "إجمالي المستحقات",
+        "current": "حالي (0-30 يوم)",
+        "late_30": "متأخر (30-60 يوم)",
+        "late_60": "متأخر (60-90 يوم)",
+        "late_90": "حرج (90+ يوم)",
+        "risk_score": "درجة المخاطر",
+        "reminders": "التذكيرات",
+        "behavior": "السلوك",
+        "actions": {
+            "send_reminder": "إرسال تذكير",
+            "log_activity": "تسجيل نشاط",
+            "block_credit": "حظر الائتمان"
+        }
     }
 }

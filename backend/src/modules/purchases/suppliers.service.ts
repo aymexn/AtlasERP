@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSupplierDto, UpdateSupplierDto } from './dto/supplier.dto';
+import { StockMovementService } from '../inventory/services/stock-movement.service';
 
 @Injectable()
 export class SuppliersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private stockMovementService: StockMovementService,
+  ) {}
 
   async list(companyId: string) {
     console.log(`[SuppliersService.list] Fetching for companyId: ${companyId}`);
@@ -27,6 +31,13 @@ export class SuppliersService {
       console.error('SuppliersService.list Error:', error);
       throw error;
     }
+  }
+
+  private async generateReference(companyId: string): Promise<string> {
+    const count = await this.prisma.supplier.count({
+      where: { companyId }
+    });
+    return `FR-${(count + 1).toString().padStart(4, '0')}`;
   }
 
   async findOne(id: string, companyId: string) {
@@ -65,11 +76,17 @@ export class SuppliersService {
         }
       }
 
+      const data: any = {
+        ...dto,
+        companyId,
+      };
+
+      if (!data.code) {
+        data.code = await this.generateReference(companyId);
+      }
+
       return await this.prisma.supplier.create({
-        data: {
-          ...dto,
-          companyId,
-        },
+        data,
       });
     } catch (error) {
       console.error('SuppliersService.create Error:', error);

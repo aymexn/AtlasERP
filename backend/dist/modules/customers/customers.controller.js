@@ -20,8 +20,11 @@ let CustomersController = class CustomersController {
     constructor(customersService) {
         this.customersService = customersService;
     }
-    async findAll(req) {
-        return this.customersService.findAll(req.user.companyId);
+    async findAll(req, filters) {
+        return this.customersService.findAll(req.user.companyId, filters);
+    }
+    async getPerformanceData(req, id) {
+        return this.customersService.getPerformanceData(req.user.companyId, id);
     }
     async findOne(req, id) {
         return this.customersService.findOne(req.user.companyId, id);
@@ -40,10 +43,19 @@ exports.CustomersController = CustomersController;
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id/performance'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], CustomersController.prototype, "getPerformanceData", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Request)()),

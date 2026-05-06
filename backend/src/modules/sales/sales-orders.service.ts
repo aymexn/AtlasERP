@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { SalesOrderStatus, Prisma } from '@prisma/client';
 import { InvoicesService } from '../invoices/invoices.service';
+import { StockMovementService } from '../inventory/services/stock-movement.service';
 
 @Injectable()
 export class SalesOrdersService {
   constructor(
     private prisma: PrismaService,
-    private invoicesService: InvoicesService
+    private invoicesService: InvoicesService,
+    private stockMovementService: StockMovementService
   ) {}
 
   async findAll(companyId: string) {
@@ -129,72 +131,42 @@ export class SalesOrdersService {
     if (!order) throw new NotFoundException('Order not found');
     if (order.status === 'SHIPPED') throw new BadRequestException('Order already shipped');
 
+    // Find the primary warehouse to consume from
+    const warehouse = await this.prisma.warehouse.findFirst({
+        where: { companyId, isActive: true },
+        orderBy: { createdAt: 'asc' }
+    });
+
+    if (!warehouse) throw new BadRequestException('No active warehouse found to consume stock.');
+
+    // 1. Delegate ALL stock logic to the automation service
+    await this.stockMovementService.completeSalesOrder(companyId, userId, id, warehouse.id);
+
+    // 2. Post-processing: Lock costs and trigger auto-invoice
     return await this.prisma.$transaction(async (tx) => {
-      for (const line of order.lines) {
-        const prod = line.product;
-        const shipQty = new Prisma.Decimal(line.quantity);
-        const currentStock = new Prisma.Decimal(prod.stockQuantity);
-        
-        // 1. Stock availability check
-        if (!order.company.allowNegativeStock && currentStock.lt(shipQty)) {
-          throw new BadRequestException(`Insufficient stock for ${prod.name}. Available: ${currentStock}, Requested: ${shipQty}`);
-        }
+      const shippedOrder = await tx.salesOrder.findUnique({
+        where: { id },
+        include: { lines: { include: { product: true } } }
+      });
 
-        const newStockQty = currentStock.minus(shipQty);
-        const currentCost = new Prisma.Decimal(prod.standardCost || 0);
-
-        // 2. Update Product Stock
-        await tx.product.update({
-          where: { id: prod.id },
-          data: {
-            stockQuantity: newStockQty,
-            stockValue: newStockQty.mul(currentCost),
-          }
-        });
-
-        // 3. Create Stock Movement (OUT)
-        await tx.stockMovement.create({
-          data: {
-            companyId,
-            productId: prod.id,
-            type: 'OUT',
-            quantity: shipQty,
-            unit: line.unit,
-            unitCost: currentCost,
-            totalCost: shipQty.mul(currentCost),
-            reference: `EXP-CLI-${order.reference}`,
-            reason: `Shipment for Sales Order ${order.reference}`,
-            createdBy: userId,
-            salesOrderId: order.id
-          }
-        });
-
-        // 4. Update Line shipped quantity and snapshot cost for margin analysis
+      for (const line of shippedOrder!.lines) {
         await tx.salesOrderLine.update({
           where: { id: line.id },
           data: { 
-            shippedQuantity: shipQty,
-            unitCostSnapshot: currentCost // Lock production cost at moment of shipment
+            shippedQuantity: line.quantity,
+            unitCostSnapshot: line.product.standardCost || 0 
           }
         });
       }
 
-      // 5. Update Order Status
-      const updatedOrder = await tx.salesOrder.update({
-        where: { id },
-        data: { status: 'SHIPPED' }
-      });
-
-      // 6. AUTO-INVOICE GENERATION
+      // AUTO-INVOICE GENERATION
       try {
         await this.invoicesService.createFromSalesOrder(companyId, order.id);
       } catch (invoiceErr) {
-        // We log but don't fail the shipment transaction if auto-invoicing fails
-        // as the user can still trigger it manually from UI.
         console.error('Auto-invoicing failed after shipment:', invoiceErr);
       }
 
-      return updatedOrder;
+      return tx.salesOrder.findUnique({ where: { id } });
     });
   }
 

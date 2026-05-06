@@ -20,6 +20,6 @@ export class StockReceptionsController {
 
   @Post(':id/validate')
   validate(@Request() req, @Param('id') id: string) {
-    return this.stockReceptionsService.validate(id, req.user.companyId);
+    return this.stockReceptionsService.validate(id, req.user.companyId, req.user.userId);
   }
 }

@@ -27,7 +27,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { KpiCard } from '@/components/ui/kpi-card';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { downloadPdf } from '@/lib/download-pdf';
 import { 
     Sheet, 
@@ -38,12 +38,14 @@ import {
     SheetFooter
 } from '@/components/ui/sheet';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { PermissionGuard } from '@/components/guards/PermissionGuard';
 
 export function InvoicesClient() {
     const t = useTranslations('finances.invoices');
     const pt = useTranslations('finances.payments');
     const ct = useTranslations('common');
     const { locale } = useParams();
+    const router = useRouter();
     
     const [invoices, setInvoices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -108,6 +110,7 @@ export function InvoicesClient() {
             toast.success(ct('save_success'));
             setIsSheetOpen(false);
             loadInvoices();
+            router.refresh();
         } catch (err: any) {
             toast.error(err.message || ct('toast.error'));
         } finally {
@@ -149,18 +152,19 @@ export function InvoicesClient() {
     }
 
     return (
-        <div className="flex flex-col gap-10 pb-20 animate-in fade-in duration-700">
-            <PageHeader 
-                title={t('title')}
-                subtitle={t('subtitle')}
-                icon={Receipt}
-            />
+        <PermissionGuard module="finance" resource="transaction" action="read" showLoading>
+            <div className="flex flex-col gap-10 pb-20 animate-in fade-in duration-700">
+                <PageHeader 
+                    title={t('title')}
+                    subtitle={t('subtitle')}
+                    icon={Receipt}
+                />
 
-            {/* Financial KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <KpiCard 
-                    title={t('kpi.total_invoiced')}
-                    value={stats.total}
+                {/* Financial KPIs */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <KpiCard 
+                        title={t('kpi.total_invoiced')}
+                        value={stats.total}
                     icon={TrendingUp}
                     variant="primary"
                     type="currency"
@@ -220,7 +224,7 @@ export function InvoicesClient() {
                                 )
                             },
                             {
-                                header: ct('fields.customer') || "CLIENT PARTENAIRE",
+                                header: ct('fields.customer'),
                                 className: "w-[300px]",
                                 accessor: (inv: any) => (
                                     <div className="font-black text-slate-900 text-[15px] tracking-tight truncate max-w-[280px]">
@@ -229,11 +233,11 @@ export function InvoicesClient() {
                                 )
                             },
                             {
-                                header: ct('date') || "DATE",
+                                header: ct('date'),
                                 accessor: (inv: any) => <span className="text-sm font-bold text-slate-500">{new Date(inv.date).toLocaleDateString(locale as string)}</span>
                             },
                             {
-                                header: t('total_ttc') || "TOTAL TTC",
+                                header: t('total_ttc'),
                                 align: 'right' as const,
                                 className: "min-w-[140px] whitespace-nowrap",
                                 accessor: (inv: any) => <span className="text-sm font-black text-slate-900">{formatCurrency(inv.totalAmountTtc)}</span>
@@ -304,7 +308,7 @@ export function InvoicesClient() {
                                 <Wallet size={64} />
                             </div>
                             <div className="relative z-10 space-y-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Facturé TTC</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('total_ttc')}</span>
                                 <div className="text-3xl font-black tracking-tight">
                                     {selectedInvoice && formatCurrency(selectedInvoice.totalAmountTtc)}
                                 </div>
@@ -330,9 +334,9 @@ export function InvoicesClient() {
                                         value={paymentData.method}
                                         onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value })}
                                     >
-                                        <option value="CASH">Espèces</option>
-                                        <option value="CHECK">Chèque</option>
-                                        <option value="TRANSFER">Virement</option>
+                                        <option value="CASH">{pt('methods.cash')}</option>
+                                        <option value="CHECK">{pt('methods.check')}</option>
+                                        <option value="TRANSFER">{pt('methods.transfer')}</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2">
@@ -383,11 +387,12 @@ export function InvoicesClient() {
                             disabled={isSubmitting}
                             className="px-12 py-4 bg-success text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-green-500/20 hover:bg-green-700 transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50"
                         >
-                            {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <><Save size={18} /> Valider le Paiement</>}
+                            {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <><Save size={18} /> {pt('validate')}</>}
                         </button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
         </div>
+    </PermissionGuard>
     );
 }

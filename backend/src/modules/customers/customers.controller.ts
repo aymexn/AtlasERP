@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CustomersService } from './customers.service';
+import { CustomersService, CustomerFilters } from './customers.service';
 
 @Controller('customers')
 @UseGuards(JwtAuthGuard)
@@ -8,8 +8,13 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  async findAll(@Request() req) {
-    return this.customersService.findAll(req.user.companyId);
+  async findAll(@Request() req, @Query() filters: CustomerFilters) {
+    return this.customersService.findAll(req.user.companyId, filters);
+  }
+
+  @Get(':id/performance')
+  async getPerformanceData(@Request() req, @Param('id') id: string) {
+    return this.customersService.getPerformanceData(req.user.companyId, id);
   }
 
   @Get(':id')

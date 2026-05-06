@@ -2,8 +2,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 export declare class InventoryService {
     private prisma;
     constructor(prisma: PrismaService);
-    getProductsStock(companyId: string, warehouseId?: string): Promise<({
+    getProductsStock(companyId: string, warehouseId?: string): Promise<{
+        quantity: number;
+        reservedQuantity: number;
+        availableQuantity: number;
         product: {
+            id: string;
             name: string;
             sku: string;
             standardCost: import("@prisma/client/runtime/library").Decimal;
@@ -12,23 +16,23 @@ export declare class InventoryService {
                 name: string;
             };
         };
-    } & {
         id: string;
         companyId: string;
         updatedAt: Date;
         productId: string;
-        quantity: import("@prisma/client/runtime/library").Decimal;
         warehouseId: string;
-        reservedQuantity: import("@prisma/client/runtime/library").Decimal;
         minThreshold: import("@prisma/client/runtime/library").Decimal;
         maxThreshold: import("@prisma/client/runtime/library").Decimal | null;
-    })[] | {
+    }[] | {
+        stockQuantity: number;
+        reservedQuantity: number;
+        availableQuantity: number;
         id: string;
         name: string;
         sku: string;
         standardCost: import("@prisma/client/runtime/library").Decimal;
-        stockQuantity: import("@prisma/client/runtime/library").Decimal;
         unit: string;
+        purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
         minStock: import("@prisma/client/runtime/library").Decimal;
         maxStock: import("@prisma/client/runtime/library").Decimal;
         stockValue: import("@prisma/client/runtime/library").Decimal;

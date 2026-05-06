@@ -49,6 +49,14 @@ export class CreatePurchaseOrderDto {
   @ValidateNested({ each: true })
   @Type(() => CreatePurchaseOrderLineDto)
   lines: CreatePurchaseOrderLineDto[];
+
+  @IsString()
+  @IsOptional()
+  status?: string;
+
+  @IsString()
+  @IsOptional()
+  warehouseId?: string;
 }
 
 export class UpdatePurchaseOrderDto extends CreatePurchaseOrderDto {}

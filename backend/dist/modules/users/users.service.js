@@ -34,6 +34,61 @@ let UsersService = class UsersService {
             data: { companyId },
         });
     }
+    async findAll() {
+        return this.prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                status: true,
+                createdAt: true,
+                roles: {
+                    include: {
+                        role: true,
+                    },
+                    where: {
+                        isActive: true,
+                    },
+                },
+            },
+        });
+    }
+    async invite(email, roleId, invitedBy, companyId) {
+        return this.prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    email,
+                    status: 'PENDING',
+                    companyId,
+                },
+            });
+            await tx.userRole.create({
+                data: {
+                    userId: user.id,
+                    roleId,
+                    assignedBy: invitedBy,
+                },
+            });
+            await tx.auditLog.create({
+                data: {
+                    companyId,
+                    userId: invitedBy,
+                    action: 'INVITE_USER',
+                    entity: 'User',
+                    entityId: user.id,
+                    newValues: { email, roleId },
+                },
+            });
+            await tx.permissionAuditLog.create({
+                data: {
+                    userId: invitedBy,
+                    actionType: 'user_invited',
+                    roleId,
+                    targetUserId: user.id,
+                },
+            });
+            return user;
+        });
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

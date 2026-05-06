@@ -9,14 +9,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommonModule = void 0;
 const common_1 = require("@nestjs/common");
 const pdf_service_1 = require("./services/pdf.service");
+const cache_service_1 = require("./services/cache.service");
 let CommonModule = class CommonModule {
 };
 exports.CommonModule = CommonModule;
 exports.CommonModule = CommonModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
-        providers: [pdf_service_1.PdfService],
-        exports: [pdf_service_1.PdfService],
+        providers: [pdf_service_1.PdfService, cache_service_1.CacheService],
+        exports: [pdf_service_1.PdfService, cache_service_1.CacheService],
     })
 ], CommonModule);
 //# sourceMappingURL=common.module.js.map

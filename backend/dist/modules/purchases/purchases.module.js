@@ -15,12 +15,13 @@ const purchase_orders_controller_1 = require("./purchase-orders.controller");
 const stock_receptions_service_1 = require("./stock-receptions.service");
 const stock_receptions_controller_1 = require("./stock-receptions.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
+const inventory_module_1 = require("../inventory/inventory.module");
 let PurchasesModule = class PurchasesModule {
 };
 exports.PurchasesModule = PurchasesModule;
 exports.PurchasesModule = PurchasesModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, inventory_module_1.InventoryModule],
         providers: [
             suppliers_service_1.SuppliersService,
             purchase_orders_service_1.PurchaseOrdersService,

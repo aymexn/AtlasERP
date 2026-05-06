@@ -89,6 +89,9 @@ export const salesOrdersService = {
     return apiFetch(`/sales-orders/${id}/profitability`);
   },
   getPdfUrl(id: string) {
-    return `/sales-orders/${id}/pdf`;
+    return `/api/pdf/sales-order/${id}`;
+  },
+  getDeliveryNoteUrl(id: string) {
+    return `/api/pdf/delivery-note/${id}`;
   }
 };

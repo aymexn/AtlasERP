@@ -4,6 +4,7 @@ export declare class CreateManufacturingOrderDto {
     plannedQuantity: number;
     plannedDate: string;
     notes?: string;
+    warehouseId?: string;
 }
 export declare class UpdateManufacturingOrderDto {
     plannedDate?: string;

@@ -1,20 +1,35 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { CustomerSegment, CustomerType, PaymentBehavior, RiskLevel } from '@prisma/client';
+export interface CustomerFilters {
+    segment?: CustomerSegment;
+    customerType?: CustomerType;
+    paymentBehavior?: PaymentBehavior;
+    riskLevel?: RiskLevel;
+    isActive?: boolean;
+}
 export declare class CustomersService {
     private prisma;
     constructor(prisma: PrismaService);
-    findAll(companyId: string): Promise<{
+    findAll(companyId: string, filters?: CustomerFilters): Promise<{
+        totalRevenue: number;
+        invoices: any;
         id: string;
         email: string | null;
         companyId: string;
         createdAt: Date;
         name: string;
+        isActive: boolean;
         address: string | null;
         phone: string | null;
-        isActive: boolean;
         updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
+        segment: import(".prisma/client").$Enums.CustomerSegment | null;
+        customerType: import(".prisma/client").$Enums.CustomerType | null;
+        paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
+        riskLevel: import(".prisma/client").$Enums.RiskLevel | null;
+        avgPaymentDelay: number;
     }[]>;
     findOne(companyId: string, id: string): Promise<{
         id: string;
@@ -22,13 +37,19 @@ export declare class CustomersService {
         companyId: string;
         createdAt: Date;
         name: string;
+        isActive: boolean;
         address: string | null;
         phone: string | null;
-        isActive: boolean;
         updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
+        segment: import(".prisma/client").$Enums.CustomerSegment | null;
+        customerType: import(".prisma/client").$Enums.CustomerType | null;
+        paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
+        riskLevel: import(".prisma/client").$Enums.RiskLevel | null;
+        totalRevenue: import("@prisma/client/runtime/library").Decimal;
+        avgPaymentDelay: number;
     }>;
     create(companyId: string, data: any): Promise<{
         id: string;
@@ -36,13 +57,19 @@ export declare class CustomersService {
         companyId: string;
         createdAt: Date;
         name: string;
+        isActive: boolean;
         address: string | null;
         phone: string | null;
-        isActive: boolean;
         updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
+        segment: import(".prisma/client").$Enums.CustomerSegment | null;
+        customerType: import(".prisma/client").$Enums.CustomerType | null;
+        paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
+        riskLevel: import(".prisma/client").$Enums.RiskLevel | null;
+        totalRevenue: import("@prisma/client/runtime/library").Decimal;
+        avgPaymentDelay: number;
     }>;
     update(companyId: string, id: string, data: any): Promise<{
         id: string;
@@ -50,13 +77,19 @@ export declare class CustomersService {
         companyId: string;
         createdAt: Date;
         name: string;
+        isActive: boolean;
         address: string | null;
         phone: string | null;
-        isActive: boolean;
         updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
+        segment: import(".prisma/client").$Enums.CustomerSegment | null;
+        customerType: import(".prisma/client").$Enums.CustomerType | null;
+        paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
+        riskLevel: import(".prisma/client").$Enums.RiskLevel | null;
+        totalRevenue: import("@prisma/client/runtime/library").Decimal;
+        avgPaymentDelay: number;
     }>;
     remove(companyId: string, id: string): Promise<{
         id: string;
@@ -64,12 +97,74 @@ export declare class CustomersService {
         companyId: string;
         createdAt: Date;
         name: string;
+        isActive: boolean;
         address: string | null;
         phone: string | null;
-        isActive: boolean;
         updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
+        segment: import(".prisma/client").$Enums.CustomerSegment | null;
+        customerType: import(".prisma/client").$Enums.CustomerType | null;
+        paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
+        riskLevel: import(".prisma/client").$Enums.RiskLevel | null;
+        totalRevenue: import("@prisma/client/runtime/library").Decimal;
+        avgPaymentDelay: number;
+    }>;
+    getPerformanceData(companyId: string, customerId: string): Promise<{
+        customer: {
+            totalRevenue: number;
+            id: string;
+            email: string | null;
+            companyId: string;
+            createdAt: Date;
+            name: string;
+            isActive: boolean;
+            address: string | null;
+            phone: string | null;
+            updatedAt: Date;
+            taxId: string | null;
+            contact: string | null;
+            creditLimit: import("@prisma/client/runtime/library").Decimal;
+            segment: import(".prisma/client").$Enums.CustomerSegment | null;
+            customerType: import(".prisma/client").$Enums.CustomerType | null;
+            paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
+            riskLevel: import(".prisma/client").$Enums.RiskLevel | null;
+            avgPaymentDelay: number;
+        };
+        kpis: {
+            totalRevenueAllTime: number;
+            totalRevenueThisYear: number;
+            outstandingBalance: number;
+            avgPaymentDelay: number;
+            segment: import(".prisma/client").$Enums.CustomerSegment;
+            paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior;
+            riskLevel: import(".prisma/client").$Enums.RiskLevel;
+        };
+        trend: {
+            month: string;
+            revenue: number;
+        }[];
+        topProducts: {
+            name: string;
+            sku: string;
+            qty: number;
+            revenue: number;
+        }[];
+        openOrders: {
+            id: string;
+            reference: string;
+            status: import(".prisma/client").$Enums.SalesOrderStatus;
+            date: Date;
+            totalAmountTtc: number;
+        }[];
+        unpaidInvoices: {
+            id: string;
+            reference: string;
+            date: Date;
+            totalAmountTtc: number;
+            amountRemaining: number;
+            status: import(".prisma/client").$Enums.InvoiceStatus;
+        }[];
     }>;
 }

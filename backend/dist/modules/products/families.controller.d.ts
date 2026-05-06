@@ -13,13 +13,13 @@ export declare class FamiliesController {
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     }>;
     findAll(req: any): Promise<({
         parent: {
@@ -31,26 +31,26 @@ export declare class FamiliesController {
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     })[]>;
     remove(id: string, req: any): Promise<{
         id: string;
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     }>;
     update(id: string, dto: UpdateFamilyDto, req: any): Promise<{
         parent: {
@@ -62,12 +62,12 @@ export declare class FamiliesController {
         companyId: string;
         createdAt: Date;
         name: string;
-        description: string | null;
         isActive: boolean;
+        description: string | null;
         updatedAt: Date;
         code: string | null;
         colorBadge: string | null;
-        sortOrder: number;
         parentId: string | null;
+        sortOrder: number;
     }>;
 }

@@ -65,4 +65,10 @@ export class ProductsController {
     remove(@Param('id') id: string, @Request() req: any) {
         return this.productsService.remove(id, req.user.companyId);
     }
+
+    @Post(':id/recalculate-cost')
+    @ApiOperation({ summary: 'Recalculate product standard cost based on active formula' })
+    recalculateCost(@Param('id') id: string, @Request() req: any) {
+        return this.productsService.recalculateCost(id, req.user.companyId);
+    }
 }

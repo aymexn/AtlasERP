@@ -59,4 +59,7 @@ export const purchaseOrdersService = {
       method: 'POST',
     });
   },
+  getPdfUrl(id: string) {
+    return `/api/pdf/purchase-order/${id}`;
+  }
 };

@@ -2,15 +2,20 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from './dto/purchase-order.dto';
 import { PurchaseOrderStatus } from '@prisma/client';
+import { StockMovementService } from '../inventory/services/stock-movement.service';
+import { MovementType } from '../inventory/dto/create-movement.dto';
 
 @Injectable()
 export class PurchaseOrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private stockMovementService: StockMovementService
+  ) {}
 
   private async generateReference(companyId: string): Promise<string> {
     const now = new Date();
     const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const prefix = `BC-${yearMonth}-`;
+    const prefix = `BCF-${yearMonth}-`;
 
     const lastOrder = await this.prisma.purchaseOrder.findFirst({
       where: {
@@ -23,8 +28,9 @@ export class PurchaseOrdersService {
 
     let sequence = 1;
     if (lastOrder) {
-      const lastSequence = parseInt(lastOrder.reference.split('-')[2]);
-      sequence = lastSequence + 1;
+      const parts = lastOrder.reference.split('-');
+      const lastSequence = parseInt(parts[parts.length - 1]);
+      sequence = isNaN(lastSequence) ? 1 : lastSequence + 1;
     }
 
     return `${prefix}${String(sequence).padStart(4, '0')}`;
@@ -131,31 +137,111 @@ export class PurchaseOrdersService {
         reference = `BC-TEMP-${Date.now()}`;
       }
 
-      return await this.prisma.$transaction(async (tx) => {
-        return await tx.purchaseOrder.create({
-          data: {
-            companyId,
-            reference,
-            supplierId: dto.supplierId,
-            orderDate: new Date(dto.orderDate),
-            expectedDate: dto.expectedDate ? new Date(dto.expectedDate) : null,
-            notes: dto.notes,
-            status: 'DRAFT',
-            totalHt: Number(totalHt.toFixed(2)),
-            totalTva: Number(totalTva.toFixed(2)),
-            totalTtc: Number(totalTtc.toFixed(2)),
-            lines: {
-              create: lineData
+        const finalStatus = (dto.status as PurchaseOrderStatus) || 'DRAFT';
+
+        return await this.prisma.$transaction(async (tx) => {
+            // 3. Create the Purchase Order
+            const order = await tx.purchaseOrder.create({
+                data: {
+                    companyId,
+                    reference,
+                    supplierId: dto.supplierId,
+                    orderDate: new Date(dto.orderDate),
+                    expectedDate: dto.expectedDate ? new Date(dto.expectedDate) : null,
+                    notes: dto.notes,
+                    status: finalStatus,
+                    totalHt: Number(totalHt.toFixed(2)),
+                    totalTva: Number(totalTva.toFixed(2)),
+                    totalTtc: Number(totalTtc.toFixed(2)),
+                    lines: {
+                        create: lineData.map(l => ({
+                            productId: l.productId,
+                            quantity: Number(l.quantity),
+                            unit: l.unit,
+                            unitPriceHt: Number(l.unitPriceHt),
+                            taxRate: Number(l.taxRate),
+                            totalHt: Number(l.totalHt),
+                            note: l.note,
+                            receivedQty: finalStatus === 'RECEIVED' ? Number(l.quantity) : 0
+                        }))
+                    }
+                },
+                include: { 
+                    supplier: true,
+                    lines: { include: { product: true } }
+                }
+            });
+
+            // Handle Immediate Stock Movement if status is RECEIVED (DIRECT STOCK ENTRY)
+            if (finalStatus === 'RECEIVED') {
+                // 1. Determine warehouse
+                let warehouseId = dto.warehouseId;
+                if (!warehouseId) {
+                    const defaultWarehouse = await tx.warehouse.findFirst({
+                        where: { companyId, isActive: true },
+                        orderBy: { createdAt: 'asc' }
+                    });
+                    if (!defaultWarehouse) throw new BadRequestException('Aucun entrepôt actif trouvé pour l\'entrée en stock.');
+                    warehouseId = defaultWarehouse.id;
+                }
+
+                // 2. Create the Reception Record (VALIDATED)
+                const now = new Date();
+                const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+                const receptionPrefix = `REC-${yearMonth}-`;
+                
+                const lastRec = await tx.stockReception.findFirst({
+                    where: { companyId, reference: { startsWith: receptionPrefix } },
+                    orderBy: { reference: 'desc' },
+                    select: { reference: true }
+                });
+                
+                let recSequence = 1;
+                if (lastRec) {
+                    const parts = lastRec.reference.split('-');
+                    const lastSeq = parseInt(parts[parts.length - 1]);
+                    recSequence = isNaN(lastSeq) ? 1 : lastSeq + 1;
+                }
+                const receptionReference = `${receptionPrefix}${String(recSequence).padStart(4, '0')}`;
+
+                const reception = await tx.stockReception.create({
+                    data: {
+                        companyId,
+                        reference: receptionReference,
+                        purchaseOrderId: order.id,
+                        warehouseId: warehouseId,
+                        status: 'VALIDATED',
+                        notes: 'Réception automatique lors de l\'achat direct',
+                        lines: {
+                            create: order.lines.map(line => ({
+                                productId: line.productId,
+                                purchaseLineId: line.id,
+                                expectedQty: Number(line.quantity),
+                                receivedQty: Number(line.quantity),
+                                unit: line.unit,
+                                unitCost: Number(line.unitPriceHt)
+                            }))
+                        }
+                    }
+                });
+
+                // 3. Generate Stock Movements & Update Inventory
+                for (const line of order.lines) {
+                    await this.stockMovementService.createMovement(companyId, null, {
+                        productId: line.productId,
+                        quantity: Number(line.quantity),
+                        type: MovementType.IN,
+                        warehouseId: warehouseId,
+                        reference: order.reference,
+                        reason: `Réception Directe BCF ${order.reference}`,
+                        unitCost: Number(line.unitPriceHt),
+                        unit: line.unit
+                    }, tx);
+                }
             }
-          },
-          include: { 
-            supplier: true,
-            lines: {
-              include: { product: true }
-            }
-          }
+
+            return order;
         });
-      });
     } catch (error) {
       console.error('PurchaseOrdersService.create Error:', error);
       throw error;

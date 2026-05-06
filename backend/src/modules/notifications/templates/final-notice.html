@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #000; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px; border: 2px solid #000; }
+        .header { margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .logo { font-size: 24px; font-weight: 900; }
+        .content { margin-bottom: 40px; }
+        .amount { font-size: 28px; font-weight: 900; margin: 20px 0; }
+        .legal { font-weight: bold; text-transform: uppercase; color: #dc2626; }
+        .footer { font-size: 11px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AtlasERP</div>
+            <p><strong>MISE EN DEMEURE</strong></p>
+        </div>
+        <div class="content">
+            <p>À l'attention de {{customerName}},</p>
+            <p class="legal">DERNIER AVIS AVANT PROCÉDURE CONTENTIEUSE</p>
+            <p>Sauf réception de votre paiement pour la facture <strong>{{invoiceNumber}}</strong> sous 24 heures, nous serons au regret de transmettre votre dossier à notre service juridique pour recouvrement forcé.</p>
+            <div class="amount">TOTAL DU : {{amount}} DA</div>
+            <p>Le montant total inclut désormais les pénalités de retard applicables. Cette lettre constitue le dernier avertissement formel.</p>
+        </div>
+        <div class="footer">
+            AtlasERP Département Juridique - Alger, Algérie
+        </div>
+    </div>
+</body>
+</html>

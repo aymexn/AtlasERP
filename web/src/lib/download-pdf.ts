@@ -9,8 +9,13 @@ import { API_URL } from './api';
 export async function downloadPdf(url: string, filename: string): Promise<boolean> {
     const token = typeof window !== 'undefined' ? localStorage.getItem('atlas_token') : null;
     
-    // Ensure relative URLs hit the backend
-    const targetUrl = url.startsWith('/') ? `${API_URL}${url}` : url;
+    // Ensure relative URLs hit the correct server
+    let targetUrl = url;
+    if (url.startsWith('/api/')) {
+        targetUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url;
+    } else if (url.startsWith('/')) {
+        targetUrl = `${API_URL}${url}`;
+    }
     
     try {
         console.log('Downloading PDF from:', targetUrl);

@@ -23,6 +23,10 @@ export class CreateManufacturingOrderDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @IsString()
+  @IsOptional()
+  warehouseId?: string;
 }
 
 export class UpdateManufacturingOrderDto {

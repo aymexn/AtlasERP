@@ -66,6 +66,6 @@ export const invoicesService = {
   },
 
   getInvoicePdfUrl(id: string) {
-    return `/invoices/${id}/pdf`;
+    return `/api/pdf/invoice/${id}`;
   }
 };
