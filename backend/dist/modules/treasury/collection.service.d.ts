@@ -14,15 +14,16 @@ export declare class CollectionService {
     }[]>;
     logActivity(companyId: string, data: any): Promise<{
         id: string;
+        status: string;
         companyId: string;
         createdAt: Date;
-        notes: string;
+        type: string;
+        updatedAt: Date;
+        notes: string | null;
         customerId: string;
         invoiceId: string | null;
-        activityType: string;
-        outcome: string | null;
-        nextAction: Date | null;
-        assignedTo: string | null;
+        actionDate: Date;
+        followUpDate: Date | null;
     }>;
     getActivities(companyId: string, customerId: string): Promise<({
         invoice: {
@@ -49,14 +50,15 @@ export declare class CollectionService {
         };
     } & {
         id: string;
+        status: string;
         companyId: string;
         createdAt: Date;
-        notes: string;
+        type: string;
+        updatedAt: Date;
+        notes: string | null;
         customerId: string;
         invoiceId: string | null;
-        activityType: string;
-        outcome: string | null;
-        nextAction: Date | null;
-        assignedTo: string | null;
+        actionDate: Date;
+        followUpDate: Date | null;
     })[]>;
 }

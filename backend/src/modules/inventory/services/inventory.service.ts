@@ -17,6 +17,7 @@ export class InventoryService {
               sku: true,
               standardCost: true,
               unit: true,
+              minStock: true,
               family: { select: { name: true } }
             }
           }
@@ -24,7 +25,6 @@ export class InventoryService {
       });
 
       // Calculate reserved quantities for all products in this warehouse
-      // Reserved = sum of required quantities for orders in DRAFT, PLANNED, or IN_PROGRESS status
       const reserved = await this.prisma.manufacturingOrderLine.groupBy({
         by: ['componentProductId'],
         where: {
@@ -47,6 +47,8 @@ export class InventoryService {
         return {
           ...s,
           quantity: physical,
+          stockQuantity: physical, // Add for consistency with global view
+          minStock: Number(s.product.minStock), // Use product threshold
           reservedQuantity: res,
           availableQuantity: Math.max(0, physical - res)
         };

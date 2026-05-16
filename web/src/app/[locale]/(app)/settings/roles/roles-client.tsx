@@ -44,7 +44,7 @@ interface Role {
 }
 
 export default function RolesClient() {
-  const t = useTranslations('settings');
+  const t = useTranslations('admin.roles');
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -62,13 +62,13 @@ export default function RolesClient() {
     try {
       const [rolesData, permsData] = await Promise.all([
         apiFetch('/rbac/roles'),
-        apiFetch('/rbac/permissions') // I need to add this endpoint to backend
+        apiFetch('/rbac/permissions')
       ]);
       setRoles(rolesData || []);
       setPermissions(permsData || []);
     } catch (error) {
       console.error('Failed to load RBAC data:', error);
-      toast.error('Erreur lors du chargement des données RBAC');
+      toast.error('Error loading RBAC data');
     } finally {
       setLoading(false);
     }
@@ -95,14 +95,14 @@ export default function RolesClient() {
         await apiFetch(`/rbac/roles/${selectedRole?.id}/permissions/${permissionId}`, {
           method: 'DELETE',
         });
-        toast.success('Permission retirée');
+        toast.success('Permission removed');
       } else {
         // Add permission
         await apiFetch(`/rbac/roles/${selectedRole?.id}/permissions`, {
           method: 'POST',
           body: JSON.stringify({ permissionIds: permissionId }),
         });
-        toast.success('Permission ajoutée');
+        toast.success('Permission added');
       }
       
       // Update the local roles state to keep everything in sync
@@ -122,7 +122,7 @@ export default function RolesClient() {
           ? [...prev, permissionId]
           : prev.filter(id => id !== permissionId)
       );
-      toast.error('Erreur lors de la mise à jour de la permission');
+      toast.error('Error updating permission');
     }
   };
 
@@ -162,12 +162,12 @@ export default function RolesClient() {
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Gestion des Rôles & Sécurité</h1>
-            <p className="text-slate-500 text-sm font-medium">Définissez les niveaux d'accès et les permissions granulaires par profil.</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{t('title')}</h1>
+            <p className="text-slate-500 text-sm font-medium">{t('subtitle')}</p>
           </div>
           <button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl flex items-center gap-2 font-black text-sm transition-all shadow-lg shadow-blue-100 uppercase tracking-tighter">
             <Plus size={18} />
-            Nouveau Rôle
+            {t('create')}
           </button>
         </div>
 
@@ -178,7 +178,7 @@ export default function RolesClient() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="text" 
-                placeholder="Rechercher un rôle..."
+                placeholder="Search role..."
                 className="w-full h-12 pl-12 pr-4 bg-white border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-600 transition-all font-bold text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -187,7 +187,7 @@ export default function RolesClient() {
 
             <div className="bg-white border-2 border-slate-100 rounded-[2rem] overflow-hidden shadow-sm">
               <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Profils Disponibles</h3>
+                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Available Profiles</h3>
               </div>
               <div className="divide-y divide-slate-100">
                 {roles.filter(r => r.displayName.toLowerCase().includes(searchTerm.toLowerCase())).map((role) => (
@@ -206,7 +206,7 @@ export default function RolesClient() {
                       </div>
                       <div>
                         <div className="font-black text-slate-900 text-sm tracking-tight">{role.displayName}</div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{role.description || 'Pas de description'}</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{role.description || 'No description'}</div>
                       </div>
                     </div>
                     {role.isSystemRole && (
@@ -227,8 +227,8 @@ export default function RolesClient() {
                   <Shield size={32} />
                 </div>
                 <div>
-                  <p className="font-black text-slate-900 uppercase tracking-tighter">Sélectionnez un rôle</p>
-                  <p className="text-slate-400 text-sm font-bold">Choisissez un profil à gauche pour configurer ses accès.</p>
+                  <p className="font-black text-slate-900 uppercase tracking-tighter">Select a role</p>
+                  <p className="text-slate-400 text-sm font-bold">Choose a profile from the left to configure its access.</p>
                 </div>
               </div>
             ) : (
@@ -243,7 +243,7 @@ export default function RolesClient() {
                       <div className="flex items-center gap-2">
                         <span className={`h-1.5 w-1.5 rounded-full ${selectedRole.isSystemRole ? 'bg-amber-500' : 'bg-green-500'}`}></span>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          {selectedRole.isSystemRole ? 'Rôle Système (Edition Autorisée)' : 'Rôle Personnalisé'}
+                          {selectedRole.isSystemRole ? 'System Role' : 'Custom Role'}
                         </p>
                       </div>
                     </div>

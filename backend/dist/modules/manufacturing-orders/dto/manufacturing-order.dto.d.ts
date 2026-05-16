@@ -1,6 +1,7 @@
 export declare class CreateManufacturingOrderDto {
     productId: string;
     formulaId: string;
+    variantId?: string;
     plannedQuantity: number;
     plannedDate: string;
     notes?: string;

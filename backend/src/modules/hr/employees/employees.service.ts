@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmployeeStatus, ContractType } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export interface EmployeeFilters {
   status?: EmployeeStatus;
@@ -10,7 +11,10 @@ export interface EmployeeFilters {
 
 @Injectable()
 export class EmployeesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventEmitter: EventEmitter2
+  ) {}
 
   async findAll(companyId: string, filters: EmployeeFilters = {}) {
     const where: any = { companyId };
@@ -64,7 +68,7 @@ export class EmployeesService {
   async create(companyId: string, data: any) {
     const { contract, ...employeeData } = data;
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Create Employee
       const employee = await tx.employee.create({
         data: {
@@ -91,12 +95,15 @@ export class EmployeesService {
 
       return employee;
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async update(companyId: string, id: string, data: any) {
     const employee = await this.findOne(companyId, id);
     
-    return this.prisma.employee.update({
+    const result = await this.prisma.employee.update({
       where: { id: employee.id },
       data: {
         ...data,
@@ -105,6 +112,9 @@ export class EmployeesService {
         terminationDate: data.terminationDate ? new Date(data.terminationDate) : undefined,
       },
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async addContract(companyId: string, employeeId: string, data: any) {

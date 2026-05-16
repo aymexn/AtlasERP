@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PurchaseOrdersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
 const stock_movement_service_1 = require("../inventory/services/stock-movement.service");
 const create_movement_dto_1 = require("../inventory/dto/create-movement.dto");
 let PurchaseOrdersService = class PurchaseOrdersService {
@@ -116,7 +117,9 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                     unitPriceHt: price,
                     taxRate: tax,
                     totalHt: lineTotalHt,
-                    note: line.note
+                    note: line.note,
+                    variantId: line.variantId,
+                    uomId: line.uomId
                 });
             }
             const totalTtc = Number((totalHt + totalTva).toFixed(2));
@@ -147,11 +150,13 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                                 productId: l.productId,
                                 quantity: Number(l.quantity),
                                 unit: l.unit,
+                                uomId: l.uomId,
+                                variantId: l.variantId,
                                 unitPriceHt: Number(l.unitPriceHt),
                                 taxRate: Number(l.taxRate),
                                 totalHt: Number(l.totalHt),
                                 note: l.note,
-                                receivedQty: finalStatus === 'RECEIVED' ? Number(l.quantity) : 0
+                                receivedQty: finalStatus === client_1.PurchaseOrderStatus.FULLY_RECEIVED ? Number(l.quantity) : 0
                             }))
                         }
                     },
@@ -160,7 +165,7 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                         lines: { include: { product: true } }
                     }
                 });
-                if (finalStatus === 'RECEIVED') {
+                if (finalStatus === client_1.PurchaseOrderStatus.FULLY_RECEIVED) {
                     let warehouseId = dto.warehouseId;
                     if (!warehouseId) {
                         const defaultWarehouse = await tx.warehouse.findFirst({
@@ -201,6 +206,8 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                                     expectedQty: Number(line.quantity),
                                     receivedQty: Number(line.quantity),
                                     unit: line.unit,
+                                    uomId: line.uomId,
+                                    variantId: line.variantId,
                                     unitCost: Number(line.unitPriceHt)
                                 }))
                             }
@@ -215,7 +222,9 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                             reference: order.reference,
                             reason: `Réception Directe BCF ${order.reference}`,
                             unitCost: Number(line.unitPriceHt),
-                            unit: line.unit
+                            unit: line.unit,
+                            uomId: line.uomId,
+                            variantId: line.variantId
                         }, tx);
                     }
                 }
@@ -270,8 +279,20 @@ let PurchaseOrdersService = class PurchaseOrdersService {
         });
         if (!order)
             throw new common_1.NotFoundException('Bon de commande introuvable.');
-        if (!['CONFIRMED', 'PARTIALLY_RECEIVED'].includes(order.status)) {
+        if (!['CONFIRMED', 'SENT', 'PARTIALLY_RECEIVED'].includes(order.status)) {
             throw new common_1.BadRequestException('Impossible de créer une réception pour une commande à ce stade.');
+        }
+        const existingDraft = await this.prisma.stockReception.findFirst({
+            where: {
+                purchaseOrderId: id,
+                companyId,
+                status: 'DRAFT'
+            },
+            include: { lines: true }
+        });
+        if (existingDraft) {
+            console.log(`[PurchaseOrdersService] Found existing DRAFT reception for PO ${id}: ${existingDraft.id}`);
+            return existingDraft;
         }
         const now = new Date();
         const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -294,6 +315,8 @@ let PurchaseOrdersService = class PurchaseOrdersService {
             expectedQty: Number(line.quantity) - Number(line.receivedQty),
             receivedQty: Number(line.quantity) - Number(line.receivedQty),
             unit: line.unit,
+            uomId: line.uomId,
+            variantId: line.variantId,
             unitCost: line.unitPriceHt,
         }))
             .filter(line => line.expectedQty > 0);
@@ -313,6 +336,77 @@ let PurchaseOrdersService = class PurchaseOrdersService {
                 }
             },
             include: { lines: true }
+        });
+    }
+    async update(id, companyId, dto) {
+        const existing = await this.prisma.purchaseOrder.findFirst({
+            where: { id, companyId }
+        });
+        if (!existing)
+            throw new common_1.NotFoundException('Bon de commande introuvable.');
+        if (existing.status !== 'DRAFT') {
+            throw new common_1.BadRequestException('Seuls les bons de commande en brouillon peuvent être modifiés.');
+        }
+        const supplier = await this.prisma.supplier.findFirst({
+            where: { id: dto.supplierId, companyId }
+        });
+        if (!supplier)
+            throw new common_1.BadRequestException('Fournisseur invalide.');
+        let totalHt = 0;
+        let totalTva = 0;
+        const lineData = [];
+        for (const line of dto.lines) {
+            const product = await this.prisma.product.findFirst({
+                where: { id: line.productId, companyId }
+            });
+            if (!product)
+                throw new common_1.BadRequestException(`Produit ID ${line.productId} invalide.`);
+            const qty = Number(line.quantity) || 0;
+            const price = Number(line.unitPriceHt) || 0;
+            const tax = Number(line.taxRate || 0.19);
+            const lineTotalHt = Number((qty * price).toFixed(2));
+            const lineTotalTva = Number((lineTotalHt * tax).toFixed(2));
+            totalHt += lineTotalHt;
+            totalTva += lineTotalTva;
+            lineData.push({
+                purchaseOrderId: id,
+                productId: line.productId,
+                quantity: qty,
+                unit: line.unit,
+                unitPriceHt: price,
+                taxRate: tax,
+                totalHt: lineTotalHt,
+                note: line.note,
+                variantId: line.variantId,
+                uomId: line.uomId
+            });
+        }
+        const totalTtc = Number((totalHt + totalTva).toFixed(2));
+        return await this.prisma.$transaction(async (tx) => {
+            await tx.purchaseOrderLine.deleteMany({
+                where: { purchaseOrderId: id }
+            });
+            const updated = await tx.purchaseOrder.update({
+                where: { id },
+                data: {
+                    supplierId: dto.supplierId,
+                    orderDate: new Date(dto.orderDate),
+                    expectedDate: dto.expectedDate ? new Date(dto.expectedDate) : null,
+                    notes: dto.notes,
+                    totalHt,
+                    totalTva,
+                    totalTtc,
+                    status: dto.status || 'DRAFT'
+                },
+                include: {
+                    supplier: true,
+                    lines: { include: { product: true } }
+                }
+            });
+            await tx.purchaseOrderLine.createMany({
+                data: lineData
+            });
+            return updated;
         });
     }
 };

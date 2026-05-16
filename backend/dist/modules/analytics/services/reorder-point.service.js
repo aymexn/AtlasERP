@@ -74,43 +74,41 @@ let ReorderPointService = ReorderPointService_1 = class ReorderPointService {
         const reorderQuantity = Math.ceil(avgDailyDemand * 30);
         const maximumStock = reorderPoint + reorderQuantity;
         const alertThreshold = Math.ceil(reorderPoint * 1.2);
-        return this.prisma.reorderPoint.upsert({
+        const existing = await this.prisma.reorderPoint.findFirst({
             where: {
-                productId_warehouseId_companyId: {
-                    productId,
-                    warehouseId,
-                    companyId
-                }
-            },
-            create: {
                 productId,
-                warehouseId,
-                companyId,
-                reorderPoint: new library_1.Decimal(reorderPoint),
-                safetyStock: new library_1.Decimal(safetyStock),
-                reorderQuantity: new library_1.Decimal(reorderQuantity),
-                maximumStock: new library_1.Decimal(maximumStock),
-                leadTimeDays,
-                averageDailyDemand: new library_1.Decimal(avgDailyDemand),
-                demandVariability: new library_1.Decimal(stdDev),
-                serviceLevel: new library_1.Decimal(serviceLevelPercent),
-                calculationMethod: 'dynamic',
-                lastCalculatedAt: new Date(),
-                alertThreshold: new library_1.Decimal(alertThreshold)
-            },
-            update: {
-                reorderPoint: new library_1.Decimal(reorderPoint),
-                safetyStock: new library_1.Decimal(safetyStock),
-                reorderQuantity: new library_1.Decimal(reorderQuantity),
-                maximumStock: new library_1.Decimal(maximumStock),
-                leadTimeDays,
-                averageDailyDemand: new library_1.Decimal(avgDailyDemand),
-                demandVariability: new library_1.Decimal(stdDev),
-                serviceLevel: new library_1.Decimal(serviceLevelPercent),
-                lastCalculatedAt: new Date(),
-                alertThreshold: new library_1.Decimal(alertThreshold)
+                warehouseId: warehouseId || null,
+                companyId
             }
         });
+        const data = {
+            productId,
+            warehouseId,
+            companyId,
+            reorderPoint: new library_1.Decimal(reorderPoint),
+            safetyStock: new library_1.Decimal(safetyStock),
+            reorderQuantity: new library_1.Decimal(reorderQuantity),
+            maximumStock: new library_1.Decimal(maximumStock),
+            leadTimeDays,
+            averageDailyDemand: new library_1.Decimal(avgDailyDemand),
+            demandVariability: new library_1.Decimal(stdDev),
+            serviceLevel: new library_1.Decimal(serviceLevelPercent),
+            calculationMethod: 'dynamic',
+            lastCalculatedAt: new Date(),
+            alertThreshold: new library_1.Decimal(alertThreshold)
+        };
+        if (existing) {
+            return this.prisma.reorderPoint.update({
+                where: { id: existing.id },
+                data: {
+                    ...data,
+                    calculationMethod: undefined
+                }
+            });
+        }
+        else {
+            return this.prisma.reorderPoint.create({ data });
+        }
     }
     async getAlerts(companyId) {
         return this.prisma.$queryRaw `
@@ -121,6 +119,9 @@ let ReorderPointService = ReorderPointService_1 = class ReorderPointService {
         rp.safety_stock,
         rp.reorder_quantity,
         w.name as warehouse_name,
+        s.name as preferred_supplier_name,
+        sp.cost_price as supplier_cost,
+        sp.lead_time_days as supplier_lead_time,
         CASE 
           WHEN COALESCE(ps.quantity, 0) <= rp.safety_stock THEN 'Critical'
           WHEN COALESCE(ps.quantity, 0) <= rp.reorder_point THEN 'Low'
@@ -130,6 +131,8 @@ let ReorderPointService = ReorderPointService_1 = class ReorderPointService {
       JOIN products p ON rp.product_id = p.id
       LEFT JOIN product_stocks ps ON p.id = ps.product_id AND (rp.warehouse_id = ps.warehouse_id OR rp.warehouse_id IS NULL)
       LEFT JOIN warehouses w ON rp.warehouse_id = w.id
+      LEFT JOIN supplier_products sp ON p.id = sp.product_id AND sp.is_preferred = true
+      LEFT JOIN suppliers s ON sp.supplier_id = s.id
       WHERE rp.company_id = ${companyId}::uuid
         AND rp.alert_enabled = true
         AND COALESCE(ps.quantity, 0) <= COALESCE(rp.alert_threshold, rp.reorder_point)

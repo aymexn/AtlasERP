@@ -33,7 +33,7 @@ export function useKeyboardShortcuts() {
             // Ctrl+Shift+N -> New Invoice
             if (isMod && e.shiftKey && (e.key === 'N' || e.key === 'n')) {
                 e.preventDefault();
-                router.push('/finances/invoices/new');
+                router.push('/finances/invoices/new' as any);
             }
 
             // / -> Focus search bar

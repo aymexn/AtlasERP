@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const event_emitter_1 = require("@nestjs/event-emitter");
 let EmployeesService = class EmployeesService {
-    constructor(prisma) {
+    constructor(prisma, eventEmitter) {
         this.prisma = prisma;
+        this.eventEmitter = eventEmitter;
     }
     async findAll(companyId, filters = {}) {
         const where = { companyId };
@@ -65,7 +67,7 @@ let EmployeesService = class EmployeesService {
     }
     async create(companyId, data) {
         const { contract, ...employeeData } = data;
-        return this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const employee = await tx.employee.create({
                 data: {
                     ...employeeData,
@@ -88,10 +90,12 @@ let EmployeesService = class EmployeesService {
             }
             return employee;
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async update(companyId, id, data) {
         const employee = await this.findOne(companyId, id);
-        return this.prisma.employee.update({
+        const result = await this.prisma.employee.update({
             where: { id: employee.id },
             data: {
                 ...data,
@@ -100,6 +104,8 @@ let EmployeesService = class EmployeesService {
                 terminationDate: data.terminationDate ? new Date(data.terminationDate) : undefined,
             },
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async addContract(companyId, employeeId, data) {
         const employee = await this.findOne(companyId, employeeId);
@@ -148,6 +154,7 @@ let EmployeesService = class EmployeesService {
 exports.EmployeesService = EmployeesService;
 exports.EmployeesService = EmployeesService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        event_emitter_1.EventEmitter2])
 ], EmployeesService);
 //# sourceMappingURL=employees.service.js.map

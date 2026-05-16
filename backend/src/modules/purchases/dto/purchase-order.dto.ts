@@ -14,6 +14,14 @@ export class CreatePurchaseOrderLineDto {
   @IsNotEmpty()
   unit: string;
 
+  @IsString()
+  @IsOptional()
+  uomId?: string;
+
+  @IsString()
+  @IsOptional()
+  variantId?: string;
+
   @IsNumber()
   @IsNotEmpty()
   unitPriceHt: number;

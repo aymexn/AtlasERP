@@ -5,6 +5,7 @@ import { StockTurnoverService } from './services/stock-turnover.service';
 import { DeadStockService } from './services/dead-stock.service';
 import { ReorderPointService } from './services/reorder-point.service';
 import { SupplierPerformanceService } from './services/supplier-performance.service';
+import { DashboardAnalyticsService } from './services/dashboard-analytics.service';
 
 @Controller('analytics')
 @UseGuards(JwtAuthGuard)
@@ -15,7 +16,56 @@ export class AnalyticsController {
     private deadStockService: DeadStockService,
     private reorderService: ReorderPointService,
     private supplierService: SupplierPerformanceService,
+    private dashboardService: DashboardAnalyticsService,
   ) {}
+
+  // Dashboard KPIs
+  @Get('kpi')
+  async getKpis(@Request() req: any, @Query('period') period?: string) {
+    return this.dashboardService.getKPIs(req.user.companyId, period);
+  }
+
+  // Predictive Alerts ("Bientôt")
+  @Get('alerts/imminent-rupture')
+  async getImminentRupture(@Request() req: any) {
+    return this.dashboardService.getImminentRupture(req.user.companyId);
+  }
+
+  @Get('alerts/surstock')
+  async getSurstock(@Request() req: any) {
+    return this.dashboardService.getSurstock(req.user.companyId);
+  }
+
+  @Get('alerts/payment-delays')
+  async getPaymentDelays(@Request() req: any) {
+    return this.dashboardService.getPaymentDelays(req.user.companyId);
+  }
+
+  @Get('alerts/production-bottlenecks')
+  async getProductionBottlenecks(@Request() req: any) {
+    return this.dashboardService.getProductionBottlenecks(req.user.companyId);
+  }
+
+  // Charts
+  @Get('charts/revenue-evolution')
+  async getRevenueEvolution(@Request() req: any, @Query('days') days?: number) {
+    return this.dashboardService.getRevenueEvolution(req.user.companyId, days ? Number(days) : 30);
+  }
+
+  @Get('charts/top-products')
+  async getTopProducts(@Request() req: any, @Query('limit') limit?: number) {
+    return this.dashboardService.getTopProducts(req.user.companyId, limit ? Number(limit) : 5);
+  }
+
+  @Get('charts/category-distribution')
+  async getCategoryDistribution(@Request() req: any) {
+    return this.dashboardService.getCategoryDistribution(req.user.companyId);
+  }
+
+  @Get('recent-transactions')
+  async getRecentTransactions(@Request() req: any, @Query('limit') limit?: number) {
+    return this.dashboardService.getRecentTransactions(req.user.companyId, limit ? Number(limit) : 10);
+  }
 
   // ABC Classification
   @Post('abc/calculate')

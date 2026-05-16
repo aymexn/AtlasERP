@@ -18,6 +18,11 @@ export class CreateStockMovementDto {
   @IsUUID()
   productId: string;
 
+  @ApiProperty()
+  @IsUUID()
+  @IsOptional()
+  variantId?: string;
+
   @ApiProperty({ enum: MovementType })
   @IsEnum(MovementType)
   type: MovementType;
@@ -60,6 +65,11 @@ export class CreateStockMovementDto {
   @IsString()
   @IsOptional()
   destinationLocation?: string;
+
+  @ApiProperty()
+  @IsUUID()
+  @IsOptional()
+  uomId?: string;
 
   @ApiProperty()
   @IsString()

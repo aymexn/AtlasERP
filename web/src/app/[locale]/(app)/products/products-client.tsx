@@ -233,7 +233,7 @@ export default function ProductsClient() {
             p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.family?.name?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFamily = selectedFamilyId === 'all' || p.familyId === selectedFamilyId;
-        const matchesStock = stockFilter === 'all' || p.stockQuantity <= (p.minStock || 0);
+        const matchesStock = stockFilter === 'all' || (p.stockQuantity < (p.minStock || 0) && p.stockQuantity > 0);
         return matchesSearch && matchesFamily && matchesStock;
     });
 
@@ -294,7 +294,7 @@ export default function ProductsClient() {
                     { label: t('stats.total'), value: products.length, variant: 'primary', icon: Package },
                     { label: t('stats.finished'), value: products.filter(p => p.articleType === 'FINISHED_PRODUCT').length, variant: 'success', icon: CheckCircle2 },
                     { label: t('stats.raw'), value: products.filter(p => p.articleType === 'RAW_MATERIAL').length, variant: 'secondary', icon: Layers },
-                    { label: t('stats.low_stock'), value: products.filter(p => p.stockQuantity <= (p.minStock || 0)).length, variant: 'warning', icon: AlertCircle }
+                    { label: t('stats.low_stock'), value: products.filter(p => p.stockQuantity < (p.minStock || 0) && p.stockQuantity > 0).length, variant: 'warning', icon: AlertCircle }
                 ].map((stat, i) => (
                     <div key={i} className="bg-card p-6 rounded-3xl border border-border shadow-sm flex items-center justify-between transition-all hover:border-primary/20 group">
                         <div>

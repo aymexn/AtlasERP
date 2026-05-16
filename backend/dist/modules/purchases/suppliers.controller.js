@@ -22,6 +22,7 @@ let SuppliersController = class SuppliersController {
         this.suppliersService = suppliersService;
     }
     create(req, createDto) {
+        console.log('[SuppliersController.create] Payload:', createDto);
         return this.suppliersService.create(req.user.companyId, createDto);
     }
     list(req) {
@@ -34,10 +35,20 @@ let SuppliersController = class SuppliersController {
         return this.suppliersService.findOne(id, req.user.companyId);
     }
     update(req, id, updateDto) {
+        console.log(`[SuppliersController.update] ID: ${id}, Payload:`, updateDto);
         return this.suppliersService.update(id, req.user.companyId, updateDto);
     }
     remove(req, id) {
         return this.suppliersService.remove(id, req.user.companyId);
+    }
+    getCatalog(id) {
+        return this.suppliersService.getCatalog(id);
+    }
+    addProductToCatalog(id, data) {
+        return this.suppliersService.addProductToCatalog(id, data);
+    }
+    removeProductFromCatalog(id) {
+        return this.suppliersService.removeProductFromCatalog(id);
     }
 };
 exports.SuppliersController = SuppliersController;
@@ -88,6 +99,28 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], SuppliersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Get)(':id/products'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], SuppliersController.prototype, "getCatalog", null);
+__decorate([
+    (0, common_1.Post)(':id/products'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], SuppliersController.prototype, "addProductToCatalog", null);
+__decorate([
+    (0, common_1.Delete)('products/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], SuppliersController.prototype, "removeProductFromCatalog", null);
 exports.SuppliersController = SuppliersController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('suppliers'),

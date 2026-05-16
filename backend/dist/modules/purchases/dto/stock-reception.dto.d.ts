@@ -14,3 +14,12 @@ export declare class CreateStockReceptionDto {
     notes?: string;
     lines: CreateStockReceptionLineDto[];
 }
+export declare class UpdateStockReceptionLineDto {
+    id: string;
+    receivedQty: number;
+}
+export declare class UpdateStockReceptionDto {
+    lines?: UpdateStockReceptionLineDto[];
+    notes?: string;
+    warehouseId?: string;
+}

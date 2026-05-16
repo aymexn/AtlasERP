@@ -50,6 +50,7 @@ export declare class InvoicesService {
                     purchasePriceHt: Prisma.Decimal | null;
                     minStock: Prisma.Decimal;
                     trackStock: boolean;
+                    stockUomId: string | null;
                     barcode: string | null;
                     internalReference: string | null;
                     isBlocked: boolean;
@@ -61,11 +62,12 @@ export declare class InvoicesService {
                 id: string;
                 taxRate: Prisma.Decimal;
                 unit: string;
-                productId: string;
                 quantity: Prisma.Decimal;
+                productId: string;
+                uomId: string | null;
                 salesOrderId: string;
-                shippedQuantity: Prisma.Decimal;
                 unitPriceHt: Prisma.Decimal;
+                shippedQuantity: Prisma.Decimal;
                 unitCostSnapshot: Prisma.Decimal;
                 lineTotalHt: Prisma.Decimal;
                 lineTotalTtc: Prisma.Decimal;
@@ -93,9 +95,9 @@ export declare class InvoicesService {
             reference: string | null;
             date: Date;
             notes: string | null;
+            method: import(".prisma/client").$Enums.PaymentMethod;
             amount: Prisma.Decimal;
             invoiceId: string;
-            method: import(".prisma/client").$Enums.PaymentMethod;
         }[];
     } & {
         id: string;
@@ -178,6 +180,7 @@ export declare class InvoicesService {
                     purchasePriceHt: Prisma.Decimal | null;
                     minStock: Prisma.Decimal;
                     trackStock: boolean;
+                    stockUomId: string | null;
                     barcode: string | null;
                     internalReference: string | null;
                     isBlocked: boolean;
@@ -189,11 +192,12 @@ export declare class InvoicesService {
                 id: string;
                 taxRate: Prisma.Decimal;
                 unit: string;
-                productId: string;
                 quantity: Prisma.Decimal;
+                productId: string;
+                uomId: string | null;
                 salesOrderId: string;
-                shippedQuantity: Prisma.Decimal;
                 unitPriceHt: Prisma.Decimal;
+                shippedQuantity: Prisma.Decimal;
                 unitCostSnapshot: Prisma.Decimal;
                 lineTotalHt: Prisma.Decimal;
                 lineTotalTtc: Prisma.Decimal;
@@ -221,9 +225,9 @@ export declare class InvoicesService {
             reference: string | null;
             date: Date;
             notes: string | null;
+            method: import(".prisma/client").$Enums.PaymentMethod;
             amount: Prisma.Decimal;
             invoiceId: string;
-            method: import(".prisma/client").$Enums.PaymentMethod;
         }[];
     } & {
         id: string;
@@ -296,6 +300,7 @@ export declare class InvoicesService {
                     purchasePriceHt: Prisma.Decimal | null;
                     minStock: Prisma.Decimal;
                     trackStock: boolean;
+                    stockUomId: string | null;
                     barcode: string | null;
                     internalReference: string | null;
                     isBlocked: boolean;
@@ -307,11 +312,12 @@ export declare class InvoicesService {
                 id: string;
                 taxRate: Prisma.Decimal;
                 unit: string;
-                productId: string;
                 quantity: Prisma.Decimal;
+                productId: string;
+                uomId: string | null;
                 salesOrderId: string;
-                shippedQuantity: Prisma.Decimal;
                 unitPriceHt: Prisma.Decimal;
+                shippedQuantity: Prisma.Decimal;
                 unitCostSnapshot: Prisma.Decimal;
                 lineTotalHt: Prisma.Decimal;
                 lineTotalTtc: Prisma.Decimal;

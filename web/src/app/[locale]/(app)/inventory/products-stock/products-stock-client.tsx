@@ -60,7 +60,7 @@ export default function ProductsStockClient() {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.sku.toLowerCase().includes(searchTerm.toLowerCase());
         
-        if (filter === 'low') return matchesSearch && Number(item.stockQuantity) <= Number(item.minStock) && Number(item.stockQuantity) > 0;
+        if (filter === 'low') return matchesSearch && Number(item.stockQuantity) < Number(item.minStock) && Number(item.stockQuantity) > 0;
         if (filter === 'out') return matchesSearch && Number(item.stockQuantity) <= 0;
         return matchesSearch;
     });
@@ -219,7 +219,7 @@ export default function ProductsStockClient() {
                                                 <Badge variant="danger" className="animate-pulse">
                                                     {t('stock.out_of_stock')}
                                                 </Badge>
-                                            ) : Number(item.stockQuantity) <= Number(item.minStock) ? (
+                                            ) : Number(item.stockQuantity) < Number(item.minStock) ? (
                                                 <Badge variant="warning">
                                                     {t('stock.low_stock')}
                                                 </Badge>

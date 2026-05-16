@@ -6,8 +6,10 @@ import { WarehousesService } from './services/warehouses.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { WarehousesController } from './warehouses.controller';
 
+import { ProductsModule } from '../products/products.module';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, ProductsModule],
   controllers: [InventoryController, WarehousesController],
   providers: [StockMovementService, InventoryService, WarehousesService],
   exports: [StockMovementService, InventoryService, WarehousesService],

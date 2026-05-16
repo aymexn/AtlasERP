@@ -28,6 +28,7 @@ let InventoryService = class InventoryService {
                             sku: true,
                             standardCost: true,
                             unit: true,
+                            minStock: true,
                             family: { select: { name: true } }
                         }
                     }
@@ -53,6 +54,8 @@ let InventoryService = class InventoryService {
                 return {
                     ...s,
                     quantity: physical,
+                    stockQuantity: physical,
+                    minStock: Number(s.product.minStock),
                     reservedQuantity: res,
                     availableQuantity: Math.max(0, physical - res)
                 };

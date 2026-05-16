@@ -25,12 +25,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -47,12 +49,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }[]>;
     getFormula(id: string, req: any): Promise<{
         components: {
@@ -76,12 +79,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -98,12 +103,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     createFormula(productId: string, dto: CreateFormulaDto, req: any): Promise<{
         components: {
@@ -127,12 +133,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -149,12 +157,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     updateFormula(id: string, dto: UpdateFormulaDto, req: any): Promise<{
         components: {
@@ -178,12 +187,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -200,12 +211,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     activateFormula(id: string, req: any): Promise<{
         components: {
@@ -229,12 +241,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -251,12 +265,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     archiveFormula(id: string, req: any): Promise<{
         components: {
@@ -280,12 +295,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -302,12 +319,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     addLine(id: string, dto: CreateFormulaLineDto, req: any): Promise<{
         components: {
@@ -331,12 +349,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -353,12 +373,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     updateLine(lineId: string, dto: UpdateFormulaLineDto, req: any): Promise<{
         components: {
@@ -382,12 +403,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -404,12 +427,13 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
     removeLine(lineId: string, req: any): Promise<{
         components: {
@@ -433,12 +457,14 @@ export declare class FormulaController {
             createdAt: Date;
             updatedAt: Date;
             unit: string;
-            sortOrder: number;
-            bomId: string;
             componentProductId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
             note: string | null;
+            variantId: string | null;
+            bomId: string;
+            uomId: string | null;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -455,11 +481,12 @@ export declare class FormulaController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
-        productId: string;
         version: string;
         code: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
     }>;
 }

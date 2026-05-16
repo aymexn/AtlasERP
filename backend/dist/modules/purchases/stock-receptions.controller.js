@@ -29,6 +29,9 @@ let StockReceptionsController = class StockReceptionsController {
     validate(req, id) {
         return this.stockReceptionsService.validate(id, req.user.companyId, req.user.userId);
     }
+    update(req, id, dto) {
+        return this.stockReceptionsService.update(id, req.user.companyId, dto);
+    }
 };
 exports.StockReceptionsController = StockReceptionsController;
 __decorate([
@@ -54,6 +57,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], StockReceptionsController.prototype, "validate", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], StockReceptionsController.prototype, "update", null);
 exports.StockReceptionsController = StockReceptionsController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('stock-receptions'),

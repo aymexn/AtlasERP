@@ -13,9 +13,11 @@ exports.PaymentsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const event_emitter_1 = require("@nestjs/event-emitter");
 let PaymentsService = class PaymentsService {
-    constructor(prisma) {
+    constructor(prisma, eventEmitter) {
         this.prisma = prisma;
+        this.eventEmitter = eventEmitter;
     }
     async findAll(companyId) {
         return this.prisma.payment.findMany({
@@ -44,7 +46,7 @@ let PaymentsService = class PaymentsService {
         if (paymentAmount.gt(invoice.amountRemaining)) {
             throw new common_1.BadRequestException(`Payment amount exceeds remaining balance (${invoice.amountRemaining} DA)`);
         }
-        return await this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const payment = await tx.payment.create({
                 data: {
                     companyId,
@@ -75,11 +77,14 @@ let PaymentsService = class PaymentsService {
             });
             return payment;
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
 };
 exports.PaymentsService = PaymentsService;
 exports.PaymentsService = PaymentsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        event_emitter_1.EventEmitter2])
 ], PaymentsService);
 //# sourceMappingURL=payments.service.js.map

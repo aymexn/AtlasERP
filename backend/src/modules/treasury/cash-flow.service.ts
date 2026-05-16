@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
+import { PurchaseOrderStatus } from '@prisma/client';
 
 @Injectable()
 export class CashFlowService {
@@ -56,7 +57,7 @@ export class CashFlowService {
         status: { not: 'CANCELLED' },
         OR: [
           { expectedDate: { gte: today, lte: end } },
-          { orderDate: { gte: today, lte: end }, status: 'RECEIVED' }
+          { orderDate: { gte: today, lte: end }, status: PurchaseOrderStatus.FULLY_RECEIVED }
         ]
       }
     });
@@ -93,7 +94,7 @@ export class CashFlowService {
       const dailyExpense = expenseMap.get(dateStr) || 0;
       const dailyPurchases = purchaseOrders
         .filter(po => {
-            const targetDate = po.status === 'RECEIVED' ? (po.orderDate || po.createdAt) : (po.expectedDate || po.orderDate);
+            const targetDate = po.status === PurchaseOrderStatus.FULLY_RECEIVED ? (po.orderDate || po.createdAt) : (po.expectedDate || po.orderDate);
             return startOfDay(new Date(targetDate)).getTime() === date.getTime();
         })
         .reduce((sum, po) => sum + Number(po.totalTtc), 0);

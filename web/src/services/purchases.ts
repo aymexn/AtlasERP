@@ -1,6 +1,6 @@
 import { apiFetch } from '@/lib/api';
 
-export type PurchaseOrderStatus = 'DRAFT' | 'SENT' | 'CONFIRMED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
+export type PurchaseOrderStatus = 'DRAFT' | 'SENT' | 'CONFIRMED' | 'PARTIALLY_RECEIVED' | 'FULLY_RECEIVED' | 'CANCELLED';
 export type ReceptionStatus = 'DRAFT' | 'VALIDATED';
 
 export interface PurchaseOrderLine {
@@ -83,6 +83,13 @@ export const purchasesService = {
     });
   },
 
+  async updateOrder(id: string, data: any): Promise<PurchaseOrder> {
+    return apiFetch(`/purchase-orders/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
   async confirmOrder(id: string): Promise<PurchaseOrder> {
     return apiFetch(`/purchase-orders/${id}/confirm`, { method: 'POST' });
   },
@@ -113,6 +120,13 @@ export const purchasesService = {
 
   async validateReception(id: string): Promise<StockReception> {
     return apiFetch(`/stock-receptions/${id}/validate`, { method: 'POST' });
+  },
+  
+  async updateReception(id: string, data: any): Promise<StockReception> {
+    return apiFetch(`/stock-receptions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
   },
 
   getPdfUrl(id: string) {

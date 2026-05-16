@@ -13,9 +13,13 @@ exports.LeavesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const notifications_service_1 = require("../../notifications/notifications.service");
+const event_emitter_1 = require("@nestjs/event-emitter");
 let LeavesService = class LeavesService {
-    constructor(prisma) {
+    constructor(prisma, notificationService, eventEmitter) {
         this.prisma = prisma;
+        this.notificationService = notificationService;
+        this.eventEmitter = eventEmitter;
     }
     async getLeaveTypes(companyId) {
         return this.prisma.leaveType.findMany({
@@ -61,18 +65,22 @@ let LeavesService = class LeavesService {
                 data: { pendingDays: { increment: totalDays } },
             });
         }
-        return this.prisma.leaveRequest.create({
+        const request = await this.prisma.leaveRequest.create({
             data: {
-                employeeId,
-                leaveTypeId,
+                employee: { connect: { id: employeeId } },
+                leaveType: { connect: { id: leaveTypeId } },
                 startDate: start,
                 endDate: end,
                 totalDays,
                 reason,
-                documentId,
                 status: client_1.LeaveStatus.PENDING,
+                ...(documentId ? { document: { connect: { id: documentId } } } : {}),
             },
+            include: { employee: true, leaveType: true },
         });
+        this.notificationService.notifyLeaveRequested(request, 'manager@atlaserp.dz').catch(console.error);
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return request;
     }
     async findAll(companyId, filters = {}) {
         const where = { employee: { companyId } };
@@ -97,7 +105,7 @@ let LeavesService = class LeavesService {
         if (!request || request.employee.companyId !== companyId) {
             throw new common_1.NotFoundException('Leave request not found');
         }
-        return this.prisma.leaveRequest.update({
+        const result = await this.prisma.leaveRequest.update({
             where: { id: requestId },
             data: {
                 status: client_1.LeaveStatus.APPROVED_BY_MANAGER,
@@ -105,6 +113,8 @@ let LeavesService = class LeavesService {
                 managerComment: comment,
             },
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async approveByHr(companyId, requestId, hrId, comment) {
         const request = await this.prisma.leaveRequest.findUnique({
@@ -114,7 +124,7 @@ let LeavesService = class LeavesService {
         if (!request || request.employee.companyId !== companyId) {
             throw new common_1.NotFoundException('Leave request not found');
         }
-        return this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const updatedRequest = await tx.leaveRequest.update({
                 where: { id: requestId },
                 data: {
@@ -122,6 +132,7 @@ let LeavesService = class LeavesService {
                     approvedByHr: hrId,
                     hrComment: comment,
                 },
+                include: { employee: true },
             });
             if (request.leaveType.isPaid) {
                 const balance = await tx.leaveBalance.findFirst({
@@ -141,8 +152,13 @@ let LeavesService = class LeavesService {
                     });
                 }
             }
+            if (updatedRequest.employee?.email) {
+                this.notificationService.notifyLeaveStatusUpdate(updatedRequest, updatedRequest.employee.email).catch(console.error);
+            }
             return updatedRequest;
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async reject(companyId, requestId, rejectedBy, comment) {
         const request = await this.prisma.leaveRequest.findUnique({
@@ -152,7 +168,7 @@ let LeavesService = class LeavesService {
         if (!request || request.employee.companyId !== companyId) {
             throw new common_1.NotFoundException('Leave request not found');
         }
-        return this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const updatedRequest = await tx.leaveRequest.update({
                 where: { id: requestId },
                 data: {
@@ -179,6 +195,8 @@ let LeavesService = class LeavesService {
             }
             return updatedRequest;
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async getCalendar(companyId, start, end) {
         return this.prisma.leaveRequest.findMany({
@@ -225,6 +243,8 @@ let LeavesService = class LeavesService {
 exports.LeavesService = LeavesService;
 exports.LeavesService = LeavesService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationService,
+        event_emitter_1.EventEmitter2])
 ], LeavesService);
 //# sourceMappingURL=leaves.service.js.map

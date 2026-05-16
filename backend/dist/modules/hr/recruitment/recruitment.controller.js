@@ -44,6 +44,9 @@ let RecruitmentController = class RecruitmentController {
     async hireCandidate(req, id) {
         return this.recruitmentService.hireCandidate(req.user.companyId, id);
     }
+    async applyToJob(data) {
+        return this.recruitmentService.applyToJob(data.jobPostingId, data.candidateId, data.notes);
+    }
     async scheduleInterview(id, data) {
         return this.recruitmentService.scheduleInterview(id, data);
     }
@@ -110,6 +113,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], RecruitmentController.prototype, "hireCandidate", null);
+__decorate([
+    (0, common_1.Post)('applications'),
+    (0, rbac_decorator_1.CheckPermission)('hr', 'recruitment', 'manage'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RecruitmentController.prototype, "applyToJob", null);
 __decorate([
     (0, common_1.Post)('applications/:id/interviews'),
     (0, rbac_decorator_1.CheckPermission)('hr', 'recruitment', 'manage'),

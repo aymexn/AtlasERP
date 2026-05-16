@@ -13,9 +13,11 @@ exports.PerformanceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const notifications_service_1 = require("../../notifications/notifications.service");
 let PerformanceService = class PerformanceService {
-    constructor(prisma) {
+    constructor(prisma, notificationService) {
         this.prisma = prisma;
+        this.notificationService = notificationService;
     }
     async getCycles(companyId) {
         return this.prisma.appraisalCycle.findMany({
@@ -36,7 +38,16 @@ let PerformanceService = class PerformanceService {
     async initializeReviews(cycleId) {
         const cycle = await this.prisma.appraisalCycle.findUnique({
             where: { id: cycleId },
-            include: { company: { include: { employees: { where: { status: 'ACTIVE' } } } } },
+            include: {
+                company: {
+                    include: {
+                        employees: {
+                            where: { status: 'ACTIVE' },
+                            include: { manager: true }
+                        }
+                    }
+                }
+            },
         });
         if (!cycle)
             throw new common_1.NotFoundException('Cycle not found');
@@ -55,6 +66,10 @@ let PerformanceService = class PerformanceService {
                 },
             });
             reviews.push(review);
+            const empWithManager = employee;
+            if (empWithManager.manager?.email) {
+                this.notificationService.sendEmail(empWithManager.manager.email, `Nouvelle évaluation à réaliser : ${employee.firstName} ${employee.lastName}`, 'performance-review-assigned', { cycle: cycle.name, employee: `${employee.firstName} ${employee.lastName}` }).catch(console.error);
+            }
         }
         return reviews;
     }
@@ -106,6 +121,7 @@ let PerformanceService = class PerformanceService {
 exports.PerformanceService = PerformanceService;
 exports.PerformanceService = PerformanceService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationService])
 ], PerformanceService);
 //# sourceMappingURL=performance.service.js.map

@@ -67,7 +67,7 @@ let SuppliersService = class SuppliersService {
         return supplier;
     }
     async create(companyId, dto) {
-        console.log(`[SuppliersService.create] Called for companyId: ${companyId}`);
+        console.log(`[SuppliersService.create] Attempting to create supplier for companyId: ${companyId}`, { name: dto.name, nif: dto.nif });
         try {
             if (!companyId)
                 throw new common_1.BadRequestException('Company ID is required');
@@ -91,7 +91,17 @@ let SuppliersService = class SuppliersService {
             });
         }
         catch (error) {
-            console.error('SuppliersService.create Error:', error);
+            console.error('[SuppliersService.create] CRITICAL ERROR:', error);
+            if (error.code === 'P2002') {
+                const targets = error.meta?.target || [];
+                if (targets.includes('nif'))
+                    throw new common_1.BadRequestException('Un fournisseur avec ce NIF existe déjà.');
+                if (targets.includes('rc'))
+                    throw new common_1.BadRequestException('Un fournisseur avec ce RC existe déjà.');
+                if (targets.includes('ai'))
+                    throw new common_1.BadRequestException('Un fournisseur avec ce AI existe déjà.');
+                throw new common_1.BadRequestException('Un fournisseur avec ces identifiants fiscaux existe déjà.');
+            }
             throw error;
         }
     }
@@ -153,6 +163,25 @@ let SuppliersService = class SuppliersService {
             activeSuppliers,
             suppliersWithOrders
         };
+    }
+    async getCatalog(supplierId) {
+        return this.prisma.supplierProduct.findMany({
+            where: { supplierId },
+            include: { product: true },
+        });
+    }
+    async addProductToCatalog(supplierId, data) {
+        return this.prisma.supplierProduct.create({
+            data: {
+                ...data,
+                supplierId,
+            },
+        });
+    }
+    async removeProductFromCatalog(id) {
+        return this.prisma.supplierProduct.delete({
+            where: { id },
+        });
     }
 };
 exports.SuppliersService = SuppliersService;

@@ -14,6 +14,10 @@ const families_service_1 = require("./families.service");
 const families_controller_1 = require("./families.controller");
 const formula_service_1 = require("./formula.service");
 const formula_controller_1 = require("./formula.controller");
+const uom_service_1 = require("./uom.service");
+const uom_controller_1 = require("./uom.controller");
+const variants_service_1 = require("./variants.service");
+const variants_controller_1 = require("./variants.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
 const pdf_service_1 = require("../../common/services/pdf.service");
 const tenants_module_1 = require("../tenants/tenants.module");
@@ -23,9 +27,9 @@ exports.ProductsModule = ProductsModule;
 exports.ProductsModule = ProductsModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule, tenants_module_1.TenantsModule],
-        controllers: [products_controller_1.ProductsController, families_controller_1.FamiliesController, formula_controller_1.FormulaController],
-        providers: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService, pdf_service_1.PdfService],
-        exports: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService],
+        controllers: [products_controller_1.ProductsController, families_controller_1.FamiliesController, formula_controller_1.FormulaController, uom_controller_1.UomController, variants_controller_1.VariantsController],
+        providers: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService, pdf_service_1.PdfService, uom_service_1.UomService, variants_service_1.VariantsService],
+        exports: [products_service_1.ProductsService, families_service_1.FamiliesService, formula_service_1.FormulaService, uom_service_1.UomService, variants_service_1.VariantsService],
     })
 ], ProductsModule);
 //# sourceMappingURL=products.module.js.map

@@ -1,19 +1,24 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PayrollStatus } from '@prisma/client';
+import { NotificationService } from '../../notifications/notifications.service';
 
 @Injectable()
 export class PayrollService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService
+  ) {}
 
   async createPeriod(companyId: string, data: any) {
     return this.prisma.payrollPeriod.create({
       data: {
-        ...data,
         companyId,
         periodStart: new Date(data.periodStart),
         periodEnd: new Date(data.periodEnd),
         paymentDate: new Date(data.paymentDate),
+        // periodName is a virtual label stored in notes if schema has it
+        ...(data.periodName ? { notes: data.periodName } : {}),
       },
     });
   }
@@ -86,14 +91,14 @@ export class PayrollService {
           status: 'calculated',
         },
         create: {
-          payrollPeriodId: periodId,
-          employeeId: employee.id,
+          payrollPeriod: { connect: { id: periodId } },
+          employee: { connect: { id: employee.id } },
           grossSalary: gross,
           totalEarnings: gross,
           totalDeductions,
           netSalary: net,
           employerCost,
-          calculationDetails: { earnings, deductions, base: Number(contract.salaryBaseAmount) },
+          calculationDetails: { earnings, deductions, base: Number(contract.salaryBaseAmount) } as any,
           status: 'calculated',
         },
       });
@@ -101,10 +106,16 @@ export class PayrollService {
       results.push(run);
     }
 
-    await this.prisma.payrollPeriod.update({
+    const updatedPeriod = await this.prisma.payrollPeriod.update({
       where: { id: periodId },
       data: { status: PayrollStatus.CALCULATED },
     });
+
+    // Notify Employees
+    const emails = employees.map(e => e.email).filter(Boolean);
+    if (emails.length > 0) {
+        this.notificationService.notifyPayrollProcessed(updatedPeriod, emails).catch(console.error);
+    }
 
     return results;
   }
@@ -158,6 +169,18 @@ export class PayrollService {
     return this.prisma.payrollRun.findMany({
       where: { payrollPeriodId: periodId },
       include: { employee: true },
+    });
+  }
+
+  async getPayrollRunForPdf(runId: string) {
+    return this.prisma.payrollRun.findUnique({
+      where: { id: runId },
+      include: {
+        employee: {
+          include: { company: true }
+        },
+        payrollPeriod: true
+      },
     });
   }
 

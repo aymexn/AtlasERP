@@ -1,29 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-// --- SESSION ARCHITECTURE (MOCK) ---
-// If you are using real next-auth, uncomment the real imports below:
-// import { getServerSession } from "next-auth/next"
-// import { authOptions } from "@/lib/auth" 
-
-const getServerSession = async (options: any) => ({
-    user: { 
-        id: 'user-id-placeholder',
-        companyId: 'ae144f97-26c9-4c6a-b1dc-e48834f18553' 
-    }
-});
-const authOptions = {}; 
+import { getTenantId } from '@/lib/api-helpers';
 
 export async function POST(request: Request) {
     try {
         // 1. SESSION VALIDATION
-        const session = await getServerSession(authOptions);
+        const companyId = await getTenantId();
         
-        if (!session?.user?.companyId) {
+        if (!companyId) {
             return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
         }
-
-        const companyId = session.user.companyId;
         const body = await request.json();
         console.log("Payload reçu (POST /api/products):", body);
 

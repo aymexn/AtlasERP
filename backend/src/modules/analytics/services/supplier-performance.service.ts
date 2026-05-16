@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { PurchaseOrderStatus } from '@prisma/client';
 
 @Injectable()
 export class SupplierPerformanceService {
@@ -15,7 +16,7 @@ export class SupplierPerformanceService {
         companyId,
         supplierId,
         orderDate: { gte: startDate, lte: endDate },
-        status: 'RECEIVED' // Or whatever status means it's closed
+        status: PurchaseOrderStatus.FULLY_RECEIVED // Or whatever status means it's closed
       },
       include: { stockReceptions: { where: { status: 'VALIDATED' } } }
     });

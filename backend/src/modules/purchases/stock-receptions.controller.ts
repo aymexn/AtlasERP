@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Patch } from '@nestjs/common';
 import { StockReceptionsService } from './stock-receptions.service';
 import { CreateStockReceptionDto } from './dto/stock-reception.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -21,5 +21,10 @@ export class StockReceptionsController {
   @Post(':id/validate')
   validate(@Request() req, @Param('id') id: string) {
     return this.stockReceptionsService.validate(id, req.user.companyId, req.user.userId);
+  }
+
+  @Patch(':id')
+  update(@Request() req, @Param('id') id: string, @Body() dto: any) {
+    return this.stockReceptionsService.update(id, req.user.companyId, dto);
   }
 }

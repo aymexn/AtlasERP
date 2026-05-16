@@ -16,10 +16,10 @@ export declare class FamiliesController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
+        sortOrder: number;
         code: string | null;
         colorBadge: string | null;
         parentId: string | null;
-        sortOrder: number;
     }>;
     findAll(req: any): Promise<({
         parent: {
@@ -34,10 +34,10 @@ export declare class FamiliesController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
+        sortOrder: number;
         code: string | null;
         colorBadge: string | null;
         parentId: string | null;
-        sortOrder: number;
     })[]>;
     remove(id: string, req: any): Promise<{
         id: string;
@@ -47,10 +47,10 @@ export declare class FamiliesController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
+        sortOrder: number;
         code: string | null;
         colorBadge: string | null;
         parentId: string | null;
-        sortOrder: number;
     }>;
     update(id: string, dto: UpdateFamilyDto, req: any): Promise<{
         parent: {
@@ -65,9 +65,9 @@ export declare class FamiliesController {
         isActive: boolean;
         description: string | null;
         updatedAt: Date;
+        sortOrder: number;
         code: string | null;
         colorBadge: string | null;
         parentId: string | null;
-        sortOrder: number;
     }>;
 }

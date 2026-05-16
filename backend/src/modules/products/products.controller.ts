@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
@@ -26,8 +26,8 @@ export class ProductsController {
 
     @Get()
     @ApiOperation({ summary: 'List all products for the current tenant' })
-    findAll(@Request() req: any) {
-        return this.productsService.list(req.user.companyId);
+    findAll(@Request() req: any, @Query('search') search?: string) {
+        return this.productsService.list(req.user.companyId, search);
     }
 
     @Get('export/pdf')
@@ -64,6 +64,12 @@ export class ProductsController {
     @ApiOperation({ summary: 'Delete a product' })
     remove(@Param('id') id: string, @Request() req: any) {
         return this.productsService.remove(id, req.user.companyId);
+    }
+
+    @Get(':id/suppliers')
+    @ApiOperation({ summary: 'Get suppliers for a specific product' })
+    getSuppliers(@Param('id') id: string, @Request() req: any) {
+        return this.productsService.getSuppliersForProduct(id, req.user.companyId);
     }
 
     @Post(':id/recalculate-cost')

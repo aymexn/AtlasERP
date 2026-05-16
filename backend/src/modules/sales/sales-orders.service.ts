@@ -3,13 +3,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SalesOrderStatus, Prisma } from '@prisma/client';
 import { InvoicesService } from '../invoices/invoices.service';
 import { StockMovementService } from '../inventory/services/stock-movement.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class SalesOrdersService {
   constructor(
     private prisma: PrismaService,
     private invoicesService: InvoicesService,
-    private stockMovementService: StockMovementService
+    private stockMovementService: StockMovementService,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async findAll(companyId: string) {
@@ -95,7 +97,7 @@ export class SalesOrdersService {
     const reference = `BC-CLI-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
 
     // 3. Persist
-    return this.prisma.salesOrder.create({
+    const order = await this.prisma.salesOrder.create({
       data: {
         reference,
         companyId,
@@ -104,7 +106,7 @@ export class SalesOrdersService {
         totalAmountHt,
         totalAmountTva,
         totalAmountTtc,
-        status: 'DRAFT',
+        status: SalesOrderStatus.DRAFT,
         lines: {
           create: formattedLines,
         },
@@ -114,6 +116,9 @@ export class SalesOrdersService {
         lines: true
       }
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return order;
   }
 
   /**
@@ -129,7 +134,7 @@ export class SalesOrdersService {
     });
 
     if (!order) throw new NotFoundException('Order not found');
-    if (order.status === 'SHIPPED') throw new BadRequestException('Order already shipped');
+    if (order.status === SalesOrderStatus.SHIPPED) throw new BadRequestException('Order already shipped');
 
     // Find the primary warehouse to consume from
     const warehouse = await this.prisma.warehouse.findFirst({
@@ -143,7 +148,7 @@ export class SalesOrdersService {
     await this.stockMovementService.completeSalesOrder(companyId, userId, id, warehouse.id);
 
     // 2. Post-processing: Lock costs and trigger auto-invoice
-    return await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const shippedOrder = await tx.salesOrder.findUnique({
         where: { id },
         include: { lines: { include: { product: true } } }
@@ -168,6 +173,9 @@ export class SalesOrdersService {
 
       return tx.salesOrder.findUnique({ where: { id } });
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async validateOrder(companyId: string, id: string) {
@@ -175,12 +183,15 @@ export class SalesOrdersService {
       where: { id, companyId }
     });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.status !== 'DRAFT') throw new BadRequestException('Only DRAFT orders can be validated');
+    if (order.status !== SalesOrderStatus.DRAFT) throw new BadRequestException('Only DRAFT orders can be validated');
 
-    return this.prisma.salesOrder.update({
+    const result = await this.prisma.salesOrder.update({
       where: { id },
-      data: { status: 'VALIDATED' }
+      data: { status: SalesOrderStatus.VALIDATED }
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async cancelOrder(companyId: string, id: string) {
@@ -188,14 +199,17 @@ export class SalesOrdersService {
       where: { id, companyId }
     });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.status === 'SHIPPED' || order.status === 'INVOICED') {
+    if (order.status === SalesOrderStatus.SHIPPED || order.status === SalesOrderStatus.INVOICED) {
       throw new BadRequestException('Cannot cancel a shipped or invoiced order');
     }
 
-    return this.prisma.salesOrder.update({
+    const result = await this.prisma.salesOrder.update({
       where: { id },
-      data: { status: 'CANCELLED' }
+      data: { status: SalesOrderStatus.CANCELLED }
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async getProfitability(companyId: string, id: string) {

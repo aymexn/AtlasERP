@@ -1,36 +1,44 @@
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationService } from '../../notifications/notifications.service';
 export declare class PayrollService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationService;
+    constructor(prisma: PrismaService, notificationService: NotificationService);
     createPeriod(companyId: string, data: any): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.PayrollStatus;
+        companyId: string;
+        createdAt: Date;
         periodStart: Date;
         periodEnd: Date;
         paymentDate: Date;
-        status: import(".prisma/client").$Enums.PayrollStatus;
         locked: boolean;
-        createdAt: Date;
-        companyId: string;
     }>;
     calculatePayroll(companyId: string, periodId: string): Promise<any[]>;
     private calculateIRG;
     getPeriods(companyId: string): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.PayrollStatus;
+        companyId: string;
+        createdAt: Date;
         periodStart: Date;
         periodEnd: Date;
         paymentDate: Date;
-        status: import(".prisma/client").$Enums.PayrollStatus;
         locked: boolean;
-        createdAt: Date;
-        companyId: string;
     }[]>;
     getPayrollRuns(periodId: string): Promise<({
         employee: {
             id: string;
+            email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
-            createdAt: Date;
             companyId: string;
+            createdAt: Date;
             userId: string | null;
+            address: string | null;
+            phone: string | null;
+            updatedAt: Date;
+            taxId: string | null;
+            notes: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -39,11 +47,7 @@ export declare class PayrollService {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
-            address: string | null;
-            phone: string | null;
-            email: string | null;
             socialSecurityNumber: string | null;
-            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -54,15 +58,13 @@ export declare class PayrollService {
             department: string | null;
             position: string | null;
             managerId: string | null;
-            notes: string | null;
-            updatedAt: Date;
         };
     } & {
         id: string;
         status: string | null;
         createdAt: Date;
-        payrollPeriodId: string;
         employeeId: string;
+        payrollPeriodId: string;
         grossSalary: import("@prisma/client/runtime/library").Decimal | null;
         totalEarnings: import("@prisma/client/runtime/library").Decimal | null;
         totalDeductions: import("@prisma/client/runtime/library").Decimal | null;
@@ -70,13 +72,86 @@ export declare class PayrollService {
         employerCost: import("@prisma/client/runtime/library").Decimal | null;
         calculationDetails: import("@prisma/client/runtime/library").JsonValue | null;
     })[]>;
+    getPayrollRunForPdf(runId: string): Promise<{
+        employee: {
+            company: {
+                id: string;
+                email: string | null;
+                createdAt: Date;
+                name: string;
+                slug: string;
+                address: string | null;
+                ai: string | null;
+                allowNegativeStock: boolean;
+                logoUrl: string | null;
+                nif: string | null;
+                phone: string | null;
+                rc: string | null;
+                rib: string | null;
+                website: string | null;
+            };
+        } & {
+            id: string;
+            email: string | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
+            companyId: string;
+            createdAt: Date;
+            userId: string | null;
+            address: string | null;
+            phone: string | null;
+            updatedAt: Date;
+            taxId: string | null;
+            notes: string | null;
+            employeeCode: string | null;
+            firstName: string;
+            lastName: string;
+            birthDate: Date | null;
+            birthPlace: string | null;
+            nationality: string | null;
+            gender: string | null;
+            maritalStatus: string | null;
+            socialSecurityNumber: string | null;
+            emergencyContactName: string | null;
+            emergencyContactPhone: string | null;
+            emergencyContactRelationship: string | null;
+            bankAccountIban: string | null;
+            bankName: string | null;
+            hireDate: Date;
+            terminationDate: Date | null;
+            department: string | null;
+            position: string | null;
+            managerId: string | null;
+        };
+        payrollPeriod: {
+            id: string;
+            status: import(".prisma/client").$Enums.PayrollStatus;
+            companyId: string;
+            createdAt: Date;
+            periodStart: Date;
+            periodEnd: Date;
+            paymentDate: Date;
+            locked: boolean;
+        };
+    } & {
+        id: string;
+        status: string | null;
+        createdAt: Date;
+        employeeId: string;
+        payrollPeriodId: string;
+        grossSalary: import("@prisma/client/runtime/library").Decimal | null;
+        totalEarnings: import("@prisma/client/runtime/library").Decimal | null;
+        totalDeductions: import("@prisma/client/runtime/library").Decimal | null;
+        netSalary: import("@prisma/client/runtime/library").Decimal | null;
+        employerCost: import("@prisma/client/runtime/library").Decimal | null;
+        calculationDetails: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
     getPayslips(employeeId: string): Promise<{
         id: string;
         periodStart: Date;
         periodEnd: Date;
         employeeId: string;
-        payrollRunId: string;
         filePath: string | null;
+        payrollRunId: string;
         generatedAt: Date;
     }[]>;
     generatePayslip(runId: string): Promise<{
@@ -84,8 +159,8 @@ export declare class PayrollService {
         periodStart: Date;
         periodEnd: Date;
         employeeId: string;
-        payrollRunId: string;
         filePath: string | null;
+        payrollRunId: string;
         generatedAt: Date;
     }>;
 }

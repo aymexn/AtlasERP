@@ -7,8 +7,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { History, Search, Filter, Clock, User, Shield } from 'lucide-react';
 
 export default function AuditPage() {
-    const t = useTranslations('settings');
-    const ct = useTranslations('common');
+    const t = useTranslations('admin.audit');
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -32,16 +31,16 @@ export default function AuditPage() {
             <div>
                 <h1 className="text-3xl font-black text-foreground tracking-tighter flex items-center gap-3">
                     <Shield className="text-blue-600" size={32} />
-                    Journal d'Audit
+                    {t('title')}
                 </h1>
-                <p className="text-muted-foreground font-medium">Suivi complet des modifications et actions utilisateurs pour la conformité.</p>
+                <p className="text-muted-foreground font-medium">{t('subtitle')}</p>
             </div>
 
             <div className="bg-white rounded-4xl border border-gray-100 shadow-xl overflow-hidden">
                 <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <History size={18} className="text-blue-600" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Activités Récentes</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recent Activities</span>
                     </div>
                 </div>
 
@@ -50,7 +49,7 @@ export default function AuditPage() {
                     isLoading={loading}
                     columns={[
                         {
-                            header: 'Date',
+                            header: t('table.date'),
                             accessor: (l) => (
                                 <div className="flex items-center gap-2">
                                     <Clock size={14} className="text-gray-400" />
@@ -59,16 +58,16 @@ export default function AuditPage() {
                             )
                         },
                         {
-                            header: 'Utilisateur',
+                            header: t('table.user'),
                             accessor: (l) => (
                                 <div className="flex items-center gap-2">
                                     <User size={14} className="text-gray-400" />
-                                    <span className="font-bold text-blue-600">{l.user?.email || 'Système'}</span>
+                                    <span className="font-bold text-blue-600">{l.user?.email || 'System'}</span>
                                 </div>
                             )
                         },
                         {
-                            header: 'Action',
+                            header: t('table.action'),
                             accessor: (l) => (
                                 <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${
                                     l.action.includes('POST') || l.action.includes('CREATE') ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
@@ -80,7 +79,7 @@ export default function AuditPage() {
                             )
                         },
                         {
-                            header: 'Entité',
+                            header: t('table.module'),
                             accessor: (l) => (
                                 <div className="flex flex-col">
                                     <span className="font-bold">{l.entity}</span>
@@ -89,7 +88,7 @@ export default function AuditPage() {
                             )
                         },
                         {
-                            header: 'Détails',
+                            header: t('table.details'),
                             accessor: (l) => (
                                 <div className="max-w-[300px] truncate text-[10px] text-gray-500 font-medium">
                                     {l.newValues ? JSON.stringify(l.newValues) : '---'}

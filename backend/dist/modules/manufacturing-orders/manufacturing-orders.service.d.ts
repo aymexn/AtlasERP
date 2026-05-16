@@ -2,10 +2,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateManufacturingOrderDto, UpdateManufacturingOrderDto, CompleteManufacturingOrderDto } from './dto/manufacturing-order.dto';
 import { StockMovementService } from '../inventory/services/stock-movement.service';
 import { Prisma } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 export declare class ManufacturingOrdersService {
     private prisma;
     private stockMovementService;
-    constructor(prisma: PrismaService, stockMovementService: StockMovementService);
+    private eventEmitter;
+    constructor(prisma: PrismaService, stockMovementService: StockMovementService, eventEmitter: EventEmitter2);
     private generateReference;
     create(companyId: string, createDto: CreateManufacturingOrderDto): Promise<{
         product: {
@@ -28,6 +30,7 @@ export declare class ManufacturingOrdersService {
             purchasePriceHt: Prisma.Decimal | null;
             minStock: Prisma.Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -56,6 +59,7 @@ export declare class ManufacturingOrdersService {
                 purchasePriceHt: Prisma.Decimal | null;
                 minStock: Prisma.Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -71,6 +75,8 @@ export declare class ManufacturingOrdersService {
             componentProductId: string;
             wastagePercent: Prisma.Decimal;
             note: string | null;
+            variantId: string | null;
+            uomId: string | null;
             manufacturingOrderId: string;
             bomComponentId: string | null;
             requiredQuantity: Prisma.Decimal;
@@ -87,12 +93,13 @@ export declare class ManufacturingOrdersService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
-            productId: string;
             version: string;
             code: string | null;
             outputQuantity: Prisma.Decimal;
             outputUnit: string;
             scrapPercent: Prisma.Decimal;
+            productId: string;
+            variantId: string | null;
         };
     } & {
         id: string;
@@ -102,6 +109,7 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -137,6 +145,7 @@ export declare class ManufacturingOrdersService {
             purchasePriceHt: Prisma.Decimal | null;
             minStock: Prisma.Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -152,6 +161,7 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -172,6 +182,7 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -184,6 +195,7 @@ export declare class ManufacturingOrdersService {
         totalEstimatedCost: Prisma.Decimal;
         totalActualCost: Prisma.Decimal | null;
     }>;
+    private checkStockAvailability;
     start(companyId: string, userId: string, id: string): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
@@ -192,6 +204,7 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -225,6 +238,7 @@ export declare class ManufacturingOrdersService {
             purchasePriceHt: Prisma.Decimal | null;
             minStock: Prisma.Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -240,6 +254,8 @@ export declare class ManufacturingOrdersService {
             componentProductId: string;
             wastagePercent: Prisma.Decimal;
             note: string | null;
+            variantId: string | null;
+            uomId: string | null;
             manufacturingOrderId: string;
             bomComponentId: string | null;
             requiredQuantity: Prisma.Decimal;
@@ -255,6 +271,28 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
+        reference: string;
+        notes: string | null;
+        warehouseId: string | null;
+        completedAt: Date | null;
+        formulaId: string;
+        plannedQuantity: Prisma.Decimal;
+        producedQuantity: Prisma.Decimal;
+        plannedDate: Date;
+        startedAt: Date | null;
+        totalEstimatedCost: Prisma.Decimal;
+        totalActualCost: Prisma.Decimal | null;
+    }>;
+    closeManufacturingOrder(companyId: string, userId: string, id: string, producedQuantity?: number): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
+        companyId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        unit: string;
+        productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -275,6 +313,7 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -324,6 +363,7 @@ export declare class ManufacturingOrdersService {
             purchasePriceHt: Prisma.Decimal | null;
             minStock: Prisma.Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -352,6 +392,7 @@ export declare class ManufacturingOrdersService {
                 purchasePriceHt: Prisma.Decimal | null;
                 minStock: Prisma.Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -367,6 +408,8 @@ export declare class ManufacturingOrdersService {
             componentProductId: string;
             wastagePercent: Prisma.Decimal;
             note: string | null;
+            variantId: string | null;
+            uomId: string | null;
             manufacturingOrderId: string;
             bomComponentId: string | null;
             requiredQuantity: Prisma.Decimal;
@@ -383,12 +426,13 @@ export declare class ManufacturingOrdersService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
-            productId: string;
             version: string;
             code: string | null;
             outputQuantity: Prisma.Decimal;
             outputUnit: string;
             scrapPercent: Prisma.Decimal;
+            productId: string;
+            variantId: string | null;
         };
     } & {
         id: string;
@@ -398,6 +442,7 @@ export declare class ManufacturingOrdersService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;

@@ -15,11 +15,13 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const invoices_service_1 = require("../invoices/invoices.service");
 const stock_movement_service_1 = require("../inventory/services/stock-movement.service");
+const event_emitter_1 = require("@nestjs/event-emitter");
 let SalesOrdersService = class SalesOrdersService {
-    constructor(prisma, invoicesService, stockMovementService) {
+    constructor(prisma, invoicesService, stockMovementService, eventEmitter) {
         this.prisma = prisma;
         this.invoicesService = invoicesService;
         this.stockMovementService = stockMovementService;
+        this.eventEmitter = eventEmitter;
     }
     async findAll(companyId) {
         return this.prisma.salesOrder.findMany({
@@ -88,7 +90,7 @@ let SalesOrdersService = class SalesOrdersService {
         const totalAmountTtc = totalAmountHt.add(totalAmountTva);
         const count = await this.prisma.salesOrder.count({ where: { companyId } });
         const reference = `BC-CLI-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
-        return this.prisma.salesOrder.create({
+        const order = await this.prisma.salesOrder.create({
             data: {
                 reference,
                 companyId,
@@ -97,7 +99,7 @@ let SalesOrdersService = class SalesOrdersService {
                 totalAmountHt,
                 totalAmountTva,
                 totalAmountTtc,
-                status: 'DRAFT',
+                status: client_1.SalesOrderStatus.DRAFT,
                 lines: {
                     create: formattedLines,
                 },
@@ -107,6 +109,8 @@ let SalesOrdersService = class SalesOrdersService {
                 lines: true
             }
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return order;
     }
     async ship(companyId, userId, id) {
         const order = await this.prisma.salesOrder.findFirst({
@@ -118,7 +122,7 @@ let SalesOrdersService = class SalesOrdersService {
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if (order.status === 'SHIPPED')
+        if (order.status === client_1.SalesOrderStatus.SHIPPED)
             throw new common_1.BadRequestException('Order already shipped');
         const warehouse = await this.prisma.warehouse.findFirst({
             where: { companyId, isActive: true },
@@ -127,7 +131,7 @@ let SalesOrdersService = class SalesOrdersService {
         if (!warehouse)
             throw new common_1.BadRequestException('No active warehouse found to consume stock.');
         await this.stockMovementService.completeSalesOrder(companyId, userId, id, warehouse.id);
-        return await this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const shippedOrder = await tx.salesOrder.findUnique({
                 where: { id },
                 include: { lines: { include: { product: true } } }
@@ -149,6 +153,8 @@ let SalesOrdersService = class SalesOrdersService {
             }
             return tx.salesOrder.findUnique({ where: { id } });
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async validateOrder(companyId, id) {
         const order = await this.prisma.salesOrder.findFirst({
@@ -156,12 +162,14 @@ let SalesOrdersService = class SalesOrdersService {
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if (order.status !== 'DRAFT')
+        if (order.status !== client_1.SalesOrderStatus.DRAFT)
             throw new common_1.BadRequestException('Only DRAFT orders can be validated');
-        return this.prisma.salesOrder.update({
+        const result = await this.prisma.salesOrder.update({
             where: { id },
-            data: { status: 'VALIDATED' }
+            data: { status: client_1.SalesOrderStatus.VALIDATED }
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async cancelOrder(companyId, id) {
         const order = await this.prisma.salesOrder.findFirst({
@@ -169,13 +177,15 @@ let SalesOrdersService = class SalesOrdersService {
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
-        if (order.status === 'SHIPPED' || order.status === 'INVOICED') {
+        if (order.status === client_1.SalesOrderStatus.SHIPPED || order.status === client_1.SalesOrderStatus.INVOICED) {
             throw new common_1.BadRequestException('Cannot cancel a shipped or invoiced order');
         }
-        return this.prisma.salesOrder.update({
+        const result = await this.prisma.salesOrder.update({
             where: { id },
-            data: { status: 'CANCELLED' }
+            data: { status: client_1.SalesOrderStatus.CANCELLED }
         });
+        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        return result;
     }
     async getProfitability(companyId, id) {
         const order = await this.findOne(companyId, id);
@@ -212,6 +222,7 @@ exports.SalesOrdersService = SalesOrdersService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         invoices_service_1.InvoicesService,
-        stock_movement_service_1.StockMovementService])
+        stock_movement_service_1.StockMovementService,
+        event_emitter_1.EventEmitter2])
 ], SalesOrdersService);
 //# sourceMappingURL=sales-orders.service.js.map

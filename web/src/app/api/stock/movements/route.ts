@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StockMovementService } from '@/lib/services/stock-movement.service';
-
-const getServerSessionMock = async () => ({
-  user: { companyId: '543ca8dc-9abe-4081-b9fc-32f71a7480bb' }
-});
+import { getTenantId } from '@/lib/api-helpers';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSessionMock();
-    if (!session?.user?.companyId) {
+    const companyId = await getTenantId();
+    if (!companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
@@ -16,7 +13,7 @@ export async function POST(req: NextRequest) {
     
     const movement = await StockMovementService.createMovement({
       ...body,
-      companyId: session.user.companyId
+      companyId: companyId
     });
     
     return NextResponse.json({
@@ -35,8 +32,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSessionMock();
-    if (!session?.user?.companyId) {
+    const companyId = await getTenantId();
+    if (!companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
@@ -47,7 +44,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
     }
     
-    const movements = await StockMovementService.getProductMovements(productId);
+    const movements = await StockMovementService.getProductMovements(productId, companyId);
     
     return NextResponse.json({
       success: true,

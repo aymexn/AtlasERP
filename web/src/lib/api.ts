@@ -104,7 +104,7 @@ export function sanitizeData(data: any): any {
     }
 
     const clean: any = {};
-    const metadataFields = ['id', 'createdAt', 'updatedAt', 'companyId', '_count'];
+    const metadataFields = ['createdAt', 'updatedAt', 'companyId', '_count'];
     
     Object.keys(data).forEach(key => {
         if (metadataFields.includes(key)) return;
@@ -118,14 +118,19 @@ export function sanitizeData(data: any): any {
         const value = data[key];
         
         // Strip out object relations (those would be nested objects with an 'id' that aren't arrays)
-        if (value && typeof value === 'object' && !Array.isArray(value) && value.id) {
-            return;
-        }
+
 
         clean[key] = value;
     });
 
     return clean;
+}
+
+export class ApiError extends Error {
+    constructor(public message: string, public status: number, public data: any) {
+        super(message);
+        this.name = 'ApiError';
+    }
 }
 
 // ─── Main apiFetch ────────────────────────────────────────────────────────────
@@ -180,8 +185,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            const errMsg = errorData.message || 'API request failed';
-            throw new Error(errMsg);
+            throw new ApiError(errorData.message || 'API request failed', response.status, errorData);
         }
 
         // Connection restored event (ONLY if we previously had issues)

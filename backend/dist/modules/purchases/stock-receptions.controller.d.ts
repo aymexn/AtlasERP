@@ -32,6 +32,7 @@ export declare class StockReceptionsController {
                 country: string;
                 taxId: string | null;
                 paymentTermsDays: number;
+                leadTimeDays: number;
                 notes: string | null;
             };
         } & {
@@ -73,6 +74,7 @@ export declare class StockReceptionsController {
                 purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                 minStock: import("@prisma/client/runtime/library").Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -83,8 +85,10 @@ export declare class StockReceptionsController {
         } & {
             id: string;
             unit: string;
-            productId: string;
             note: string | null;
+            productId: string;
+            variantId: string | null;
+            uomId: string | null;
             unitCost: import("@prisma/client/runtime/library").Decimal;
             receptionId: string;
             purchaseLineId: string | null;
@@ -99,8 +103,8 @@ export declare class StockReceptionsController {
         updatedAt: Date;
         reference: string;
         notes: string | null;
-        purchaseOrderId: string;
         warehouseId: string;
+        purchaseOrderId: string;
         receivedAt: Date;
         validatedAt: Date | null;
     })[]>;
@@ -134,6 +138,7 @@ export declare class StockReceptionsController {
                 country: string;
                 taxId: string | null;
                 paymentTermsDays: number;
+                leadTimeDays: number;
                 notes: string | null;
             };
         } & {
@@ -172,6 +177,7 @@ export declare class StockReceptionsController {
                 purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                 minStock: import("@prisma/client/runtime/library").Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -182,8 +188,10 @@ export declare class StockReceptionsController {
         } & {
             id: string;
             unit: string;
-            productId: string;
             note: string | null;
+            productId: string;
+            variantId: string | null;
+            uomId: string | null;
             unitCost: import("@prisma/client/runtime/library").Decimal;
             receptionId: string;
             purchaseLineId: string | null;
@@ -198,8 +206,8 @@ export declare class StockReceptionsController {
         updatedAt: Date;
         reference: string;
         notes: string | null;
-        purchaseOrderId: string;
         warehouseId: string;
+        purchaseOrderId: string;
         receivedAt: Date;
         validatedAt: Date | null;
     }>;
@@ -223,6 +231,7 @@ export declare class StockReceptionsController {
                 country: string;
                 taxId: string | null;
                 paymentTermsDays: number;
+                leadTimeDays: number;
                 notes: string | null;
             };
         } & {
@@ -261,6 +270,7 @@ export declare class StockReceptionsController {
                 purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                 minStock: import("@prisma/client/runtime/library").Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -271,8 +281,10 @@ export declare class StockReceptionsController {
         } & {
             id: string;
             unit: string;
-            productId: string;
             note: string | null;
+            productId: string;
+            variantId: string | null;
+            uomId: string | null;
             unitCost: import("@prisma/client/runtime/library").Decimal;
             receptionId: string;
             purchaseLineId: string | null;
@@ -287,8 +299,64 @@ export declare class StockReceptionsController {
         updatedAt: Date;
         reference: string;
         notes: string | null;
-        purchaseOrderId: string;
         warehouseId: string;
+        purchaseOrderId: string;
+        receivedAt: Date;
+        validatedAt: Date | null;
+    }>;
+    update(req: any, id: string, dto: any): Promise<{
+        lines: ({
+            product: {
+                id: string;
+                companyId: string;
+                createdAt: Date;
+                name: string;
+                isActive: boolean;
+                description: string | null;
+                updatedAt: Date;
+                sku: string;
+                salePriceHt: import("@prisma/client/runtime/library").Decimal | null;
+                taxRate: import("@prisma/client/runtime/library").Decimal;
+                standardCost: import("@prisma/client/runtime/library").Decimal;
+                stockQuantity: import("@prisma/client/runtime/library").Decimal;
+                familyId: string | null;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                unit: string;
+                secondaryName: string | null;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
+                minStock: import("@prisma/client/runtime/library").Decimal;
+                trackStock: boolean;
+                stockUomId: string | null;
+                barcode: string | null;
+                internalReference: string | null;
+                isBlocked: boolean;
+                maxStock: import("@prisma/client/runtime/library").Decimal | null;
+                preferredSupplierId: string | null;
+                stockValue: import("@prisma/client/runtime/library").Decimal;
+            };
+        } & {
+            id: string;
+            unit: string;
+            note: string | null;
+            productId: string;
+            variantId: string | null;
+            uomId: string | null;
+            unitCost: import("@prisma/client/runtime/library").Decimal;
+            receptionId: string;
+            purchaseLineId: string | null;
+            expectedQty: import("@prisma/client/runtime/library").Decimal;
+            receivedQty: import("@prisma/client/runtime/library").Decimal;
+        })[];
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.ReceptionStatus;
+        companyId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        reference: string;
+        notes: string | null;
+        warehouseId: string;
+        purchaseOrderId: string;
         receivedAt: Date;
         validatedAt: Date | null;
     }>;

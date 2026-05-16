@@ -1,0 +1,347 @@
+import { ProjectService } from '../services/project.service';
+export declare class ProjectController {
+    private projectService;
+    constructor(projectService: ProjectService);
+    createProject(req: any, data: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.ProjectStatus;
+        companyId: string;
+        createdAt: Date;
+        name: string;
+        description: string | null;
+        tags: string[];
+        isPublic: boolean;
+        updatedAt: Date;
+        code: string | null;
+        createdBy: string | null;
+        priority: import(".prisma/client").$Enums.Priority;
+        category: string | null;
+        startDate: Date | null;
+        color: string | null;
+        departmentId: string | null;
+        targetEndDate: Date | null;
+        actualEndDate: Date | null;
+        progress: import("@prisma/client/runtime/library").Decimal;
+        budget: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        teamMembers: import("@prisma/client/runtime/library").JsonValue | null;
+        projectManagerId: string | null;
+        clientId: string | null;
+    }>;
+    getProjects(req: any): Promise<({
+        _count: {
+            tasks: number;
+        };
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.ProjectStatus;
+        companyId: string;
+        createdAt: Date;
+        name: string;
+        description: string | null;
+        tags: string[];
+        isPublic: boolean;
+        updatedAt: Date;
+        code: string | null;
+        createdBy: string | null;
+        priority: import(".prisma/client").$Enums.Priority;
+        category: string | null;
+        startDate: Date | null;
+        color: string | null;
+        departmentId: string | null;
+        targetEndDate: Date | null;
+        actualEndDate: Date | null;
+        progress: import("@prisma/client/runtime/library").Decimal;
+        budget: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        teamMembers: import("@prisma/client/runtime/library").JsonValue | null;
+        projectManagerId: string | null;
+        clientId: string | null;
+    })[]>;
+    getProject(id: string): Promise<{
+        milestones: {
+            id: string;
+            status: import(".prisma/client").$Enums.MilestoneStatus;
+            createdAt: Date;
+            name: string;
+            description: string | null;
+            updatedAt: Date;
+            dueDate: Date;
+            projectId: string;
+            completedDate: Date | null;
+            dependsOnId: string | null;
+            displayOrder: number | null;
+        }[];
+        tasks: ({
+            assignedTo: {
+                employee: {
+                    firstName: string;
+                    lastName: string;
+                };
+                email: string;
+            };
+        } & {
+            id: string;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            createdAt: Date;
+            description: string | null;
+            title: string;
+            updatedAt: Date;
+            createdBy: string | null;
+            attachments: import("@prisma/client/runtime/library").JsonValue | null;
+            priority: import(".prisma/client").$Enums.Priority;
+            completedAt: Date | null;
+            dueDate: Date | null;
+            projectId: string | null;
+            displayOrder: number | null;
+            taskNumber: string | null;
+            taskType: string;
+            milestoneId: string | null;
+            assignedToId: string | null;
+            reporterId: string | null;
+            estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+            actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            boardColumn: string | null;
+            parentTaskId: string | null;
+            labels: string[];
+        })[];
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.ProjectStatus;
+        companyId: string;
+        createdAt: Date;
+        name: string;
+        description: string | null;
+        tags: string[];
+        isPublic: boolean;
+        updatedAt: Date;
+        code: string | null;
+        createdBy: string | null;
+        priority: import(".prisma/client").$Enums.Priority;
+        category: string | null;
+        startDate: Date | null;
+        color: string | null;
+        departmentId: string | null;
+        targetEndDate: Date | null;
+        actualEndDate: Date | null;
+        progress: import("@prisma/client/runtime/library").Decimal;
+        budget: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        teamMembers: import("@prisma/client/runtime/library").JsonValue | null;
+        projectManagerId: string | null;
+        clientId: string | null;
+    }>;
+    getKanban(id: string): Promise<{
+        TODO: ({
+            assignedTo: {
+                employee: {
+                    firstName: string;
+                    lastName: string;
+                };
+                id: string;
+                email: string;
+            };
+        } & {
+            id: string;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            createdAt: Date;
+            description: string | null;
+            title: string;
+            updatedAt: Date;
+            createdBy: string | null;
+            attachments: import("@prisma/client/runtime/library").JsonValue | null;
+            priority: import(".prisma/client").$Enums.Priority;
+            completedAt: Date | null;
+            dueDate: Date | null;
+            projectId: string | null;
+            displayOrder: number | null;
+            taskNumber: string | null;
+            taskType: string;
+            milestoneId: string | null;
+            assignedToId: string | null;
+            reporterId: string | null;
+            estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+            actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            boardColumn: string | null;
+            parentTaskId: string | null;
+            labels: string[];
+        })[];
+        IN_PROGRESS: ({
+            assignedTo: {
+                employee: {
+                    firstName: string;
+                    lastName: string;
+                };
+                id: string;
+                email: string;
+            };
+        } & {
+            id: string;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            createdAt: Date;
+            description: string | null;
+            title: string;
+            updatedAt: Date;
+            createdBy: string | null;
+            attachments: import("@prisma/client/runtime/library").JsonValue | null;
+            priority: import(".prisma/client").$Enums.Priority;
+            completedAt: Date | null;
+            dueDate: Date | null;
+            projectId: string | null;
+            displayOrder: number | null;
+            taskNumber: string | null;
+            taskType: string;
+            milestoneId: string | null;
+            assignedToId: string | null;
+            reporterId: string | null;
+            estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+            actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            boardColumn: string | null;
+            parentTaskId: string | null;
+            labels: string[];
+        })[];
+        IN_REVIEW: ({
+            assignedTo: {
+                employee: {
+                    firstName: string;
+                    lastName: string;
+                };
+                id: string;
+                email: string;
+            };
+        } & {
+            id: string;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            createdAt: Date;
+            description: string | null;
+            title: string;
+            updatedAt: Date;
+            createdBy: string | null;
+            attachments: import("@prisma/client/runtime/library").JsonValue | null;
+            priority: import(".prisma/client").$Enums.Priority;
+            completedAt: Date | null;
+            dueDate: Date | null;
+            projectId: string | null;
+            displayOrder: number | null;
+            taskNumber: string | null;
+            taskType: string;
+            milestoneId: string | null;
+            assignedToId: string | null;
+            reporterId: string | null;
+            estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+            actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            boardColumn: string | null;
+            parentTaskId: string | null;
+            labels: string[];
+        })[];
+        DONE: ({
+            assignedTo: {
+                employee: {
+                    firstName: string;
+                    lastName: string;
+                };
+                id: string;
+                email: string;
+            };
+        } & {
+            id: string;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            createdAt: Date;
+            description: string | null;
+            title: string;
+            updatedAt: Date;
+            createdBy: string | null;
+            attachments: import("@prisma/client/runtime/library").JsonValue | null;
+            priority: import(".prisma/client").$Enums.Priority;
+            completedAt: Date | null;
+            dueDate: Date | null;
+            projectId: string | null;
+            displayOrder: number | null;
+            taskNumber: string | null;
+            taskType: string;
+            milestoneId: string | null;
+            assignedToId: string | null;
+            reporterId: string | null;
+            estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+            actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            boardColumn: string | null;
+            parentTaskId: string | null;
+            labels: string[];
+        })[];
+    }>;
+    createTask(projectId: string, req: any, data: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        createdAt: Date;
+        description: string | null;
+        title: string;
+        updatedAt: Date;
+        createdBy: string | null;
+        attachments: import("@prisma/client/runtime/library").JsonValue | null;
+        priority: import(".prisma/client").$Enums.Priority;
+        completedAt: Date | null;
+        dueDate: Date | null;
+        projectId: string | null;
+        displayOrder: number | null;
+        taskNumber: string | null;
+        taskType: string;
+        milestoneId: string | null;
+        assignedToId: string | null;
+        reporterId: string | null;
+        estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+        actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        boardColumn: string | null;
+        parentTaskId: string | null;
+        labels: string[];
+    }>;
+    updateTask(taskId: string, data: any, req: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        createdAt: Date;
+        description: string | null;
+        title: string;
+        updatedAt: Date;
+        createdBy: string | null;
+        attachments: import("@prisma/client/runtime/library").JsonValue | null;
+        priority: import(".prisma/client").$Enums.Priority;
+        completedAt: Date | null;
+        dueDate: Date | null;
+        projectId: string | null;
+        displayOrder: number | null;
+        taskNumber: string | null;
+        taskType: string;
+        milestoneId: string | null;
+        assignedToId: string | null;
+        reporterId: string | null;
+        estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+        actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        boardColumn: string | null;
+        parentTaskId: string | null;
+        labels: string[];
+    }>;
+    moveTask(taskId: string, data: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        createdAt: Date;
+        description: string | null;
+        title: string;
+        updatedAt: Date;
+        createdBy: string | null;
+        attachments: import("@prisma/client/runtime/library").JsonValue | null;
+        priority: import(".prisma/client").$Enums.Priority;
+        completedAt: Date | null;
+        dueDate: Date | null;
+        projectId: string | null;
+        displayOrder: number | null;
+        taskNumber: string | null;
+        taskType: string;
+        milestoneId: string | null;
+        assignedToId: string | null;
+        reporterId: string | null;
+        estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
+        actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        boardColumn: string | null;
+        parentTaskId: string | null;
+        labels: string[];
+    }>;
+}

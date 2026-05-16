@@ -7,13 +7,18 @@ import { useTranslations, useLocale } from 'next-intl';
 import { 
   X, Tag, BarChart3, Package, Factory, 
   Calculator, Info, Plus, Trash2, ShieldCheck,
-  TrendingDown, TrendingUp, Search, RefreshCw
+  TrendingDown, TrendingUp, Search, RefreshCw,
+  Layers, Scale, Truck
 } from 'lucide-react';
 import { productFormSchema, ProductFormValues } from '@/schemas/product.schema';
 import { productsService, Product } from '@/services/products';
 import { ProductFamily } from '@/services/families';
 import { formatCurrency } from '@/lib/formatters';
+import { generateSmartSKU } from '@/lib/sku';
 import { toast } from 'sonner';
+import { VariantsTab } from './product-tabs/VariantsTab';
+import { UomTab } from './product-tabs/UomTab';
+import { SupplierTab } from './product-tabs/SupplierTab';
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -24,7 +29,7 @@ interface ProductModalProps {
   allProducts: Product[]; // New prop to select components
 }
 
-type TabType = 'general' | 'pricing' | 'stock' | 'formula';
+type TabType = 'general' | 'pricing' | 'stock' | 'formula' | 'variants' | 'uom' | 'suppliers';
 
 export function ProductModal({ isOpen, onClose, onSuccess, product, families, allProducts }: ProductModalProps) {
   const t = useTranslations('products');
@@ -70,7 +75,8 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
   const formulaLines = watch('formulaLines') || [];
 
   // Visibility logic
-  const isRawMaterial = articleType === 'RAW_MATERIAL';
+  const isInternalOnly = ['RAW_MATERIAL', 'PACKAGING', 'CONSUMABLE'].includes(articleType);
+  const isSold = ['FINISHED_PRODUCT', 'SEMI_FINISHED', 'SERVICE', 'CONSUMABLE'].includes(articleType);
   const canHaveFormula = articleType === 'FINISHED_PRODUCT' || articleType === 'SEMI_FINISHED';
   
   // Dynamic BOM Calculation
@@ -89,7 +95,39 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
     }
   }, [bomCost, canHaveFormula, setValue]);
 
-  const margin = salePriceHt - (isRawMaterial ? purchasePriceHt : bomCost);
+  // Set default units based on type
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'articleType') {
+        const type = value.articleType;
+        if (type === 'RAW_MATERIAL') setValue('unit', 'KG');
+        else if (type === 'PACKAGING' || type === 'FINISHED_PRODUCT') setValue('unit', 'PCS');
+        else if (type === 'SERVICE') setValue('unit', 'U');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
+
+  // Auto-sync BOM units with components
+  useEffect(() => {
+    formulaLines.forEach((line, index) => {
+      const comp = allProducts.find(p => p.id === line.componentId);
+      if (comp && line.unit !== comp.unit) {
+        setValue(`formulaLines.${index}.unit` as any, comp.unit);
+      }
+    });
+  }, [formulaLines, allProducts, setValue]);
+
+  const handleGenerateSKU = () => {
+    const type = watch('articleType');
+    const familyId = watch('familyId');
+    const family = families.find(f => f.id === familyId);
+    const sku = generateSmartSKU(type, family?.name);
+    setValue('sku', sku, { shouldValidate: true });
+    toast.info("Référence générée avec succès");
+  };
+
+  const margin = salePriceHt - (isInternalOnly ? purchasePriceHt : bomCost);
   const marginPercent = salePriceHt > 0 ? (margin / salePriceHt) * 100 : 0;
 
   useEffect(() => {
@@ -257,14 +295,35 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                 active={activeTab === 'formula'} 
                 onClick={() => setActiveTab('formula')} 
                 icon={<Factory size={16}/>} 
-            label="Formulation / OF" 
-            hasError={!!errors.formulaLines || (canHaveFormula && bomCost === 0 && articleType !== 'SERVICE')}
-          />
+                label="Formulation / OF" 
+                hasError={!!errors.formulaLines || (canHaveFormula && bomCost === 0)}
+            />
           )}
+          <TabButton 
+            active={activeTab === 'variants'} 
+            onClick={() => setActiveTab('variants')} 
+            icon={<Layers size={16}/>} 
+            label="Variants" 
+          />
+          <TabButton 
+            active={activeTab === 'uom'} 
+            onClick={() => setActiveTab('uom')} 
+            icon={<Scale size={16}/>} 
+            label="Unités" 
+          />
+          <TabButton 
+            active={activeTab === 'suppliers'} 
+            onClick={() => setActiveTab('suppliers')} 
+            icon={<Truck size={16}/>} 
+            label="Approvisionnement" 
+          />
         </div>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit as any, onError)} className="flex-1 flex flex-col overflow-hidden">
+          <form 
+            onSubmit={handleSubmit(onSubmit as any, onError)} 
+            className={`flex-1 flex flex-col min-h-0 ${['variants', 'uom', 'supplier'].includes(activeTab) ? 'hidden' : 'overflow-hidden'}`}
+          >
             <div className="p-8 overflow-y-auto space-y-8">
               
               {/* CONTENT TABS */}
@@ -278,7 +337,17 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                     </div>
                     <div className="space-y-2">
                         <FieldLabel label={t('fields.code')} />
-                        <input {...register('sku')} className={`form-input font-mono font-black ${errors.sku ? 'border-rose-500 bg-rose-50' : ''}`} placeholder="SKU-XXXX" />
+                        <div className="relative group">
+                            <input {...register('sku')} className={`form-input font-mono font-black pr-12 ${errors.sku ? 'border-rose-500 bg-rose-50' : ''}`} placeholder="SKU-XXXX" />
+                            <button 
+                                type="button"
+                                onClick={handleGenerateSKU}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                                title="Générer SKU"
+                            >
+                                <RefreshCw size={16} />
+                            </button>
+                        </div>
                         {errors.sku && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.sku.message}</p>}
                     </div>
                     <div className="space-y-2">
@@ -313,15 +382,20 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                       
                       {/* Left Side: Basic Cost */}
                       <div className="space-y-6">
-                        {isRawMaterial ? (
+                        {isInternalOnly ? (
                            <div className="space-y-2">
                               <FieldLabel label="Prix d'Achat HT" />
-                              <input 
-                                type="number" 
-                                step="0.01" 
-                                {...register('purchasePriceHt', { valueAsNumber: true })} 
-                                className="form-input text-blue-600 font-black" 
-                              />
+                              <div className="relative">
+                                <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    {...register('purchasePriceHt', { valueAsNumber: true })} 
+                                    className="form-input text-blue-600 font-black pl-12" 
+                                />
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <Calculator size={16} />
+                                </div>
+                              </div>
                               <p className="text-[10px] text-slate-400 italic">Dernier prix d'acquisition négocié.</p>
                            </div>
                         ) : (
@@ -332,10 +406,10 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                                     type="number" 
                                     readOnly 
                                     value={bomCost.toFixed(2)}
-                                    className="form-input-readonly bg-slate-50" 
+                                    className="form-input-readonly bg-slate-50 pl-12" 
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <Calculator size={14} />
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <Calculator size={16} />
                                 </div>
                               </div>
                               <p className="text-[10px] text-slate-400 flex items-center gap-1">
@@ -344,22 +418,27 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                            </div>
                         )}
 
-                        {!isRawMaterial && (
+                        {!isInternalOnly && (
                           <div className="space-y-2">
                                <FieldLabel label="Prix de Vente HT" />
-                               <input 
-                                  type="number" 
-                                  step="0.01" 
-                                  {...register('salePriceHt', { valueAsNumber: true })} 
-                                  className="form-input font-black text-slate-900"
-                               />
+                               <div className="relative">
+                                 <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    {...register('salePriceHt', { valueAsNumber: true })} 
+                                    className="form-input font-black text-slate-900 pl-12"
+                                 />
+                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <Tag size={16} />
+                                 </div>
+                               </div>
                           </div>
                         )}
                       </div>
 
                       {/* Right Side: Indicators */}
                       <div className="space-y-6">
-                         {!isRawMaterial && (
+                         {!isInternalOnly ? (
                            <>
                               <div className="p-6 bg-slate-950 rounded-3xl text-white shadow-xl">
                                   <div className="flex items-center justify-between mb-4">
@@ -376,29 +455,31 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
 
                               <div className="space-y-2">
                                 <FieldLabel label="Taux de TVA" />
-                                <select {...register('taxRate', { valueAsNumber: true })} className="form-select" disabled={isRawMaterial}>
+                                <select {...register('taxRate', { valueAsNumber: true })} className="form-select">
                                     <option value={0.19}>19% (Standard)</option>
                                     <option value={0.09}>9% (Réduit)</option>
                                     <option value={0}>0% (Exonéré)</option>
                                 </select>
                               </div>
                            </>
-                         )}
-                         {isRawMaterial && (
-                            <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-100 rounded-3xl p-8 text-center">
+                         ) : (
+                            <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-100 rounded-3xl p-8 text-center bg-slate-50/50">
                                 <div>
-                                    <ShieldCheck size={32} className="text-slate-200 mx-auto mb-2" />
-                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+                                    <div className="h-16 w-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-4">
+                                        <ShieldCheck size={32} className="text-blue-500" />
+                                    </div>
+                                    <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-relaxed">
                                         Consommation <br/>Interne Uniquement
                                     </p>
+                                    <p className="text-[9px] text-slate-400 font-bold mt-2">Cet article ne sera pas disponible à la vente directe.</p>
                                 </div>
                             </div>
                          )}
                       </div>
 
                       {/* TTC Banner */}
-                      {!isRawMaterial && (
-                         <div className="col-span-2 p-6 bg-blue-600 rounded-3xl shadow-xl shadow-blue-100 flex items-center justify-between text-white">
+                      {!isInternalOnly && (
+                         <div className="col-span-2 p-6 bg-blue-600 rounded-3xl shadow-xl shadow-blue-100 flex items-center justify-between text-white animate-in slide-in-from-bottom-2 duration-500">
                             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">PRIX PUBLIC TTC</span>
                             <span className="text-3xl font-black">
                                 {formatCurrency(salePriceHt * (1 + taxRate), locale)}
@@ -473,24 +554,20 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className="col-span-3 flex items-center gap-2">
-                                            <input 
-                                                type="number" 
-                                                placeholder="Qté"
-                                                {...register(`formulaLines.${index}.quantity`, { valueAsNumber: true })}
-                                                className="w-full bg-slate-50 border-none rounded-xl px-3 py-2 text-sm font-black focus:ring-2 focus:ring-blue-100 placeholder:font-medium"
-                                            />
-                                            <select 
-                                                {...register(`formulaLines.${index}.unit` as any)}
-                                                className="bg-slate-50 border-none rounded-lg px-1 py-1 text-[9px] font-black uppercase text-slate-400"
-                                            >
-                                                <option value="KG">KG</option>
-                                                <option value="L">L</option>
-                                                <option value="PCS">PCS</option>
-                                                <option value="G">G</option>
-                                                <option value="ML">ML</option>
-                                            </select>
-                                        </div>
+                                            <div className="relative flex-1">
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="Qté"
+                                                    {...register(`formulaLines.${index}.quantity`, { valueAsNumber: true })}
+                                                    className="w-full bg-slate-50 border-none rounded-xl px-3 py-2 text-sm font-black focus:ring-2 focus:ring-blue-100 placeholder:font-medium"
+                                                />
+                                            </div>
+                                            <div className="px-3 py-2 bg-blue-50 rounded-xl border border-blue-100">
+                                                <span className="text-[10px] font-black text-blue-600 uppercase">
+                                                    {comp?.unit || 'KG'}
+                                                </span>
+                                                <input type="hidden" {...register(`formulaLines.${index}.unit`)} value={comp?.unit || 'KG'} />
+                                            </div>
                                         <div className="col-span-2 text-right">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Coût unit.</p>
                                             <p className="text-[11px] font-black text-slate-900">{formatCurrency(Number(comp?.standardCost || comp?.purchasePriceHt || 0), locale)}</p>
@@ -548,6 +625,21 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
             </div>
           </form>
         </FormProvider>
+
+        {/* Variants Tab */}
+        {activeTab === 'variants' && product?.id && (
+            <VariantsTab productId={product.id} />
+        )}
+
+        {/* UoM Tab */}
+        {activeTab === 'uom' && product?.id && (
+            <UomTab productId={product.id} />
+        )}
+
+        {/* Supplier Tab */}
+        {activeTab === 'suppliers' && product?.id && (
+            <SupplierTab productId={product.id} />
+        )}
       </div>
 
       <style jsx global>{`

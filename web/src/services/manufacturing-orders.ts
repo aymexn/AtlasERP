@@ -82,6 +82,13 @@ export const manufacturingOrdersService = {
     });
   },
 
+  async close(id: string, producedQuantity?: number): Promise<ManufacturingOrder> {
+    return apiFetch(`/manufacturing-orders/${id}/close`, {
+      method: 'POST',
+      body: JSON.stringify({ producedQuantity }),
+    });
+  },
+
   async cancel(id: string): Promise<ManufacturingOrder> {
     return apiFetch(`/manufacturing-orders/${id}/cancel`, { method: 'POST' });
   },

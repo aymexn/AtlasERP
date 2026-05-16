@@ -35,7 +35,7 @@ interface Role {
 }
 
 export default function UsersClient() {
-  const t = useTranslations('settings');
+  const t = useTranslations('admin.users');
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ export default function UsersClient() {
       setRoles(rolesData || []);
     } catch (error) {
       console.error('Failed to load users data:', error);
-      toast.error('Erreur lors du chargement des utilisateurs');
+      toast.error('Error loading users');
     } finally {
       setLoading(false);
     }
@@ -80,13 +80,13 @@ export default function UsersClient() {
         method: 'POST',
         body: JSON.stringify({ email: inviteEmail, roleId: inviteRoleId }),
       });
-      toast.success('Invitation envoyée avec succès');
+      toast.success('Invitation sent successfully');
       setIsInviteModalOpen(false);
       setInviteEmail('');
       setInviteRoleId('');
       loadData();
     } catch (error) {
-      toast.error('Erreur lors de l\'envoi de l\'invitation');
+      toast.error('Error sending invitation');
     } finally {
       setInviting(false);
     }
@@ -98,10 +98,10 @@ export default function UsersClient() {
         method: 'POST',
         body: JSON.stringify({ roleId }),
       });
-      toast.success('Rôle assigné avec succès');
+      toast.success('Role assigned successfully');
       loadData();
     } catch (error) {
-      toast.error('Erreur lors de l\'assignation du rôle');
+      toast.error('Error assigning role');
     }
   };
 
@@ -110,10 +110,10 @@ export default function UsersClient() {
       await apiFetch(`/rbac/users/${userId}/roles/${roleId}`, {
         method: 'DELETE',
       });
-      toast.success('Rôle révoqué avec succès');
+      toast.success('Role revoked successfully');
       loadData();
     } catch (error) {
-      toast.error('Erreur lors de la révocation du rôle');
+      toast.error('Error revoking role');
     }
   };
 
@@ -130,25 +130,25 @@ export default function UsersClient() {
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Gestion des Utilisateurs</h1>
-            <p className="text-slate-500 text-sm font-medium">Gérez les comptes utilisateurs et leurs habilitations d'accès.</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{t('title')}</h1>
+            <p className="text-slate-500 text-sm font-medium">{t('subtitle')}</p>
           </div>
           <button 
             onClick={() => setIsInviteModalOpen(true)}
             className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl flex items-center gap-2 font-black text-sm transition-all shadow-lg shadow-blue-100 uppercase tracking-tighter"
           >
             <UserPlus size={18} />
-            Inviter un Collaborateur
+            {t('invite')}
           </button>
         </div>
 
-        <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm">
+        <div className="bg-white border-2 border-slate-100 rounded-4xl overflow-hidden shadow-sm">
           <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative w-full sm:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="text" 
-                placeholder="Rechercher un utilisateur..."
+                placeholder={t('search')}
                 className="w-full h-11 pl-12 pr-4 bg-white border-2 border-slate-100 rounded-xl outline-none focus:border-blue-600 transition-all font-bold text-xs"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -156,7 +156,7 @@ export default function UsersClient() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">
-                {users.length} Utilisateurs
+                {t('count', { count: users.length })}
               </span>
             </div>
           </div>
@@ -165,10 +165,10 @@ export default function UsersClient() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rôles Actifs</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('table.user')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('table.roles')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('table.status')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -183,7 +183,7 @@ export default function UsersClient() {
                           <div className="font-black text-slate-900 text-sm tracking-tight">{user.email}</div>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <Mail size={10} className="text-slate-300" />
-                            <span className="text-[10px] font-bold text-slate-400">Collaborateur Interne</span>
+                            <span className="text-[10px] font-bold text-slate-400">Collaborator</span>
                           </div>
                         </div>
                       </div>
@@ -210,7 +210,7 @@ export default function UsersClient() {
                           className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-tighter border border-slate-100 transition-all"
                         >
                           <Plus size={10} />
-                          Ajouter
+                          {t('role_modal.add')}
                         </button>
                       </div>
                     </td>
@@ -221,8 +221,8 @@ export default function UsersClient() {
                           user.status === 'PENDING' ? 'bg-amber-500' : 'bg-slate-300'
                         }`}></div>
                         <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                          {user.status === 'ACTIVE' ? 'Actif' : 
-                           user.status === 'PENDING' ? 'En attente' : 'Suspendu'}
+                          {user.status === 'ACTIVE' ? 'Active' : 
+                           user.status === 'PENDING' ? 'Pending' : 'Suspended'}
                         </span>
                       </div>
                     </td>
@@ -241,11 +241,11 @@ export default function UsersClient() {
         {/* Invitation Modal */}
         {isInviteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-white w-full max-w-md rounded-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
               <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Inviter un Collaborateur</h3>
-                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Nouveau compte utilisateur</p>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">{t('invite_modal.title')}</h3>
+                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{t('invite_modal.subtitle')}</p>
                 </div>
                 <button onClick={() => setIsInviteModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-xl transition-all">
                   <X size={20} />
@@ -253,13 +253,13 @@ export default function UsersClient() {
               </div>
               <form onSubmit={handleInvite} className="p-8 space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Adresse E-mail</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('invite_modal.email')}</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="email" 
                       required
-                      placeholder="email@exemple.com"
+                      placeholder="email@example.com"
                       className="w-full h-12 pl-12 pr-4 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-600 rounded-2xl outline-none transition-all font-bold text-sm"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
@@ -268,7 +268,7 @@ export default function UsersClient() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rôle Principal</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('invite_modal.role')}</label>
                   <div className="grid grid-cols-1 gap-2">
                     {roles.map(role => (
                       <button
@@ -305,7 +305,7 @@ export default function UsersClient() {
                   ) : (
                     <>
                       <Send size={18} />
-                      Envoyer l'Invitation
+                      {t('invite_modal.send')}
                     </>
                   )}
                 </button>
@@ -317,10 +317,10 @@ export default function UsersClient() {
         {/* Role Assignment Modal */}
         {isRoleModalOpen && selectedUser && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-white w-full max-w-md rounded-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
               <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Assigner un Rôle</h3>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">{t('role_modal.title')}</h3>
                   <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-tighter">{selectedUser.email}</p>
                 </div>
                 <button onClick={() => setIsRoleModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-xl transition-all">
@@ -365,7 +365,7 @@ export default function UsersClient() {
                   onClick={() => setIsRoleModalOpen(false)}
                   className="flex-1 h-12 bg-white text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all"
                 >
-                  Annuler
+                  Cancel
                 </button>
               </div>
             </div>

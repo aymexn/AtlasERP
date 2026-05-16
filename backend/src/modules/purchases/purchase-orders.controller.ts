@@ -73,4 +73,8 @@ export class PurchaseOrdersController {
       }
     }
   }
+  @Patch(':id')
+  update(@Request() req, @Param('id') id: string, @Body() updateDto: UpdatePurchaseOrderDto) {
+    return this.purchaseOrdersService.update(id, req.user.companyId, updateDto);
+  }
 }

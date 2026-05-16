@@ -48,15 +48,16 @@ export declare class TreasuryController {
     }[]>;
     logActivity(req: any, data: any): Promise<{
         id: string;
+        status: string;
         companyId: string;
         createdAt: Date;
-        notes: string;
+        type: string;
+        updatedAt: Date;
+        notes: string | null;
         customerId: string;
         invoiceId: string | null;
-        activityType: string;
-        outcome: string | null;
-        nextAction: Date | null;
-        assignedTo: string | null;
+        actionDate: Date;
+        followUpDate: Date | null;
     }>;
     getActivities(req: any, customerId: string): Promise<({
         invoice: {
@@ -83,15 +84,16 @@ export declare class TreasuryController {
         };
     } & {
         id: string;
+        status: string;
         companyId: string;
         createdAt: Date;
-        notes: string;
+        type: string;
+        updatedAt: Date;
+        notes: string | null;
         customerId: string;
         invoiceId: string | null;
-        activityType: string;
-        outcome: string | null;
-        nextAction: Date | null;
-        assignedTo: string | null;
+        actionDate: Date;
+        followUpDate: Date | null;
     })[]>;
     getForecast(req: any): Promise<any[]>;
 }

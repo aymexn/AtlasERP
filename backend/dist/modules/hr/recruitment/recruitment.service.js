@@ -13,9 +13,11 @@ exports.RecruitmentService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const notifications_service_1 = require("../../notifications/notifications.service");
 let RecruitmentService = class RecruitmentService {
-    constructor(prisma) {
+    constructor(prisma, notificationService) {
         this.prisma = prisma;
+        this.notificationService = notificationService;
     }
     async getJobPostings(companyId) {
         return this.prisma.jobPosting.findMany({
@@ -113,6 +115,11 @@ let RecruitmentService = class RecruitmentService {
                 where: { id: application.candidateId },
                 data: { status: client_1.CandidateStatus.HIRED },
             });
+            this.notificationService.sendEmail('hr-manager@atlaserp.dz', `Nouveau recrutement : ${employee.firstName} ${employee.lastName}`, 'new-hire-alert', {
+                employee: `${employee.firstName} ${employee.lastName}`,
+                position: employee.position,
+                startDate: employee.hireDate
+            }).catch(console.error);
             return employee;
         });
     }
@@ -120,6 +127,7 @@ let RecruitmentService = class RecruitmentService {
 exports.RecruitmentService = RecruitmentService;
 exports.RecruitmentService = RecruitmentService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationService])
 ], RecruitmentService);
 //# sourceMappingURL=recruitment.service.js.map

@@ -11,8 +11,10 @@ export declare class InventoryController {
         createdAt: Date;
         type: import(".prisma/client").$Enums.MovementType;
         unit: string;
-        productId: string;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
+        uomId: string | null;
         movementType: string;
         reference: string;
         reason: string | null;
@@ -44,8 +46,10 @@ export declare class InventoryController {
         createdAt: Date;
         type: import(".prisma/client").$Enums.MovementType;
         unit: string;
-        productId: string;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
+        uomId: string | null;
         movementType: string;
         reference: string;
         reason: string | null;
@@ -59,6 +63,8 @@ export declare class InventoryController {
     })[]>;
     getStock(req: any, warehouseId?: string): Promise<{
         quantity: number;
+        stockQuantity: number;
+        minStock: number;
         reservedQuantity: number;
         availableQuantity: number;
         product: {
@@ -67,6 +73,7 @@ export declare class InventoryController {
             sku: string;
             standardCost: import("@prisma/client/runtime/library").Decimal;
             unit: string;
+            minStock: import("@prisma/client/runtime/library").Decimal;
             family: {
                 name: string;
             };
@@ -75,6 +82,7 @@ export declare class InventoryController {
         companyId: string;
         updatedAt: Date;
         productId: string;
+        variantId: string | null;
         warehouseId: string;
         minThreshold: import("@prisma/client/runtime/library").Decimal;
         maxThreshold: import("@prisma/client/runtime/library").Decimal | null;
@@ -125,8 +133,10 @@ export declare class InventoryController {
         createdAt: Date;
         type: import(".prisma/client").$Enums.MovementType;
         unit: string;
-        productId: string;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        productId: string;
+        variantId: string | null;
+        uomId: string | null;
         movementType: string;
         reference: string;
         reason: string | null;

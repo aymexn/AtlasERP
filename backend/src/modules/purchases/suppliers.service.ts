@@ -63,7 +63,7 @@ export class SuppliersService {
   }
 
   async create(companyId: string, dto: CreateSupplierDto) {
-    console.log(`[SuppliersService.create] Called for companyId: ${companyId}`);
+    console.log(`[SuppliersService.create] Attempting to create supplier for companyId: ${companyId}`, { name: dto.name, nif: dto.nif });
     try {
       if (!companyId) throw new BadRequestException('Company ID is required');
 
@@ -88,8 +88,18 @@ export class SuppliersService {
       return await this.prisma.supplier.create({
         data,
       });
-    } catch (error) {
-      console.error('SuppliersService.create Error:', error);
+    } catch (error: any) {
+      console.error('[SuppliersService.create] CRITICAL ERROR:', error);
+      
+      // Handle Prisma Unique Constraint Violations
+      if (error.code === 'P2002') {
+        const targets = error.meta?.target || [];
+        if (targets.includes('nif')) throw new BadRequestException('Un fournisseur avec ce NIF existe déjà.');
+        if (targets.includes('rc')) throw new BadRequestException('Un fournisseur avec ce RC existe déjà.');
+        if (targets.includes('ai')) throw new BadRequestException('Un fournisseur avec ce AI existe déjà.');
+        throw new BadRequestException('Un fournisseur avec ces identifiants fiscaux existe déjà.');
+      }
+
       throw error;
     }
   }
@@ -159,5 +169,29 @@ export class SuppliersService {
       activeSuppliers,
       suppliersWithOrders
     };
+  }
+
+  // --- CATALOG METHODS ---
+
+  async getCatalog(supplierId: string) {
+    return this.prisma.supplierProduct.findMany({
+      where: { supplierId },
+      include: { product: true },
+    });
+  }
+
+  async addProductToCatalog(supplierId: string, data: any) {
+    return this.prisma.supplierProduct.create({
+      data: {
+        ...data,
+        supplierId,
+      },
+    });
+  }
+
+  async removeProductFromCatalog(id: string) {
+    return this.prisma.supplierProduct.delete({
+      where: { id },
+    });
   }
 }

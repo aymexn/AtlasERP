@@ -85,6 +85,11 @@ export class CreateProductDto {
     @IsBoolean()
     trackStock?: boolean;
 
+    @ApiPropertyOptional({ example: 'uuid-uom' })
+    @IsOptional()
+    @IsString()
+    stockUomId?: string;
+
     @ApiPropertyOptional({ example: [{ componentId: 'uuid', quantity: 1.5 }] })
     @IsOptional()
     formulaLines?: { componentId: string; quantity: number }[];
@@ -172,6 +177,11 @@ export class UpdateProductDto {
     @IsOptional()
     @IsBoolean()
     trackStock?: boolean;
+
+    @ApiPropertyOptional({ example: 'uuid-uom' })
+    @IsOptional()
+    @IsString()
+    stockUomId?: string;
 
     @ApiPropertyOptional({ example: [{ componentId: 'uuid', quantity: 1.5 }] })
     @IsOptional()

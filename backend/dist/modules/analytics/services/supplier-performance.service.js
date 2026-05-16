@@ -14,6 +14,7 @@ exports.SupplierPerformanceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const library_1 = require("@prisma/client/runtime/library");
+const client_1 = require("@prisma/client");
 let SupplierPerformanceService = SupplierPerformanceService_1 = class SupplierPerformanceService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -25,7 +26,7 @@ let SupplierPerformanceService = SupplierPerformanceService_1 = class SupplierPe
                 companyId,
                 supplierId,
                 orderDate: { gte: startDate, lte: endDate },
-                status: 'RECEIVED'
+                status: client_1.PurchaseOrderStatus.FULLY_RECEIVED
             },
             include: { stockReceptions: { where: { status: 'VALIDATED' } } }
         });

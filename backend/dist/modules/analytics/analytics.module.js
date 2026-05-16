@@ -16,6 +16,7 @@ const dead_stock_service_1 = require("./services/dead-stock.service");
 const reorder_point_service_1 = require("./services/reorder-point.service");
 const supplier_performance_service_1 = require("./services/supplier-performance.service");
 const analytics_cron_service_1 = require("./services/analytics-cron.service");
+const dashboard_analytics_service_1 = require("./services/dashboard-analytics.service");
 let AnalyticsModule = class AnalyticsModule {
 };
 exports.AnalyticsModule = AnalyticsModule;
@@ -32,6 +33,7 @@ exports.AnalyticsModule = AnalyticsModule = __decorate([
             reorder_point_service_1.ReorderPointService,
             supplier_performance_service_1.SupplierPerformanceService,
             analytics_cron_service_1.AnalyticsCronService,
+            dashboard_analytics_service_1.DashboardAnalyticsService,
         ],
         exports: [
             abc_classification_service_1.AbcClassificationService,
@@ -39,6 +41,7 @@ exports.AnalyticsModule = AnalyticsModule = __decorate([
             dead_stock_service_1.DeadStockService,
             reorder_point_service_1.ReorderPointService,
             supplier_performance_service_1.SupplierPerformanceService,
+            dashboard_analytics_service_1.DashboardAnalyticsService,
         ],
     })
 ], AnalyticsModule);

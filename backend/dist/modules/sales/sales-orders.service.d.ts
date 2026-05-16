@@ -2,11 +2,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { InvoicesService } from '../invoices/invoices.service';
 import { StockMovementService } from '../inventory/services/stock-movement.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 export declare class SalesOrdersService {
     private prisma;
     private invoicesService;
     private stockMovementService;
-    constructor(prisma: PrismaService, invoicesService: InvoicesService, stockMovementService: StockMovementService);
+    private eventEmitter;
+    constructor(prisma: PrismaService, invoicesService: InvoicesService, stockMovementService: StockMovementService, eventEmitter: EventEmitter2);
     findAll(companyId: string): Promise<({
         company: {
             id: string;
@@ -65,6 +67,7 @@ export declare class SalesOrdersService {
                 purchasePriceHt: Prisma.Decimal | null;
                 minStock: Prisma.Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -76,11 +79,12 @@ export declare class SalesOrdersService {
             id: string;
             taxRate: Prisma.Decimal;
             unit: string;
-            productId: string;
             quantity: Prisma.Decimal;
+            productId: string;
+            uomId: string | null;
             salesOrderId: string;
-            shippedQuantity: Prisma.Decimal;
             unitPriceHt: Prisma.Decimal;
+            shippedQuantity: Prisma.Decimal;
             unitCostSnapshot: Prisma.Decimal;
             lineTotalHt: Prisma.Decimal;
             lineTotalTtc: Prisma.Decimal;
@@ -158,6 +162,7 @@ export declare class SalesOrdersService {
                 purchasePriceHt: Prisma.Decimal | null;
                 minStock: Prisma.Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -169,11 +174,12 @@ export declare class SalesOrdersService {
             id: string;
             taxRate: Prisma.Decimal;
             unit: string;
-            productId: string;
             quantity: Prisma.Decimal;
+            productId: string;
+            uomId: string | null;
             salesOrderId: string;
-            shippedQuantity: Prisma.Decimal;
             unitPriceHt: Prisma.Decimal;
+            shippedQuantity: Prisma.Decimal;
             unitCostSnapshot: Prisma.Decimal;
             lineTotalHt: Prisma.Decimal;
             lineTotalTtc: Prisma.Decimal;
@@ -251,6 +257,7 @@ export declare class SalesOrdersService {
                 purchasePriceHt: Prisma.Decimal | null;
                 minStock: Prisma.Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -262,11 +269,12 @@ export declare class SalesOrdersService {
             id: string;
             taxRate: Prisma.Decimal;
             unit: string;
-            productId: string;
             quantity: Prisma.Decimal;
+            productId: string;
+            uomId: string | null;
             salesOrderId: string;
-            shippedQuantity: Prisma.Decimal;
             unitPriceHt: Prisma.Decimal;
+            shippedQuantity: Prisma.Decimal;
             unitCostSnapshot: Prisma.Decimal;
             lineTotalHt: Prisma.Decimal;
             lineTotalTtc: Prisma.Decimal;
@@ -311,11 +319,12 @@ export declare class SalesOrdersService {
             id: string;
             taxRate: Prisma.Decimal;
             unit: string;
-            productId: string;
             quantity: Prisma.Decimal;
+            productId: string;
+            uomId: string | null;
             salesOrderId: string;
-            shippedQuantity: Prisma.Decimal;
             unitPriceHt: Prisma.Decimal;
+            shippedQuantity: Prisma.Decimal;
             unitCostSnapshot: Prisma.Decimal;
             lineTotalHt: Prisma.Decimal;
             lineTotalTtc: Prisma.Decimal;

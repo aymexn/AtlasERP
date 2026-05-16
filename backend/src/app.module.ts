@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
@@ -18,6 +19,7 @@ import { CommonModule } from './common/common.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { TenantInterceptor } from './common/interceptors/tenant.interceptor';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TreasuryModule } from './modules/treasury/treasury.module';
 import { RbacModule } from './modules/rbac/rbac.module';
@@ -27,10 +29,12 @@ import { LeavesModule } from './modules/hr/leaves/leaves.module';
 import { PayrollModule } from './modules/hr/payroll/payroll.module';
 import { RecruitmentModule } from './modules/hr/recruitment/recruitment.module';
 import { PerformanceModule } from './modules/hr/performance/performance.module';
+import { CollaborationModule } from './modules/collaboration/collaboration.module';
 
 
 @Module({
     imports: [
+        EventEmitterModule.forRoot(),
         AuthModule, 
         TenantsModule, 
         UsersModule, 
@@ -56,13 +60,18 @@ import { PerformanceModule } from './modules/hr/performance/performance.module';
         LeavesModule,
         PayrollModule,
         RecruitmentModule,
-        PerformanceModule
+        PerformanceModule,
+        CollaborationModule
     ],
     controllers: [],
     providers: [
         {
             provide: APP_INTERCEPTOR,
             useClass: AuditInterceptor,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: TenantInterceptor,
         },
     ],
 })

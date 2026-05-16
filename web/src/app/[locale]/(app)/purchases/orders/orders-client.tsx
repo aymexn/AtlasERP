@@ -29,6 +29,7 @@ import {
     SheetFooter
 } from '@/components/ui/sheet';
 import { apiFetch } from '@/lib/api';
+import { Combobox } from '@/components/ui/combobox';
 
 export default function OrdersClient() {
     const t = useTranslations('purchases');
@@ -89,6 +90,8 @@ export default function OrdersClient() {
                     orderDate: new Date().toISOString().split('T')[0],
                     expectedDate: '',
                     notes: '',
+                    status: 'DRAFT',
+                    warehouseId: '',
                     lines: [{ 
                         productId: product.id, 
                         quantity: Number(qty) || 1, 
@@ -148,7 +151,7 @@ export default function OrdersClient() {
             expectedDate: formState.expectedDate || undefined,
             notes: formState.notes || undefined,
             status: formState.status,
-            warehouseId: formState.status === 'RECEIVED' ? formState.warehouseId : undefined,
+            warehouseId: formState.status === 'FULLY_RECEIVED' ? formState.warehouseId : undefined,
             lines: formState.lines.map(line => ({
                 productId: line.productId,
                 quantity: Number(line.quantity),
@@ -165,7 +168,7 @@ export default function OrdersClient() {
                 body: JSON.stringify(payload)
             });
             
-            const message = payload.status === 'RECEIVED' 
+            const message = payload.status === 'FULLY_RECEIVED' 
                 ? 'Commande et Stock mis à jour avec succès' 
                 : (t('orders.success.created' as any) || 'BCF créé avec succès');
             
@@ -214,9 +217,12 @@ export default function OrdersClient() {
 
     const getStatusVariant = (status: string) => {
         switch(status) {
-            case 'RECEIVED': return 'active';
-            case 'CANCELLED': return 'inactive';
+            case 'DRAFT': return 'draft';
+            case 'SENT': return 'info';
+            case 'CONFIRMED': return 'confirmed';
             case 'PARTIALLY_RECEIVED': return 'warning';
+            case 'FULLY_RECEIVED': return 'active';
+            case 'CANCELLED': return 'cancelled';
             default: return 'primary';
         }
     };
@@ -238,17 +244,7 @@ export default function OrdersClient() {
                 icon={ShoppingBag}
                 action={{
                     label: t('orders.add'),
-                    onClick: () => {
-                        setFormState({
-                            supplierId: '',
-                            orderDate: new Date().toISOString().split('T')[0],
-                            expectedDate: '',
-                            notes: '',
-                            lines: [{ productId: '', quantity: 1, unit: 'U', unitPriceHt: 0, taxRate: 0.19 }]
-                        });
-                        setActiveTab('general');
-                        setIsModalOpen(true);
-                    },
+                    onClick: () => router.push(`/${locale}/purchases/orders/new`),
                     icon: Plus
                 }}
             />
@@ -257,7 +253,7 @@ export default function OrdersClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KpiCard 
                     title={t('orders.kpi.active_orders')}
-                    value={orders.filter(o => !['RECEIVED', 'CANCELLED'].includes(o.status)).length}
+                    value={orders.filter(o => !['FULLY_RECEIVED', 'CANCELLED'].includes(o.status)).length}
                     icon={Truck}
                     variant="primary"
                     type="count"
@@ -273,7 +269,7 @@ export default function OrdersClient() {
                 />
                 <KpiCard 
                     title={t('orders.kpi.received')}
-                    value={orders.filter(o => o.status === 'RECEIVED').length}
+                    value={orders.filter(o => o.status === 'FULLY_RECEIVED').length}
                     icon={CheckCircle2}
                     variant="success"
                     type="count"
@@ -335,7 +331,7 @@ export default function OrdersClient() {
                                 header: ct('status'),
                                 accessor: (row) => (
                                     <Badge variant={getStatusVariant(row.status) as any}>
-                                        {row.status}
+                                        {t(`STATUS.${row.status}`)}
                                     </Badge>
                                 )
                             },
@@ -400,21 +396,14 @@ export default function OrdersClient() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="col-span-2 space-y-3">
                                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">{t('orders.form.supplier' as any) || 'Fournisseur'}</label>
-                                            <div className="relative group">
-                                                <Users className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={20} />
-                                                <select 
-                                                    required
-                                                    className="w-full pl-14 pr-10 py-5 bg-slate-50 border-2 border-transparent rounded-[2rem] outline-none focus:border-blue-600 focus:bg-white transition-all font-black text-slate-900 appearance-none cursor-pointer shadow-sm text-lg"
-                                                    value={formState.supplierId}
-                                                    onChange={(e) => setFormState({ ...formState, supplierId: e.target.value })}
-                                                >
-                                                    <option value="">{ct('select_placeholder' as any) || 'Sélectionner un partenaire...'}</option>
-                                                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code || 'NO-CODE'})</option>)}
-                                                </select>
-                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
-                                                    <LayoutGrid size={18} />
-                                                </div>
-                                            </div>
+                                            <Combobox 
+                                                options={suppliers.map(s => ({ label: `${s.name} (${s.code || 'NO-CODE'})`, value: s.id }))}
+                                                value={formState.supplierId}
+                                                onChange={(val) => setFormState({ ...formState, supplierId: val })}
+                                                placeholder={ct('select_placeholder' as any) || 'Sélectionner un partenaire...'}
+                                                searchPlaceholder="Rechercher un fournisseur..."
+                                                icon={Users}
+                                            />
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">{t('orders.form.order_date' as any) || 'Date émission'}</label>
@@ -480,14 +469,13 @@ export default function OrdersClient() {
                                             <div key={i} className="flex flex-col md:flex-row gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-lg hover:shadow-slate-100 transition-all group items-center">
                                                 <div className="flex-2 min-w-[200px] w-full">
                                                     <label className="md:hidden text-[9px] font-black text-slate-400 uppercase mb-1 block">Article</label>
-                                                    <select 
-                                                        className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl outline-none focus:border-primary transition-all font-bold text-slate-800 text-sm"
+                                                    <Combobox 
+                                                        options={availableProducts.map(p => ({ label: `${p.name} (${p.sku || 'N/A'})`, value: p.id }))}
                                                         value={l.productId}
-                                                        onChange={(e) => updateLine(i, 'productId', e.target.value)}
-                                                    >
-                                                        <option value="">{t('orders.form.product_placeholder' as any) || 'Sélectionner un article...'}</option>
-                                                        {availableProducts.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku || 'N/A'})</option>)}
-                                                    </select>
+                                                        onChange={(val) => updateLine(i, 'productId', val)}
+                                                        placeholder={t('orders.form.product_placeholder' as any) || 'Sélectionner un article...'}
+                                                        className="h-11 rounded-xl"
+                                                    />
                                                 </div>
                                                 <div className="w-full md:w-28">
                                                     <label className="md:hidden text-[9px] font-black text-slate-400 uppercase mb-1 block text-center">Quantité</label>
@@ -536,7 +524,7 @@ export default function OrdersClient() {
                                         <div className="absolute top-0 right-0 p-8 opacity-10">
                                             <Calculator size={80} />
                                         </div>
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Récapitulatif Financier</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{t('orders.form.financial_summary')}</h3>
                                         <div className="space-y-4 relative z-10">
                                             <div className="flex justify-between items-center opacity-60">
                                                 <span className="text-xs font-bold uppercase tracking-widest">{ct('total_ht')}</span>
@@ -552,31 +540,33 @@ export default function OrdersClient() {
                                                 <span className="text-4xl font-black tracking-tighter">{formatCurrency(totals.ttc)}</span>
                                             </div>
                                         </div>
-                                                          <div className="p-8 bg-white border-2 border-slate-100 rounded-[2.5rem] space-y-6 shadow-sm">
+                                    </div>
+
+                                    <div className="p-8 bg-white border-2 border-slate-100 rounded-[2.5rem] space-y-6 shadow-sm">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-lg ${formState.status === 'RECEIVED' ? 'bg-green-600 text-white shadow-green-100' : 'bg-slate-100 text-slate-400'}`}>
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-lg ${formState.status === 'FULLY_RECEIVED' ? 'bg-green-600 text-white shadow-green-100' : 'bg-slate-100 text-slate-400'}`}>
                                                     <Package size={24} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-slate-900 uppercase tracking-tighter">ENTRÉE EN STOCK DIRECTE</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Marquer comme reçu et alimenter l'inventaire</p>
+                                                    <p className="text-sm font-black text-slate-900 uppercase tracking-tighter">{t('orders.form.direct_stock')}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t('orders.form.direct_stock_desc')}</p>
                                                 </div>
                                             </div>
                                             <button 
                                                 type="button"
-                                                onClick={() => setFormState({...formState, status: formState.status === 'RECEIVED' ? 'SENT' : 'RECEIVED'})}
-                                                className={`w-16 h-9 rounded-full p-1.5 transition-all flex items-center ${formState.status === 'RECEIVED' ? 'bg-green-600' : 'bg-slate-200'}`}
+                                                onClick={() => setFormState({...formState, status: formState.status === 'FULLY_RECEIVED' ? 'SENT' : 'FULLY_RECEIVED'})}
+                                                className={`w-16 h-9 rounded-full p-1.5 transition-all flex items-center ${formState.status === 'FULLY_RECEIVED' ? 'bg-green-600' : 'bg-slate-200'}`}
                                             >
-                                                <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all transform ${formState.status === 'RECEIVED' ? 'translate-x-7' : 'translate-x-0'}`} />
+                                                <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all transform ${formState.status === 'FULLY_RECEIVED' ? 'translate-x-7' : 'translate-x-0'}`} />
                                             </button>
                                         </div>
 
-                                        {formState.status === 'RECEIVED' && (
+                                        {formState.status === 'FULLY_RECEIVED' && (
                                             <div className="pt-6 border-t border-slate-100 animate-in slide-in-from-top-4 duration-300">
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <Warehouse size={14} className="text-slate-400" />
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Entrepôt de destination</label>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('receptions.fields.warehouse')}</label>
                                                 </div>
                                                 <select 
                                                     className="w-full h-14 px-6 bg-slate-50 border-2 border-transparent rounded-2xl outline-none focus:border-green-600 focus:bg-white transition-all font-black text-slate-900 text-sm shadow-sm"
@@ -588,20 +578,18 @@ export default function OrdersClient() {
                                                 </select>
                                             </div>
                                         )}
-                                    </div>
-                                    <div className={`p-6 rounded-3xl border flex items-start gap-4 transition-all duration-500 ${formState.status === 'RECEIVED' ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100'}`}>
-                                        <Info className={formState.status === 'RECEIVED' ? 'text-green-600 mt-1' : 'text-blue-600 mt-1'} size={20} />
-                                        <div className="space-y-1">
-                                            <p className={`text-[10px] font-black uppercase tracking-widest ${formState.status === 'RECEIVED' ? 'text-green-900' : 'text-blue-900'}`}>
-                                                {formState.status === 'RECEIVED' ? "ALIMENTATION RÉELLE DES STOCKS" : "MODE COMMANDE (BROUILLON/ENVOYÉ)"}
+
+                                        <div className="space-y-2">
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${formState.status === 'FULLY_RECEIVED' ? 'text-green-900' : 'text-blue-900'}`}>
+                                                {formState.status === 'FULLY_RECEIVED' ? t('orders.form.stock_feed_title') : t('orders.form.order_mode_title')}
                                             </p>
-                                            <p className={`text-[10px] font-bold uppercase leading-relaxed opacity-70 ${formState.status === 'RECEIVED' ? 'text-green-700' : 'text-blue-700'}`}>
-                                                {formState.status === 'RECEIVED' 
-                                                    ? "La validation créera automatiquement une réception validée et les mouvements de stock entrants (IN) pour tous les articles."
-                                                    : "La commande sera créée sans impacter les stocks. Une réception manuelle devra être effectuée plus tard."}
+                                            <p className={`text-[10px] font-bold uppercase leading-relaxed opacity-70 ${formState.status === 'FULLY_RECEIVED' ? 'text-green-700' : 'text-blue-700'}`}>
+                                                {formState.status === 'FULLY_RECEIVED' 
+                                                    ? t('orders.form.stock_feed_desc')
+                                                    : t('orders.form.order_mode_desc')}
                                             </p>
                                         </div>
-                                    </div>                     </div>
+                                    </div>
                                 </div>
                             )}
                         </form>

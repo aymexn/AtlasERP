@@ -7,6 +7,7 @@ import { DeadStockService } from './services/dead-stock.service';
 import { ReorderPointService } from './services/reorder-point.service';
 import { SupplierPerformanceService } from './services/supplier-performance.service';
 import { AnalyticsCronService } from './services/analytics-cron.service';
+import { DashboardAnalyticsService } from './services/dashboard-analytics.service';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AnalyticsCronService } from './services/analytics-cron.service';
     ReorderPointService,
     SupplierPerformanceService,
     AnalyticsCronService,
+    DashboardAnalyticsService,
   ],
   exports: [
     AbcClassificationService,
@@ -27,6 +29,7 @@ import { AnalyticsCronService } from './services/analytics-cron.service';
     DeadStockService,
     ReorderPointService,
     SupplierPerformanceService,
+    DashboardAnalyticsService,
   ],
 })
 export class AnalyticsModule {}

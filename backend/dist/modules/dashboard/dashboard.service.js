@@ -24,23 +24,23 @@ let DashboardService = class DashboardService {
         const cached = await this.cache.get(cacheKey);
         if (cached)
             return cached;
-        const activeStatuses = ['PLANNED', 'IN_PROGRESS'];
-        const [orders, orderStats, inProgressStats, activeOrders, outOfStockCount, lowStockCount, productsWithoutFormula, recentActivity, pendingPOStats, pendingPOCount, topSuppliers, rawMaterialStockValue, salesRevenue, activeSalesCount, customerCount, allExpenses, allReceipts, salesPerformance, salesLines, invoiceStats, topProducts, recentSalesForChart, recentPurchasesForChart] = await Promise.all([
+        const activeStatuses = [client_1.ManufacturingOrderStatus.PLANNED, client_1.ManufacturingOrderStatus.IN_PROGRESS];
+        const [orders, orderStats, inProgressStats, activeOrders, outOfStockCount, lowStockCount, productsWithoutFormula, recentActivity, pendingPOStats, pendingPOCount, topSuppliers, rawMaterialStockValue, salesRevenue, activeSalesCount, customerCount, allExpenses, allReceipts, salesPerformance, salesLines, invoiceStats, topProducts, recentSalesForChart, recentPurchasesForChart, activeEmployeeCount, pendingLeavesCount, todayRevenue, yesterdayRevenue, newCustomersToday] = await Promise.all([
             this.prisma.manufacturingOrder.groupBy({
                 by: ['status'],
                 where: { companyId },
                 _count: { _all: true }
             }),
             this.prisma.manufacturingOrder.aggregate({
-                where: { companyId, status: 'COMPLETED' },
+                where: { companyId, status: client_1.ManufacturingOrderStatus.COMPLETED },
                 _sum: { totalActualCost: true, producedQuantity: true }
             }),
             this.prisma.manufacturingOrder.aggregate({
-                where: { companyId, status: 'IN_PROGRESS' },
+                where: { companyId, status: client_1.ManufacturingOrderStatus.IN_PROGRESS },
                 _sum: { totalEstimatedCost: true }
             }),
             this.prisma.manufacturingOrder.findMany({
-                where: { companyId, status: { in: ['PLANNED', 'IN_PROGRESS'] } },
+                where: { companyId, status: { in: [client_1.ManufacturingOrderStatus.PLANNED, client_1.ManufacturingOrderStatus.IN_PROGRESS] } },
                 include: { lines: { include: { component: { select: { stockQuantity: true } } } } },
                 take: 50
             }),
@@ -48,7 +48,12 @@ let DashboardService = class DashboardService {
                 where: { companyId, isActive: true, stockQuantity: { lte: 0 } }
             }),
             this.prisma.product.count({
-                where: { companyId, isActive: true, stockQuantity: { gt: 0, lte: this.prisma.product.fields.minStock } }
+                where: {
+                    companyId,
+                    isActive: true,
+                    stockQuantity: { gt: 0, lte: this.prisma.product.fields.minStock },
+                    minStock: { gt: 0 }
+                }
             }),
             this.prisma.product.count({
                 where: { companyId, articleType: { in: [client_1.ArticleType.FINISHED_PRODUCT, client_1.ArticleType.SEMI_FINISHED] }, bomsAsFinishedProduct: { none: { status: 'ACTIVE' } } }
@@ -57,13 +62,13 @@ let DashboardService = class DashboardService {
                 where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, include: { product: { select: { name: true } } }
             }),
             this.prisma.purchaseOrder.aggregate({
-                where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }, _sum: { totalTtc: true }
+                where: { companyId, status: { in: [client_1.PurchaseOrderStatus.SENT, client_1.PurchaseOrderStatus.CONFIRMED, client_1.PurchaseOrderStatus.PARTIALLY_RECEIVED] } }, _sum: { totalTtc: true }
             }),
             this.prisma.purchaseOrder.count({
-                where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }
+                where: { companyId, status: { in: [client_1.PurchaseOrderStatus.SENT, client_1.PurchaseOrderStatus.CONFIRMED, client_1.PurchaseOrderStatus.PARTIALLY_RECEIVED] } }
             }),
             this.prisma.purchaseOrder.groupBy({
-                by: ['supplierId'], where: { companyId, status: 'RECEIVED' }, _sum: { totalTtc: true }, orderBy: { _sum: { totalTtc: 'desc' } }, take: 3
+                by: ['supplierId'], where: { companyId, status: client_1.PurchaseOrderStatus.FULLY_RECEIVED }, _sum: { totalTtc: true }, orderBy: { _sum: { totalTtc: 'desc' } }, take: 3
             }),
             this.prisma.product.aggregate({
                 where: { companyId, articleType: client_1.ArticleType.RAW_MATERIAL }, _sum: { stockValue: true }
@@ -72,7 +77,7 @@ let DashboardService = class DashboardService {
                 where: { companyId, status: { in: ['SHIPPED', 'INVOICED'] }, date: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } }, _sum: { totalAmountHt: true }
             }),
             this.prisma.salesOrder.count({
-                where: { companyId, status: { in: ['DRAFT', 'VALIDATED', 'PREPARING'] } }
+                where: { companyId, status: { in: [client_1.SalesOrderStatus.DRAFT, client_1.SalesOrderStatus.VALIDATED, client_1.SalesOrderStatus.PREPARING] } }
             }),
             this.prisma.customer.count({
                 where: { companyId, isActive: true }
@@ -84,16 +89,16 @@ let DashboardService = class DashboardService {
                 where: { companyId }, _sum: { amount: true }
             }),
             this.prisma.salesOrderLine.aggregate({
-                where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, _sum: { lineTotalHt: true }
+                where: { salesOrder: { companyId, status: { in: [client_1.SalesOrderStatus.SHIPPED, client_1.SalesOrderStatus.INVOICED] } } }, _sum: { lineTotalHt: true }
             }),
             this.prisma.salesOrderLine.findMany({
-                where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, select: { quantity: true, unitCostSnapshot: true }
+                where: { salesOrder: { companyId, status: { in: [client_1.SalesOrderStatus.SHIPPED, client_1.SalesOrderStatus.INVOICED] } } }, select: { quantity: true, unitCostSnapshot: true }
             }),
             this.prisma.invoice.aggregate({
-                where: { companyId, status: { not: 'CANCELLED' } }, _sum: { totalAmountTtc: true, amountPaid: true }
+                where: { companyId, status: { not: client_1.InvoiceStatus.CANCELLED } }, _sum: { totalAmountTtc: true, amountPaid: true }
             }),
             this.prisma.salesOrderLine.groupBy({
-                by: ['productId'], where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, _sum: { quantity: true, lineTotalHt: true }, orderBy: { _sum: { lineTotalHt: 'desc' } }, take: 5
+                by: ['productId'], where: { salesOrder: { companyId, status: { in: [client_1.SalesOrderStatus.SHIPPED, client_1.SalesOrderStatus.INVOICED] } } }, _sum: { quantity: true, lineTotalHt: true }, orderBy: { _sum: { lineTotalHt: 'desc' } }, take: 5
             }),
             this.prisma.salesOrder.findMany({
                 where: {
@@ -112,6 +117,38 @@ let DashboardService = class DashboardService {
                 },
                 select: { orderDate: true, totalTtc: true },
                 orderBy: { orderDate: 'asc' }
+            }),
+            this.prisma.employee.count({ where: { companyId, status: client_1.EmployeeStatus.ACTIVE } }),
+            this.prisma.leaveRequest.count({
+                where: {
+                    employee: { companyId },
+                    status: client_1.LeaveStatus.PENDING
+                }
+            }),
+            this.prisma.salesOrder.aggregate({
+                where: {
+                    companyId,
+                    status: { in: ['SHIPPED', 'INVOICED', 'VALIDATED'] },
+                    date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+                },
+                _sum: { totalAmountHt: true }
+            }),
+            this.prisma.salesOrder.aggregate({
+                where: {
+                    companyId,
+                    status: { in: ['SHIPPED', 'INVOICED', 'VALIDATED'] },
+                    date: {
+                        gte: new Date(new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0, 0, 0, 0)),
+                        lt: new Date(new Date().setHours(0, 0, 0, 0))
+                    }
+                },
+                _sum: { totalAmountHt: true }
+            }),
+            this.prisma.customer.count({
+                where: {
+                    companyId,
+                    createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+                }
             })
         ]);
         const [supplierNames, topProductNames] = await Promise.all([
@@ -134,6 +171,17 @@ let DashboardService = class DashboardService {
         const totalExpenses = Number(allExpenses._sum.amount || 0);
         const netProfit = totalRevenue - totalCogs - totalExpenses;
         const marginPercent = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+        const cashPosition = Number(allReceipts._sum.amount || 0) - totalExpenses;
+        const cashScore = cashPosition > 0 ? 100 : 50;
+        const salesScore = Number(todayRevenue._sum.totalAmountHt || 0) >= 60000 ? 100 : 70;
+        const invScore = (outOfStockCount + lowStockCount) === 0 ? 100 : Math.max(0, 100 - (outOfStockCount * 10) - (lowStockCount * 2));
+        const invoiceScore = netGap <= 0 ? 100 : Math.max(0, 100 - (netGap / 10000));
+        const hrScore = 100;
+        const healthScore = Math.round((cashScore * 0.3) +
+            (salesScore * 0.25) +
+            (invScore * 0.2) +
+            (invoiceScore * 0.15) +
+            (hrScore * 0.1));
         const allDates = new Set();
         const salesChartMap = new Map();
         const purchasesChartMap = new Map();
@@ -203,7 +251,27 @@ let DashboardService = class DashboardService {
                 totalCogs,
                 netProfit,
                 marginPercent,
-                cashPosition: Number(allReceipts._sum.amount || 0) - totalExpenses
+                cashPosition: cashPosition
+            },
+            hr: {
+                activeEmployees: activeEmployeeCount,
+                pendingLeaves: pendingLeavesCount
+            },
+            health: {
+                score: healthScore,
+                factors: {
+                    cashFlow: { score: cashScore, status: cashScore >= 80 ? 'healthy' : 'attention' },
+                    sales: { score: salesScore, status: salesScore >= 80 ? 'growing' : 'attention' },
+                    inventory: { score: invScore, status: invScore >= 80 ? 'healthy' : 'attention' },
+                    invoices: { score: invoiceScore, status: invoiceScore >= 80 ? 'good' : 'attention' },
+                    hr: { score: hrScore, status: 'stable' }
+                }
+            },
+            todayPerformance: {
+                revenueToday: Number(todayRevenue._sum.totalAmountHt || 0),
+                revenueYesterday: Number(yesterdayRevenue._sum.totalAmountHt || 0),
+                revenueTarget: 60000,
+                newCustomers: newCustomersToday
             },
             recentActivity
         };

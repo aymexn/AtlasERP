@@ -156,7 +156,7 @@ export default function CollectionsClient() {
                         <button className="p-3 bg-white border border-slate-100 rounded-xl text-emerald-600 shadow-sm hover:bg-emerald-600 hover:text-white transition-all"><Phone size={18} /></button>
                         <button className="p-3 bg-white border border-slate-100 rounded-xl text-blue-600 shadow-sm hover:bg-blue-600 hover:text-white transition-all"><Mail size={18} /></button>
                         <Link 
-                          href={`/treasury/customers/${item.id}/aging`}
+                          href={`/treasury/customers/${item.id}/aging` as any}
                           className="p-3 bg-slate-900 rounded-xl text-white shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all flex items-center gap-2 font-bold text-xs pl-4"
                         >
                           Dossier

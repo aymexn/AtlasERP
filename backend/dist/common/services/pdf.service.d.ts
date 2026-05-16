@@ -2,6 +2,7 @@ export declare class PdfService {
     private toNumber;
     private formatAmount;
     private str;
+    generatePayslipPdf(run: any, res: any): Promise<void>;
     generateInvoicePdf(invoice: any, res: any): Promise<void>;
     generateSalesOrderPdf(order: any, res: any): Promise<void>;
     generatePurchaseOrderPdf(order: any, res: any): Promise<void>;

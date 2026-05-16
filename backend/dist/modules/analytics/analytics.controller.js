@@ -20,13 +20,42 @@ const stock_turnover_service_1 = require("./services/stock-turnover.service");
 const dead_stock_service_1 = require("./services/dead-stock.service");
 const reorder_point_service_1 = require("./services/reorder-point.service");
 const supplier_performance_service_1 = require("./services/supplier-performance.service");
+const dashboard_analytics_service_1 = require("./services/dashboard-analytics.service");
 let AnalyticsController = class AnalyticsController {
-    constructor(abcService, turnoverService, deadStockService, reorderService, supplierService) {
+    constructor(abcService, turnoverService, deadStockService, reorderService, supplierService, dashboardService) {
         this.abcService = abcService;
         this.turnoverService = turnoverService;
         this.deadStockService = deadStockService;
         this.reorderService = reorderService;
         this.supplierService = supplierService;
+        this.dashboardService = dashboardService;
+    }
+    async getKpis(req, period) {
+        return this.dashboardService.getKPIs(req.user.companyId, period);
+    }
+    async getImminentRupture(req) {
+        return this.dashboardService.getImminentRupture(req.user.companyId);
+    }
+    async getSurstock(req) {
+        return this.dashboardService.getSurstock(req.user.companyId);
+    }
+    async getPaymentDelays(req) {
+        return this.dashboardService.getPaymentDelays(req.user.companyId);
+    }
+    async getProductionBottlenecks(req) {
+        return this.dashboardService.getProductionBottlenecks(req.user.companyId);
+    }
+    async getRevenueEvolution(req, days) {
+        return this.dashboardService.getRevenueEvolution(req.user.companyId, days ? Number(days) : 30);
+    }
+    async getTopProducts(req, limit) {
+        return this.dashboardService.getTopProducts(req.user.companyId, limit ? Number(limit) : 5);
+    }
+    async getCategoryDistribution(req) {
+        return this.dashboardService.getCategoryDistribution(req.user.companyId);
+    }
+    async getRecentTransactions(req, limit) {
+        return this.dashboardService.getRecentTransactions(req.user.companyId, limit ? Number(limit) : 10);
     }
     async calculateAbc(req, body) {
         return this.abcService.calculateABC(req.user.companyId, new Date(body.startDate), new Date(body.endDate));
@@ -67,6 +96,73 @@ let AnalyticsController = class AnalyticsController {
     }
 };
 exports.AnalyticsController = AnalyticsController;
+__decorate([
+    (0, common_1.Get)('kpi'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('period')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getKpis", null);
+__decorate([
+    (0, common_1.Get)('alerts/imminent-rupture'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getImminentRupture", null);
+__decorate([
+    (0, common_1.Get)('alerts/surstock'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getSurstock", null);
+__decorate([
+    (0, common_1.Get)('alerts/payment-delays'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getPaymentDelays", null);
+__decorate([
+    (0, common_1.Get)('alerts/production-bottlenecks'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getProductionBottlenecks", null);
+__decorate([
+    (0, common_1.Get)('charts/revenue-evolution'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('days')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getRevenueEvolution", null);
+__decorate([
+    (0, common_1.Get)('charts/top-products'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getTopProducts", null);
+__decorate([
+    (0, common_1.Get)('charts/category-distribution'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getCategoryDistribution", null);
+__decorate([
+    (0, common_1.Get)('recent-transactions'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "getRecentTransactions", null);
 __decorate([
     (0, common_1.Post)('abc/calculate'),
     __param(0, (0, common_1.Request)()),
@@ -148,6 +244,7 @@ exports.AnalyticsController = AnalyticsController = __decorate([
         stock_turnover_service_1.StockTurnoverService,
         dead_stock_service_1.DeadStockService,
         reorder_point_service_1.ReorderPointService,
-        supplier_performance_service_1.SupplierPerformanceService])
+        supplier_performance_service_1.SupplierPerformanceService,
+        dashboard_analytics_service_1.DashboardAnalyticsService])
 ], AnalyticsController);
 //# sourceMappingURL=analytics.controller.js.map

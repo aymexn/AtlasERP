@@ -7,6 +7,7 @@ export declare enum MovementType {
 export declare class CreateStockMovementDto {
     reference?: string;
     productId: string;
+    variantId?: string;
     type: MovementType;
     quantity: number;
     unit: string;
@@ -16,6 +17,7 @@ export declare class CreateStockMovementDto {
     warehouseToId?: string;
     sourceLocation?: string;
     destinationLocation?: string;
+    uomId?: string;
     reason?: string;
     date?: string;
 }

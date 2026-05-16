@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ManufacturingOrderStatus, ArticleType } from '@prisma/client';
+import { ManufacturingOrderStatus, ArticleType, PurchaseOrderStatus, SalesOrderStatus, InvoiceStatus, EmployeeStatus, LeaveStatus } from '@prisma/client';
 import { CacheService } from '../../common/services/cache.service';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class DashboardService {
         const cached = await this.cache.get(cacheKey);
         if (cached) return cached;
 
-        const activeStatuses = ['PLANNED', 'IN_PROGRESS'];
+        const activeStatuses = [ManufacturingOrderStatus.PLANNED, ManufacturingOrderStatus.IN_PROGRESS];
 
         // Execute all independent queries concurrently to achieve < 200ms
         const [
@@ -41,7 +41,12 @@ export class DashboardService {
             invoiceStats,
             topProducts,
             recentSalesForChart,
-            recentPurchasesForChart
+            recentPurchasesForChart,
+            activeEmployeeCount,
+            pendingLeavesCount,
+            todayRevenue,
+            yesterdayRevenue,
+            newCustomersToday
         ] = await Promise.all([
             // Optimized: We don't need all orders just to count them
             this.prisma.manufacturingOrder.groupBy({
@@ -50,16 +55,16 @@ export class DashboardService {
                 _count: { _all: true }
             }),
             this.prisma.manufacturingOrder.aggregate({
-                where: { companyId, status: 'COMPLETED' },
+                where: { companyId, status: ManufacturingOrderStatus.COMPLETED },
                 _sum: { totalActualCost: true, producedQuantity: true }
             }),
             this.prisma.manufacturingOrder.aggregate({
-                where: { companyId, status: 'IN_PROGRESS' },
+                where: { companyId, status: ManufacturingOrderStatus.IN_PROGRESS },
                 _sum: { totalEstimatedCost: true }
             }),
             // We still need active orders with details for shortages (might need pagination later if 1000s)
             this.prisma.manufacturingOrder.findMany({
-                where: { companyId, status: { in: ['PLANNED', 'IN_PROGRESS'] } },
+                where: { companyId, status: { in: [ManufacturingOrderStatus.PLANNED, ManufacturingOrderStatus.IN_PROGRESS] } },
                 include: { lines: { include: { component: { select: { stockQuantity: true } } } } },
                 take: 50 // Limit to top 50 active to keep it fast
             }),
@@ -67,8 +72,14 @@ export class DashboardService {
             this.prisma.product.count({
                 where: { companyId, isActive: true, stockQuantity: { lte: 0 } }
             }),
+            // Stock Alerts - Low Stock (0 < stock <= min_stock)
             this.prisma.product.count({
-                where: { companyId, isActive: true, stockQuantity: { gt: 0, lte: this.prisma.product.fields.minStock } }
+                where: { 
+                    companyId, 
+                    isActive: true, 
+                    stockQuantity: { gt: 0, lte: this.prisma.product.fields.minStock },
+                    minStock: { gt: 0 }
+                }
             }),
             this.prisma.product.count({
                 where: { companyId, articleType: { in: [ArticleType.FINISHED_PRODUCT, ArticleType.SEMI_FINISHED] }, bomsAsFinishedProduct: { none: { status: 'ACTIVE' } } }
@@ -77,13 +88,13 @@ export class DashboardService {
                 where: { companyId }, orderBy: { updatedAt: 'desc' }, take: 5, include: { product: { select: { name: true } } }
             }),
             this.prisma.purchaseOrder.aggregate({
-                where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }, _sum: { totalTtc: true }
+                where: { companyId, status: { in: [PurchaseOrderStatus.SENT, PurchaseOrderStatus.CONFIRMED, PurchaseOrderStatus.PARTIALLY_RECEIVED] } }, _sum: { totalTtc: true }
             }),
             this.prisma.purchaseOrder.count({
-                where: { companyId, status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] } }
+                where: { companyId, status: { in: [PurchaseOrderStatus.SENT, PurchaseOrderStatus.CONFIRMED, PurchaseOrderStatus.PARTIALLY_RECEIVED] } }
             }),
             this.prisma.purchaseOrder.groupBy({
-                by: ['supplierId'], where: { companyId, status: 'RECEIVED' }, _sum: { totalTtc: true }, orderBy: { _sum: { totalTtc: 'desc' } }, take: 3
+                by: ['supplierId'], where: { companyId, status: PurchaseOrderStatus.FULLY_RECEIVED }, _sum: { totalTtc: true }, orderBy: { _sum: { totalTtc: 'desc' } }, take: 3
             }),
             this.prisma.product.aggregate({
                 where: { companyId, articleType: ArticleType.RAW_MATERIAL }, _sum: { stockValue: true }
@@ -92,7 +103,7 @@ export class DashboardService {
                 where: { companyId, status: { in: ['SHIPPED', 'INVOICED'] }, date: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } }, _sum: { totalAmountHt: true }
             }),
             this.prisma.salesOrder.count({
-                where: { companyId, status: { in: ['DRAFT', 'VALIDATED', 'PREPARING'] } }
+                where: { companyId, status: { in: [SalesOrderStatus.DRAFT, SalesOrderStatus.VALIDATED, SalesOrderStatus.PREPARING] } }
             }),
             this.prisma.customer.count({
                 where: { companyId, isActive: true }
@@ -104,17 +115,17 @@ export class DashboardService {
                 where: { companyId }, _sum: { amount: true }
             }),
             this.prisma.salesOrderLine.aggregate({
-                where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, _sum: { lineTotalHt: true }
+                where: { salesOrder: { companyId, status: { in: [SalesOrderStatus.SHIPPED, SalesOrderStatus.INVOICED] } } }, _sum: { lineTotalHt: true }
             }),
             this.prisma.salesOrderLine.findMany({
-                where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, select: { quantity: true, unitCostSnapshot: true }
+                where: { salesOrder: { companyId, status: { in: [SalesOrderStatus.SHIPPED, SalesOrderStatus.INVOICED] } } }, select: { quantity: true, unitCostSnapshot: true }
             }),
             // Financial Cash Flow Logic
             this.prisma.invoice.aggregate({
-                where: { companyId, status: { not: 'CANCELLED' } }, _sum: { totalAmountTtc: true, amountPaid: true }
+                where: { companyId, status: { not: InvoiceStatus.CANCELLED } }, _sum: { totalAmountTtc: true, amountPaid: true }
             }),
             this.prisma.salesOrderLine.groupBy({
-                by: ['productId'], where: { salesOrder: { companyId, status: { in: ['SHIPPED', 'INVOICED'] } } }, _sum: { quantity: true, lineTotalHt: true }, orderBy: { _sum: { lineTotalHt: 'desc' } }, take: 5
+                by: ['productId'], where: { salesOrder: { companyId, status: { in: [SalesOrderStatus.SHIPPED, SalesOrderStatus.INVOICED] } } }, _sum: { quantity: true, lineTotalHt: true }, orderBy: { _sum: { lineTotalHt: 'desc' } }, take: 5
             }),
             // Sales chart grouping
             // Sales chart grouping - Optimized with 6 month limit
@@ -135,6 +146,40 @@ export class DashboardService {
                 },
                 select: { orderDate: true, totalTtc: true },
                 orderBy: { orderDate: 'asc' }
+            }),
+            // HR Stats
+            this.prisma.employee.count({ where: { companyId, status: EmployeeStatus.ACTIVE } }),
+            this.prisma.leaveRequest.count({ 
+                where: { 
+                    employee: { companyId }, 
+                    status: LeaveStatus.PENDING 
+                } 
+            }),
+            // Today vs Yesterday Revenue
+            this.prisma.salesOrder.aggregate({
+                where: { 
+                    companyId, 
+                    status: { in: ['SHIPPED', 'INVOICED', 'VALIDATED'] }, 
+                    date: { gte: new Date(new Date().setHours(0,0,0,0)) } 
+                },
+                _sum: { totalAmountHt: true }
+            }),
+            this.prisma.salesOrder.aggregate({
+                where: { 
+                    companyId, 
+                    status: { in: ['SHIPPED', 'INVOICED', 'VALIDATED'] }, 
+                    date: { 
+                        gte: new Date(new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0,0,0,0)),
+                        lt: new Date(new Date().setHours(0,0,0,0))
+                    } 
+                },
+                _sum: { totalAmountHt: true }
+            }),
+            this.prisma.customer.count({
+                where: { 
+                    companyId, 
+                    createdAt: { gte: new Date(new Date().setHours(0,0,0,0)) } 
+                }
             })
         ]);
 
@@ -167,6 +212,23 @@ export class DashboardService {
         const totalExpenses = Number(allExpenses._sum.amount || 0);
         const netProfit = totalRevenue - totalCogs - totalExpenses;
         const marginPercent = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+        const cashPosition = Number(allReceipts._sum.amount || 0) - totalExpenses;
+
+        // Health Score Calculation
+        const cashScore = cashPosition > 0 ? 100 : 50;
+        const salesScore = Number(todayRevenue._sum.totalAmountHt || 0) >= 60000 ? 100 : 70;
+        const invScore = (outOfStockCount + lowStockCount) === 0 ? 100 : Math.max(0, 100 - (outOfStockCount * 10) - (lowStockCount * 2));
+        const invoiceScore = netGap <= 0 ? 100 : Math.max(0, 100 - (netGap / 10000));
+        const hrScore = 100; // Simplified
+
+        const healthScore = Math.round(
+            (cashScore * 0.3) + 
+            (salesScore * 0.25) + 
+            (invScore * 0.2) + 
+            (invoiceScore * 0.15) + 
+            (hrScore * 0.1)
+        );
 
         // Combined Chart Logic
         const allDates = new Set<string>();
@@ -243,7 +305,27 @@ export class DashboardService {
                 totalCogs,
                 netProfit,
                 marginPercent,
-                cashPosition: Number(allReceipts._sum.amount || 0) - totalExpenses
+                cashPosition: cashPosition
+            },
+            hr: {
+                activeEmployees: activeEmployeeCount,
+                pendingLeaves: pendingLeavesCount
+            },
+            health: {
+                score: healthScore,
+                factors: {
+                    cashFlow: { score: cashScore, status: cashScore >= 80 ? 'healthy' : 'attention' },
+                    sales: { score: salesScore, status: salesScore >= 80 ? 'growing' : 'attention' },
+                    inventory: { score: invScore, status: invScore >= 80 ? 'healthy' : 'attention' },
+                    invoices: { score: invoiceScore, status: invoiceScore >= 80 ? 'good' : 'attention' },
+                    hr: { score: hrScore, status: 'stable' }
+                }
+            },
+            todayPerformance: {
+                revenueToday: Number(todayRevenue._sum.totalAmountHt || 0),
+                revenueYesterday: Number(yesterdayRevenue._sum.totalAmountHt || 0),
+                revenueTarget: 60000,
+                newCustomers: newCustomersToday
             },
             recentActivity
         };

@@ -13,6 +13,7 @@ exports.CashFlowService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const date_fns_1 = require("date-fns");
+const client_1 = require("@prisma/client");
 let CashFlowService = class CashFlowService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -55,7 +56,7 @@ let CashFlowService = class CashFlowService {
                 status: { not: 'CANCELLED' },
                 OR: [
                     { expectedDate: { gte: today, lte: end } },
-                    { orderDate: { gte: today, lte: end }, status: 'RECEIVED' }
+                    { orderDate: { gte: today, lte: end }, status: client_1.PurchaseOrderStatus.FULLY_RECEIVED }
                 ]
             }
         });
@@ -85,7 +86,7 @@ let CashFlowService = class CashFlowService {
             const dailyExpense = expenseMap.get(dateStr) || 0;
             const dailyPurchases = purchaseOrders
                 .filter(po => {
-                const targetDate = po.status === 'RECEIVED' ? (po.orderDate || po.createdAt) : (po.expectedDate || po.orderDate);
+                const targetDate = po.status === client_1.PurchaseOrderStatus.FULLY_RECEIVED ? (po.orderDate || po.createdAt) : (po.expectedDate || po.orderDate);
                 return (0, date_fns_1.startOfDay)(new Date(targetDate)).getTime() === date.getTime();
             })
                 .reduce((sum, po) => sum + Number(po.totalTtc), 0);

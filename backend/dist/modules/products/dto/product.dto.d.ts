@@ -15,6 +15,7 @@ export declare class CreateProductDto {
     minStock?: number;
     isActive?: boolean;
     trackStock?: boolean;
+    stockUomId?: string;
     formulaLines?: {
         componentId: string;
         quantity: number;
@@ -36,6 +37,7 @@ export declare class UpdateProductDto {
     minStock?: number;
     isActive?: boolean;
     trackStock?: boolean;
+    stockUomId?: string;
     formulaLines?: {
         componentId: string;
         quantity: number;

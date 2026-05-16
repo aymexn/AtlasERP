@@ -7,7 +7,7 @@ import {
     Warehouse as WarehouseIcon, ShoppingBag, Calendar,
     Package, Info, AlertTriangle, FileCheck, Filter,
     PackageSearch, Receipt, ArrowRight, Clock, History, User,
-    Settings, Download, MoreVertical, LayoutGrid, FileSearch, Check
+    Settings, Download, MoreVertical, LayoutGrid, FileSearch, Check, Save
 } from 'lucide-react';
 import { StockReception, PurchaseOrder } from '@/services/purchases';
 import { Warehouse } from '@/services/inventory';
@@ -17,7 +17,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { KpiCard } from '@/components/ui/kpi-card';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
     Sheet, 
     SheetContent, 
@@ -34,8 +34,10 @@ export default function ReceptionsClient() {
     const ct = useTranslations('common');
     const locale = useLocale();
 
+    const router = useRouter();
     const searchParams = useSearchParams();
     const orderIdParam = searchParams.get('orderId');
+    const receptionIdParam = searchParams.get('id');
     
     const [receptions, setReceptions] = useState<StockReception[]>([]);
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -49,6 +51,7 @@ export default function ReceptionsClient() {
     const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
     const [isCreateMode, setIsCreateMode] = useState(false);
     const [selectedReception, setSelectedReception] = useState<StockReception | null>(null);
+    const [editableLines, setEditableLines] = useState<any[]>([]);
 
     const [createForm, setCreateForm] = useState({
         warehouseId: '',
@@ -59,6 +62,12 @@ export default function ReceptionsClient() {
         setIsMounted(true);
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (selectedReception && selectedReception.lines) {
+            setEditableLines(selectedReception.lines.map(l => ({ ...l })));
+        }
+    }, [selectedReception]);
 
     const loadData = async () => {
         try {
@@ -71,7 +80,7 @@ export default function ReceptionsClient() {
             setReceptions(Array.isArray(receptionsData) ? receptionsData : receptionsData.data || []);
             setWarehouses(Array.isArray(warehousesData) ? warehousesData : warehousesData.data || []);
 
-            if (orderIdParam) {
+            if (orderIdParam && orderIdParam !== 'undefined' && orderIdParam !== 'null') {
                 const order = await apiFetch(`/purchase-orders/${orderIdParam}`);
                 setSelectedOrder(order);
                 setIsCreateMode(true);
@@ -80,6 +89,15 @@ export default function ReceptionsClient() {
                 if (whs.length > 0) {
                     setCreateForm(prev => ({ ...prev, warehouseId: whs[0].id }));
                 }
+            }
+
+            if (receptionIdParam && receptionIdParam !== 'undefined' && receptionIdParam !== 'null') {
+                const reception = await apiFetch(`/stock-receptions/${receptionIdParam}`);
+
+                setSelectedReception(reception);
+                setIsCreateMode(false);
+                setActiveTab('lines');
+                setIsModalOpen(true);
             }
         } catch (error) {
             console.error(error);
@@ -108,6 +126,28 @@ export default function ReceptionsClient() {
             });
             toast.success(t('purchases.receptions.toast.created' as any) || 'Réception créée');
             setIsModalOpen(false);
+            loadData();
+        } catch (error: any) {
+            toast.error(error.message || ct('toast.error'));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleUpdateLines = async () => {
+        if (!selectedReception) return;
+        try {
+            setSubmitting(true);
+            await apiFetch(`/stock-receptions/${selectedReception.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    lines: editableLines.map(l => ({ id: l.id, receivedQty: Number(l.receivedQty) }))
+                })
+            });
+            toast.success(ct('save_success'));
+            // Refresh local selected reception to update lines view
+            const updated = await apiFetch(`/stock-receptions/${selectedReception.id}`);
+            setSelectedReception(updated);
             loadData();
         } catch (error: any) {
             toast.error(error.message || ct('toast.error'));
@@ -154,7 +194,7 @@ export default function ReceptionsClient() {
 
     const getStatusVariant = (status: string) => {
         switch(status) {
-            case 'DRAFT': return 'warning';
+            case 'DRAFT': return 'draft';
             case 'VALIDATED': return 'active';
             default: return 'primary';
         }
@@ -245,10 +285,7 @@ export default function ReceptionsClient() {
                         data={filteredReceptions}
                         isLoading={loading}
                         onRowClick={(r) => {
-                            setSelectedReception(r);
-                            setIsCreateMode(false);
-                            setActiveTab('info');
-                            setIsModalOpen(true);
+                            router.push(`/${locale}/purchases/receptions/${r.id}`);
                         }}
                         columns={[
                             {
@@ -277,7 +314,7 @@ export default function ReceptionsClient() {
                                 header: ct('status'),
                                 accessor: (r) => (
                                     <Badge variant={getStatusVariant(r.status) as any}>
-                                        {t(`receptions.status.${r.status.toLowerCase()}` as any)}
+                                        {t(`receptions.status.${r.status.toLowerCase()}`)}
                                     </Badge>
                                 )
                             }
@@ -309,11 +346,11 @@ export default function ReceptionsClient() {
                         {/* Tabs */}
                         <div className="flex px-8 mt-4 gap-6 border-b border-slate-50 overflow-x-auto scrollbar-hide">
                             {(isCreateMode ? [
-                                { id: 'info', label: "Origine", icon: ShoppingBag },
-                                { id: 'config', label: "Configuration", icon: Settings },
+                                { id: 'info', label: t('receptions.details.tabs.origin'), icon: ShoppingBag },
+                                { id: 'config', label: t('receptions.details.tabs.config'), icon: Settings },
                             ] : [
-                                { id: 'info', label: "Informations", icon: Info },
-                                { id: 'lines', label: "Articles", icon: Package },
+                                { id: 'info', label: t('receptions.details.tabs.info'), icon: Info },
+                                { id: 'lines', label: t('receptions.details.tabs.items'), icon: Package },
                             ]).map((tab) => (
                                 <button
                                     key={tab.id}
@@ -335,7 +372,7 @@ export default function ReceptionsClient() {
                                     {activeTab === 'info' && (
                                         <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                                             <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
-                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Origine Commande</h3>
+                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('receptions.details.tabs.origin')}</h3>
                                                 <div className="flex justify-between items-center">
                                                     <div className="flex flex-col">
                                                         <span className="text-lg font-black text-slate-900">{selectedOrder.reference}</span>
@@ -343,13 +380,13 @@ export default function ReceptionsClient() {
                                                     </div>
                                                     <div className="text-right">
                                                         <div className="text-xl font-black text-primary">{formatCurrency(selectedOrder.totalTtc)}</div>
-                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedOrder.lines?.length || 0} Articles</div>
+                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedOrder.lines?.length || 0} {t('receptions.details.tabs.items')}</div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="p-4 bg-blue-50/50 rounded-2xl flex items-center gap-3">
                                                 <Info className="text-primary" size={18} />
-                                                <p className="text-[11px] font-bold text-primary uppercase">La validation mettra à jour instantanément les stocks réels dans l'entrepôt sélectionné.</p>
+                                                <p className="text-[11px] font-bold text-primary uppercase">{t('receptions.details.ready_desc')}</p>
                                             </div>
                                         </div>
                                     )}
@@ -429,17 +466,45 @@ export default function ReceptionsClient() {
 
                                     {activeTab === 'lines' && (
                                         <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('receptions.details.lines')}</h4>
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('receptions.details.lines')}</h4>
+                                                {!isCreateMode && selectedReception?.status === 'DRAFT' && (
+                                                    <button 
+                                                        onClick={handleUpdateLines}
+                                                        disabled={submitting}
+                                                        className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase hover:bg-blue-100 transition-all flex items-center gap-2"
+                                                    >
+                                                        {submitting ? <Loader2 className="animate-spin" size={12} /> : <Save size={12} />}
+                                                        SAUVEGARDER QUANTITÉS
+                                                    </button>
+                                                )}
+                                            </div>
                                             <div className="rounded-3xl border border-slate-100 overflow-hidden divide-y divide-slate-100">
-                                                {selectedReception.lines?.map((line, i) => (
+                                                {(selectedReception?.status === 'DRAFT' ? editableLines : selectedReception.lines)?.map((line, i) => (
                                                     <div key={i} className="p-5 flex items-center justify-between bg-slate-50/30 hover:bg-white transition-colors">
                                                         <div className="flex flex-col">
                                                             <span className="text-sm font-black text-slate-900">{line.product?.name}</span>
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SKU: {line.product?.sku || 'N/A'}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SKU: {line.product?.sku || 'N/A'} • Attendu: {line.expectedQty}</span>
                                                         </div>
-                                                        <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black text-primary shadow-sm">
-                                                            {line.receivedQty} {line.unit}
-                                                        </div>
+                                                        
+                                                        {selectedReception?.status === 'DRAFT' ? (
+                                                            <div className="flex items-center gap-3">
+                                                                <input 
+                                                                    type="number"
+                                                                    className="w-24 h-10 px-3 bg-white border border-slate-200 rounded-xl text-sm font-black text-primary outline-none focus:border-primary text-center"
+                                                                    value={line.receivedQty}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditableLines(prev => prev.map((l, idx) => i === idx ? { ...l, receivedQty: val } : l));
+                                                                    }}
+                                                                />
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{line.unit}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black text-primary shadow-sm">
+                                                                {line.receivedQty} {line.unit}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -471,7 +536,7 @@ export default function ReceptionsClient() {
                                     disabled={submitting}
                                     className="px-12 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50"
                                 >
-                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <><CheckCircle2 size={18} /> VALIDER & ENTRER EN STOCK</>}
+                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <><CheckCircle2 size={18} /> {t('receptions.details.validate_button')}</>}
                                 </button>
                             )}
                         </div>

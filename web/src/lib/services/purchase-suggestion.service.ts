@@ -10,28 +10,30 @@ export interface PurchaseSuggestion {
   committedStock: number;
   neededForMO: number;
   availableStock: number;
+  pendingPurchaseOrders: number;
   suggestedQuantity: number;
   preferredSupplierId: string | null;
   supplierName: string | null;
   unit: string;
   unitPriceHt: number;
   isCritical: boolean;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  reason: string;
 }
 
 export class PurchaseSuggestionService {
 
   static async analyzePurchaseNeeds(companyId: string): Promise<PurchaseSuggestion[]> {
-    // 1. Get all active products that are raw materials or packaging (and potentially finished products if bought)
+    // 1. Get all active products that are trackable
     const products = await prisma.product.findMany({
       where: {
         companyId,
         isActive: true,
-        // We only buy Raw Materials, Packaging, or simple items
-        articleType: { in: ['RAW_MATERIAL', 'PACKAGING', 'SIMPLE', 'CONSUMABLE'] },
         trackStock: true
       },
       include: {
-        preferredSupplier: true
+        preferredSupplier: true,
+        stocks: true
       }
     });
 
@@ -40,20 +42,9 @@ export class PurchaseSuggestionService {
     for (const product of products) {
       const stockQuantity = Number(product.stockQuantity || 0);
       const minStock = Number(product.minStock || 0);
+      const reasons: string[] = [];
 
-      // 2. Calculate Committed Stock (needed for Open Sales Orders - though rare for raw materials, good to have)
-      const openSalesLines = await prisma.salesOrderLine.findMany({
-        where: {
-          productId: product.id,
-          salesOrder: {
-            companyId,
-            status: { in: ['VALIDATED', 'PREPARING'] } // Orders not yet shipped
-          }
-        }
-      });
-      const committedStockForSales = openSalesLines.reduce((acc, line) => acc + Number(line.quantity), 0);
-
-      // 3. Calculate Needed for Manufacturing Orders (Raw Materials allocated to PLANNED/IN_PROGRESS MOs)
+      // 2. Calculate Needed for Manufacturing Orders (Raw Materials allocated to PLANNED/IN_PROGRESS MOs)
       const openMOLines = await prisma.manufacturingOrderLine.findMany({
         where: {
           componentProductId: product.id,
@@ -61,54 +52,95 @@ export class PurchaseSuggestionService {
             companyId,
             status: { in: ['PLANNED', 'IN_PROGRESS'] }
           }
+        },
+        include: {
+          manufacturingOrder: true
         }
       });
+      
       const neededForMO = openMOLines.reduce((acc, line) => {
-        // Only count what hasn't been consumed yet
         const remainingToConsume = Number(line.requiredQuantity) - Number(line.consumedQuantity);
+        if (remainingToConsume > 0) {
+          reasons.push(`OF ${line.manufacturingOrder.reference}: ${remainingToConsume} ${line.unit}`);
+        }
         return acc + (remainingToConsume > 0 ? remainingToConsume : 0);
       }, 0);
 
-      const committedStock = committedStockForSales + neededForMO;
-      const availableStock = stockQuantity - committedStock;
+      // 3. Calculate Pending Purchase Orders (Already ordered but not received)
+      const pendingPOLines = await prisma.purchaseOrderLine.findMany({
+        where: {
+          productId: product.id,
+          purchaseOrder: {
+            companyId,
+            status: { in: ['SENT', 'CONFIRMED', 'PARTIALLY_RECEIVED'] }
+          }
+        }
+      });
+      
+      const pendingPurchaseOrders = pendingPOLines.reduce((acc, line) => {
+        const remainingToReceive = Number(line.quantity) - Number(line.receivedQty);
+        return acc + (remainingToReceive > 0 ? remainingToReceive : 0);
+      }, 0);
 
-      // 4. Check if we need to order
-      // We order if available stock is below the minimum threshold.
-      // Even if stockQuantity > 0, high committedStock might trigger an order.
-      if (availableStock < minStock) {
-        // Algorithm: required quantity = (minStock * 2) - availableStock
-        let suggestedQuantity = (minStock * 2) - availableStock;
+      // 4. Calculate Net Need
+      // Demand = neededForMO + (minStock if stockQuantity < minStock)
+      // Supply = stockQuantity + pendingPurchaseOrders
+      
+      const deficitToMinStock = Math.max(0, minStock - stockQuantity);
+      if (deficitToMinStock > 0) {
+        reasons.push(`Seuil min: ${minStock}, Actuel: ${stockQuantity}`);
+      }
+
+      const totalDemand = neededForMO + deficitToMinStock;
+      const totalSupply = stockQuantity + pendingPurchaseOrders;
+      const netNeed = totalDemand - (stockQuantity + pendingPurchaseOrders); // Actually we should subtract totalSupply from totalDemand
+
+      // Logic: If (stock + pending) < (MO_required + min_stock), then we need to buy.
+      const rawGap = (neededForMO + minStock) - (stockQuantity + pendingPurchaseOrders);
+
+      if (rawGap > 0) {
+        const suggestedQuantity = Math.ceil(rawGap);
         
-        // Safety check: if minStock is 0 but stock is negative, order enough to get to at least 0 plus a buffer
-        if (suggestedQuantity <= 0 && availableStock < 0) {
-            suggestedQuantity = Math.abs(availableStock) * 1.5; // Order 50% more than negative gap
+        // Determine Priority
+        let priority: 'critical' | 'high' | 'medium' | 'low' = 'medium';
+        if (neededForMO > 0 && stockQuantity <= 0) {
+          priority = 'critical';
+        } else if (stockQuantity < minStock * 0.3) {
+          priority = 'high';
+        } else if (stockQuantity < minStock) {
+          priority = 'medium';
+        } else {
+          priority = 'low';
         }
-        
-        if (suggestedQuantity > 0) {
-            suggestions.push({
-                productId: product.id,
-                name: product.name,
-                sku: product.sku,
-                currentStock: stockQuantity,
-                minStock: minStock,
-                committedStock: committedStockForSales,
-                neededForMO: neededForMO,
-                availableStock: availableStock,
-                suggestedQuantity: Math.ceil(suggestedQuantity),
-                preferredSupplierId: product.preferredSupplierId,
-                supplierName: product.preferredSupplier?.name || null,
-                unit: product.unit,
-                unitPriceHt: Number(product.purchasePriceHt || 0),
-                isCritical: stockQuantity <= 0
-            });
-        }
+
+        suggestions.push({
+          productId: product.id,
+          name: product.name,
+          sku: product.sku,
+          currentStock: stockQuantity,
+          minStock: minStock,
+          committedStock: 0, // Legacy field
+          neededForMO: neededForMO,
+          availableStock: stockQuantity - neededForMO,
+          pendingPurchaseOrders: pendingPurchaseOrders,
+          suggestedQuantity: suggestedQuantity,
+          preferredSupplierId: product.preferredSupplierId,
+          supplierName: product.preferredSupplier?.name || null,
+          unit: product.unit,
+          unitPriceHt: Number(product.purchasePriceHt || 0),
+          isCritical: priority === 'critical',
+          priority,
+          reason: reasons.join(' | ')
+        });
       }
     }
 
-    // Sort by criticality then by supplier
+    // Sort by priority then by supplier
+    const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
     return suggestions.sort((a, b) => {
-        if (a.isCritical && !b.isCritical) return -1;
-        if (!a.isCritical && b.isCritical) return 1;
+        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+            return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
         return (a.supplierName || '').localeCompare(b.supplierName || '');
     });
   }

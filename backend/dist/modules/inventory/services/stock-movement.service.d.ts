@@ -2,18 +2,24 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateStockMovementDto } from '../dto/create-movement.dto';
 import { Prisma } from '@prisma/client';
 import { NotificationService } from '../../notifications/notifications.service';
+import { UomService } from '../../products/uom.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 export declare class StockMovementService {
     private prisma;
     private notificationService;
-    constructor(prisma: PrismaService, notificationService: NotificationService);
+    private uomService;
+    private eventEmitter;
+    constructor(prisma: PrismaService, notificationService: NotificationService, uomService: UomService, eventEmitter: EventEmitter2);
     createMovement(companyId: string, userId: string | null, dto: CreateStockMovementDto, tx?: Prisma.TransactionClient): Promise<{
         id: string;
         companyId: string;
         createdAt: Date;
         type: import(".prisma/client").$Enums.MovementType;
         unit: string;
-        productId: string;
         quantity: Prisma.Decimal;
+        productId: string;
+        variantId: string | null;
+        uomId: string | null;
         movementType: string;
         reference: string;
         reason: string | null;
@@ -27,7 +33,7 @@ export declare class StockMovementService {
     }>;
     validateReception(companyId: string, userId: string, receptionId: string, tx?: Prisma.TransactionClient): Promise<void>;
     completeSalesOrder(companyId: string, userId: string, orderId: string, warehouseId: string): Promise<void>;
-    completeManufacturingOrder(companyId: string, userId: string, moId: string, warehouseId: string): Promise<{
+    completeManufacturingOrder(companyId: string, userId: string, moId: string, warehouseId: string, producedQty: number): Promise<{
         product: {
             id: string;
             companyId: string;
@@ -48,6 +54,7 @@ export declare class StockMovementService {
             purchasePriceHt: Prisma.Decimal | null;
             minStock: Prisma.Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -76,6 +83,7 @@ export declare class StockMovementService {
                 purchasePriceHt: Prisma.Decimal | null;
                 minStock: Prisma.Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -91,6 +99,8 @@ export declare class StockMovementService {
             componentProductId: string;
             wastagePercent: Prisma.Decimal;
             note: string | null;
+            variantId: string | null;
+            uomId: string | null;
             manufacturingOrderId: string;
             bomComponentId: string | null;
             requiredQuantity: Prisma.Decimal;
@@ -106,6 +116,7 @@ export declare class StockMovementService {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -118,6 +129,7 @@ export declare class StockMovementService {
         totalEstimatedCost: Prisma.Decimal;
         totalActualCost: Prisma.Decimal | null;
     }>;
+    private deductStockFromAnyWarehouse;
     private updateStock;
     private generateReference;
     getProductMovementHistory(productId: string, companyId: string): Promise<({
@@ -136,8 +148,10 @@ export declare class StockMovementService {
         createdAt: Date;
         type: import(".prisma/client").$Enums.MovementType;
         unit: string;
-        productId: string;
         quantity: Prisma.Decimal;
+        productId: string;
+        variantId: string | null;
+        uomId: string | null;
         movementType: string;
         reference: string;
         reason: string | null;
@@ -169,8 +183,10 @@ export declare class StockMovementService {
         createdAt: Date;
         type: import(".prisma/client").$Enums.MovementType;
         unit: string;
-        productId: string;
         quantity: Prisma.Decimal;
+        productId: string;
+        variantId: string | null;
+        uomId: string | null;
         movementType: string;
         reference: string;
         reason: string | null;

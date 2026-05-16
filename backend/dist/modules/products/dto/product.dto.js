@@ -8,7 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateProductDto = exports.CreateProductDto = void 0;
 const class_validator_1 = require("class-validator");
@@ -67,7 +66,7 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ enum: client_1.ArticleType, example: client_1.ArticleType.FINISHED_PRODUCT }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.ArticleType),
-    __metadata("design:type", typeof (_a = typeof client_1.ArticleType !== "undefined" && client_1.ArticleType) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], CreateProductDto.prototype, "articleType", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 'pcs' }),
@@ -113,6 +112,12 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateProductDto.prototype, "trackStock", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'uuid-uom' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProductDto.prototype, "stockUomId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: [{ componentId: 'uuid', quantity: 1.5 }] }),
     (0, class_validator_1.IsOptional)(),
@@ -171,7 +176,7 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ enum: client_1.ArticleType }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.ArticleType),
-    __metadata("design:type", typeof (_b = typeof client_1.ArticleType !== "undefined" && client_1.ArticleType) === "function" ? _b : Object)
+    __metadata("design:type", String)
 ], UpdateProductDto.prototype, "articleType", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 'pcs' }),
@@ -217,6 +222,12 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UpdateProductDto.prototype, "trackStock", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'uuid-uom' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateProductDto.prototype, "stockUomId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: [{ componentId: 'uuid', quantity: 1.5 }] }),
     (0, class_validator_1.IsOptional)(),

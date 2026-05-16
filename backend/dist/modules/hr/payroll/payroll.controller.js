@@ -18,9 +18,11 @@ const jwt_auth_guard_1 = require("../../../common/guards/jwt-auth.guard");
 const permissions_guard_1 = require("../../rbac/guards/permissions.guard");
 const rbac_decorator_1 = require("../../rbac/decorators/rbac.decorator");
 const payroll_service_1 = require("./payroll.service");
+const pdf_service_1 = require("../../../common/services/pdf.service");
 let PayrollController = class PayrollController {
-    constructor(payrollService) {
+    constructor(payrollService, pdfService) {
         this.payrollService = payrollService;
+        this.pdfService = pdfService;
     }
     async getPeriods(req) {
         return this.payrollService.getPeriods(req.user.companyId);
@@ -33,6 +35,14 @@ let PayrollController = class PayrollController {
     }
     async getPayrollRuns(id) {
         return this.payrollService.getPayrollRuns(id);
+    }
+    async streamPayslip(id, res) {
+        const run = await this.payrollService.getPayrollRunForPdf(id);
+        if (!run)
+            throw new common_1.NotFoundException('Payroll run not found');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=Bulletin_${run.employee?.lastName}_${id.substring(0, 5)}.pdf`);
+        await this.pdfService.generatePayslipPdf(run, res);
     }
     async generatePayslip(id) {
         return this.payrollService.generatePayslip(id);
@@ -77,6 +87,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "getPayrollRuns", null);
 __decorate([
+    (0, common_1.Get)('runs/:id/pdf'),
+    (0, rbac_decorator_1.CheckPermission)('hr', 'payroll', 'read'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], PayrollController.prototype, "streamPayslip", null);
+__decorate([
     (0, common_1.Post)('runs/:id/payslip'),
     (0, rbac_decorator_1.CheckPermission)('hr', 'payroll', 'approve'),
     __param(0, (0, common_1.Param)('id')),
@@ -95,6 +114,7 @@ __decorate([
 exports.PayrollController = PayrollController = __decorate([
     (0, common_1.Controller)('hr/payroll'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
-    __metadata("design:paramtypes", [payroll_service_1.PayrollService])
+    __metadata("design:paramtypes", [payroll_service_1.PayrollService,
+        pdf_service_1.PdfService])
 ], PayrollController);
 //# sourceMappingURL=payroll.controller.js.map

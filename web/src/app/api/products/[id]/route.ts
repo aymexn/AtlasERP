@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getTenantId } from '@/lib/api-helpers';
 
 function sanitizeDecimals(obj: any): any {
     if (obj === null || obj === undefined) return obj;
@@ -17,22 +18,22 @@ function sanitizeDecimals(obj: any): any {
     return obj;
 }
 
-const getServerSession = async (options: any) => ({
-    user: { 
-        id: 'user-id-placeholder',
-        companyId: 'ae144f97-26c9-4c6a-b1dc-e48834f18553' 
-    }
-});
-const authOptions = {}; 
-
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const companyId = await getTenantId();
+        if (!companyId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { id } = await params;
         const product = await prisma.product.findUnique({
-            where: { id },
+            where: { 
+                id,
+                companyId: companyId
+            },
             include: {
                 family: true,
                 bomsAsFinishedProduct: {
@@ -67,11 +68,10 @@ export async function PATCH(
     const { formulaLines, ...productData } = body;
 
     // 1. SESSION VALIDATION
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId) {
+    const sessionCompanyId = await getTenantId();
+    if (!sessionCompanyId) {
         return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
     }
-    const sessionCompanyId = session.user.companyId;
 
     // 2. Identify context
     const existingProduct = await prisma.product.findUnique({

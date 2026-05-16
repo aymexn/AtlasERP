@@ -1,8 +1,10 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 export declare class PaymentsService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private eventEmitter;
+    constructor(prisma: PrismaService, eventEmitter: EventEmitter2);
     findAll(companyId: string): Promise<({
         invoice: {
             customer: {
@@ -18,9 +20,9 @@ export declare class PaymentsService {
         reference: string | null;
         date: Date;
         notes: string | null;
+        method: import(".prisma/client").$Enums.PaymentMethod;
         amount: Prisma.Decimal;
         invoiceId: string;
-        method: import(".prisma/client").$Enums.PaymentMethod;
     })[]>;
     recordPayment(companyId: string, data: any): Promise<{
         id: string;
@@ -30,8 +32,8 @@ export declare class PaymentsService {
         reference: string | null;
         date: Date;
         notes: string | null;
+        method: import(".prisma/client").$Enums.PaymentMethod;
         amount: Prisma.Decimal;
         invoiceId: string;
-        method: import(".prisma/client").$Enums.PaymentMethod;
     }>;
 }

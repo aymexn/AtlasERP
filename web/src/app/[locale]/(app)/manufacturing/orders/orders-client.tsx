@@ -15,6 +15,7 @@ import { formatCurrency, formatNumber } from '@/lib/format';
 import { PurchaseNeedModal } from './_components/PurchaseNeedModal';
 import { inventoryService, Warehouse } from '@/services/inventory';
 import { PageHeader } from '@/components/ui/page-header';
+import { apiFetch, ApiError } from '@/lib/api';
 import { KpiCard } from '@/components/ui/kpi-card';
 import { DataTable } from '@/components/ui/data-table';
 import { downloadPdf } from '@/lib/download-pdf';
@@ -42,10 +43,10 @@ export default function OrdersClient() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
-    // Available Active Formulas map for creation form
     const [availableFormulas, setAvailableFormulas] = useState<any[]>([]);
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-    const [warehouseStocks, setWarehouseStocks] = useState<Record<string, number>>({});
+    const [warehouseStocks, setWarehouseStocks] = useState<Record<string, any>>({});
+    const [aggregateStocks, setAggregateStocks] = useState<Record<string, any>>({});
     const [isReplenishing, setIsReplenishing] = useState(false);
     const [isPurchaseNeedModalOpen, setIsPurchaseNeedModalOpen] = useState(false);
 
@@ -56,14 +57,25 @@ export default function OrdersClient() {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [fetchedOrders, fetchedProducts, fetchedWarehouses] = await Promise.all([
+            const [fetchedOrders, fetchedProducts, fetchedWarehouses, fetchedGlobalStocks] = await Promise.all([
                 manufacturingOrdersService.getAll(),
                 productsService.list(),
-                inventoryService.listWarehouses()
+                inventoryService.listWarehouses(),
+                inventoryService.getStock() // Global aggregate stocks
             ]);
             setOrders(fetchedOrders);
             setProducts(fetchedProducts);
             setWarehouses(fetchedWarehouses);
+            
+            const globalMap: Record<string, any> = {};
+            fetchedGlobalStocks.forEach((s: any) => {
+                globalMap[s.id] = {
+                    physical: Number(s.stockQuantity),
+                    available: Number(s.availableQuantity),
+                    reserved: Number(s.reservedQuantity)
+                };
+            });
+            setAggregateStocks(globalMap);
         } catch (error) {
             console.error(error);
         } finally {
@@ -138,12 +150,12 @@ export default function OrdersClient() {
             const costPerUnit = Number(line.component?.standardCost) || Number(line.component?.purchasePriceHt) || 0;
             const lineCost = requiredWithWastage * costPerUnit;
             
-            // Use warehouse-specific AVAILABLE stock (Physical - Reserved) if available
-            const warehouseId = currentOrder?.warehouseId;
-            const availableStock = warehouseId ? (warehouseStocks[line.componentProductId]?.available || 0) : (Number(line.component?.stockQuantity) || 0);
+            // Use AGGREGATE AVAILABLE stock (Sum of all warehouses - Sum of all reservations)
+            const availableStock = aggregateStocks[line.componentProductId]?.available || 0;
             
             const shortageQty = Math.max(0, requiredWithWastage - availableStock);
             const isShortage = shortageQty > 0;
+            const isRupture = availableStock === 0;
             
             totalMatCost += lineCost;
             if (isShortage) {
@@ -159,7 +171,8 @@ export default function OrdersClient() {
                 lineCost,
                 availableStock,
                 shortageQty,
-                isShortage
+                isShortage,
+                isRupture
             };
         }) || [];
 
@@ -215,8 +228,8 @@ export default function OrdersClient() {
                 const isConfirmed = window.confirm(
                     `Confirmer la clôture de la production ?\n\n` +
                     `Ceci va :\n` +
-                    `- Consommer les matières premières dans l'entrepôt ${selectedOrderDetails.warehouse?.name || 'par défaut'}\n` +
-                    `- Entrer le produit fini en stock\n` +
+                    `- Consommer les matières premières depuis tous les entrepôts disponibles\n` +
+                    `- Entrer le produit fini dans l'entrepôt : ${selectedOrderDetails.warehouse?.name || 'Par défaut'}\n` +
                     `- Mettre à jour le coût de revient standard de l'article\n\n` +
                     `Continuer ?`
                 );
@@ -224,7 +237,7 @@ export default function OrdersClient() {
 
                 const prodQty = window.prompt(t('prompt_produced_qty'), selectedOrderDetails.plannedQuantity.toString());
                 if (prodQty === null) return;
-                await manufacturingOrdersService.complete(selectedOrderDetails.id, Number(prodQty));
+                await manufacturingOrdersService.close(selectedOrderDetails.id, Number(prodQty));
             } else if (action === 'start') {
                 if (!window.confirm(t('confirm_start_production'))) return;
                 await manufacturingOrdersService.start(selectedOrderDetails.id);
@@ -240,8 +253,15 @@ export default function OrdersClient() {
             toast.success(ct('success'));
         } catch(e: any) {
             console.error("Action error:", e);
-            const msg = e.message || ct('error');
-            toast.error(msg);
+            
+            if (e instanceof ApiError && e.data?.error === 'INSUFFICIENT_STOCK') {
+                const shortages = e.data.details || [];
+                const shortageList = shortages.map((s: any) => `${s.product} (-${s.deficit.toFixed(2)})`).join(', ');
+                toast.error(`${e.message}: ${shortageList}`, { duration: 5000 });
+            } else {
+                const msg = e.message || ct('error');
+                toast.error(msg);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -578,8 +598,8 @@ export default function OrdersClient() {
                                                     {t(`status.${selectedOrderDetails?.status.toLowerCase()}`)}
                                                 </span>
                                                 <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
-                                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl uppercase tracking-widest border ${selectedOrderDetails.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}>
-                                                    {selectedOrderDetails.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? t('traffic_insufficient') : t('traffic_ready')}
+                                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl uppercase tracking-widest border ${selectedOrderDetails?.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}>
+                                                    {selectedOrderDetails?.lines?.some((l: any) => l.stockStatus === 'INSUFFICIENT') ? t('traffic_insufficient') : t('traffic_ready')}
                                                 </span>
                                                 <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
                                                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
@@ -693,7 +713,7 @@ export default function OrdersClient() {
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <label className="text-[11px] font-bold text-gray-500 tracking-tight ml-1">{t('warehouse_label') || 'Entrepôt Source'}</label>
+                                                            <label className="text-[11px] font-bold text-gray-500 tracking-tight ml-1">{t('warehouse_destination') || 'Entrepôt de Destination (Produit Fini)'}</label>
                                                             <div className="relative group">
                                                                 <select
                                                                     required
@@ -780,6 +800,14 @@ export default function OrdersClient() {
                                                                 {currentOrder?.productId ? t('select_formula') : t('select_product')}
                                                             </p>
                                                         </div>
+                                                    ) : !currentOrder?.warehouseId ? (
+                                                        <div className="flex flex-col items-center justify-center py-20 bg-amber-50/30 rounded-3xl border border-dashed border-amber-200 m-8 text-center px-8">
+                                                            <div className="h-12 w-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4">
+                                                                <Layers size={24} />
+                                                            </div>
+                                                            <p className="text-sm font-black text-amber-900 uppercase tracking-widest">{t('warehouse_destination') || 'Entrepôt de Destination'}</p>
+                                                            <p className="text-[10px] font-bold text-amber-600/60 uppercase tracking-widest mt-1">Veuillez sélectionner l'entrepôt qui recevra le produit fini.<br/>Les matières premières seront puisées automatiquement dans tout votre réseau.</p>
+                                                        </div>
                                                     ) : (
                                                         <table className="w-full text-left border-collapse">
                                                             <thead className="sticky top-0 bg-white/95 backdrop-blur-md z-10 border-b border-gray-50">
@@ -811,18 +839,25 @@ export default function OrdersClient() {
                                                                             </div>
                                                                         </td>
                                                                         <td className="px-8 py-5">
-                                                                            {line.isShortage ? (
+                                                                            {line.isRupture ? (
+                                                                                <span className="text-rose-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-rose-50 px-2 py-1 rounded-lg border border-rose-200 w-fit">
+                                                                                    <X size={10} /> {t('status_insufficient' as any) || 'RUPTURE'}
+                                                                                </span>
+                                                                            ) : line.isShortage ? (
                                                                                 <div className="flex flex-col gap-1">
-                                                                                    <span className="text-rose-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-rose-100/50 px-2 py-1 rounded-lg border border-rose-100 w-fit">
-                                                                                       <AlertCircle size={10} /> {t('shortage')}: -{line.shortageQty.toFixed(2)}
+                                                                                    <span className="text-orange-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-orange-50 px-2 py-1 rounded-lg border border-orange-200 w-fit">
+                                                                                       <AlertCircle size={10} /> {t('traffic_partial' as any) || 'PARTIEL'}
+                                                                                    </span>
+                                                                                    <span className="text-[9px] font-bold text-orange-400 mt-1">
+                                                                                        {t('shortage')}: -{line.shortageQty.toFixed(2)}
                                                                                     </span>
                                                                                     <Link href={{ pathname: '/purchases/orders', query: { productId: line.component?.id, qty: line.shortageQty.toFixed(2) } } as any} className="text-[10px] font-black uppercase flex items-center gap-1.5 text-slate-400 hover:text-blue-600 transition-colors w-fit px-2 py-1.5 hover:bg-slate-100 rounded-lg mt-1 group" title="Créer un Bon de Commande pour cet article">
                                                                                         <ShoppingCart size={12} className="group-hover:scale-110 transition-transform" /> Quick Buy
                                                                                     </Link>
                                                                                 </div>
                                                                             ) : (
-                                                                                <span className="text-emerald-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-emerald-100/50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
-                                                                                    <CheckCircle2 size={10} /> {t('status_enough')}
+                                                                                <span className="text-emerald-600 font-black text-[9px] uppercase tracking-tighter flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 w-fit">
+                                                                                    <CheckCircle2 size={10} /> {t('status_enough') || 'SUFFISANT'}
                                                                                 </span>
                                                                             )}
                                                                         </td>
@@ -850,7 +885,7 @@ export default function OrdersClient() {
                                         </button>
                                         <button
                                             type="submit"
-                                            disabled={submitting || !currentOrder?.formulaId}
+                                            disabled={submitting || !currentOrder?.formulaId || (previewData ? previewData.shortageCount > 0 : false)}
                                             className="bg-gray-900 hover:bg-black disabled:bg-gray-200 text-white px-16 py-5 rounded-3xl font-black shadow-2xl shadow-gray-200 transition-all active:scale-95 flex items-center gap-4 uppercase tracking-[0.2em] text-xs"
                                         >
                                             {submitting ? <Loader2 className="animate-spin" size={20} /> : (
@@ -903,7 +938,7 @@ export default function OrdersClient() {
                                                     </div>
                                                     {(selectedOrderDetails as any).warehouse && (
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em]">{t('warehouse_label') || 'Entrepôt'}</span>
+                                                            <span className="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em]">{t('warehouse_destination') || 'Entrepôt Destination'}</span>
                                                             <span className="text-[10px] font-black text-blue-200">{(selectedOrderDetails as any).warehouse.name}</span>
                                                         </div>
                                                     )}
@@ -943,7 +978,7 @@ export default function OrdersClient() {
                                                 </div>
                                                 {t('material_requirements')}
                                                 <span className="text-[10px] font-black text-blue-600/50 normal-case tracking-normal ml-2">
-                                                    (Entrepôt: {selectedOrderDetails.warehouse?.name || 'Par défaut'})
+                                                    (Sourcing automatique : Tous entrepôts)
                                                 </span>
                                             </h3>
                                             <button 
@@ -988,25 +1023,22 @@ export default function OrdersClient() {
                                                             </td>
                                                             <td className="px-6 py-3">
                                                                 <div className="flex items-center gap-3">
-                                                                    {line.stockStatus === 'ENOUGH' && (
-                                                                        <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                                                            SUFFISANT
+                                                                    {line.stockStatus === 'ENOUGH' ? (
+                                                                        <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-1">
+                                                                            <CheckCircle2 size={10} /> {t('status_enough') || 'SUFFISANT'}
                                                                         </span>
-                                                                    )}
-                                                                    {line.stockStatus === 'LOW' && (
-                                                                        <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest border border-amber-100">
-                                                                            PARTIEL
-                                                                        </span>
-                                                                    )}
-                                                                    {line.stockStatus === 'INSUFFICIENT' && (
-                                                                        <span className="px-3 py-1 rounded-xl bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest border border-rose-100">
-                                                                            RUPTURE
-                                                                        </span>
-                                                                    )}
-                                                                    
-                                                                    {line.shortageQuantity > 0 && (
-                                                                        <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
-                                                                            Manquant: -{Number(line.shortageQuantity).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 3 })} {line.unit}
+                                                                    ) : line.stockStatus === 'LOW' ? (
+                                                                        <div className="flex flex-col gap-1">
+                                                                            <span className="px-3 py-1 rounded-xl bg-orange-50 text-orange-600 text-[9px] font-black uppercase tracking-widest border border-orange-100 flex items-center gap-1 w-fit">
+                                                                                <AlertCircle size={10} /> {t('traffic_partial' as any) || 'PARTIEL'}
+                                                                            </span>
+                                                                            <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100 w-fit mt-1">
+                                                                                Manquant: -{Number(line.shortageQuantity).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 3 })} {line.unit}
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="px-3 py-1 rounded-xl bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest border border-rose-100 flex items-center gap-1">
+                                                                            <X size={10} /> {t('status_insufficient' as any) || 'RUPTURE'}
                                                                         </span>
                                                                     )}
                                                                 </div>
@@ -1036,7 +1068,8 @@ export default function OrdersClient() {
                                     {selectedOrderDetails.status === 'DRAFT' && (
                                         <button 
                                             onClick={() => handleAction('plan')} 
-                                            className="px-12 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl font-black shadow-2xl shadow-blue-100 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
+                                            disabled={submitting || selectedOrderDetails.lines?.some((l: any) => l.stockStatus !== 'ENOUGH')}
+                                            className="px-12 py-5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-3xl font-black shadow-2xl shadow-blue-100 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
                                         >
                                             {submitting ? <Loader2 className="animate-spin" size={20} /> : <><Target size={20} /> {t('plan_production')}</>}
                                         </button>
@@ -1044,7 +1077,8 @@ export default function OrdersClient() {
                                     {selectedOrderDetails.status === 'PLANNED' && (
                                         <button 
                                             onClick={() => handleAction('start')} 
-                                            className="px-12 py-5 bg-amber-500 hover:bg-amber-600 text-white rounded-3xl font-black shadow-2xl shadow-amber-100 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
+                                            disabled={submitting || selectedOrderDetails.lines?.some((l: any) => l.stockStatus !== 'ENOUGH')}
+                                            className="px-12 py-5 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-3xl font-black shadow-2xl shadow-amber-100 transition-all flex items-center gap-4 uppercase tracking-[0.2em] text-xs active:scale-95"
                                         >
                                             {submitting ? <Loader2 className="animate-spin" size={20} /> : <><Play size={20} className="fill-current" /> {t('start_production')}</>}
                                         </button>

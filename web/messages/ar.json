@@ -1,4 +1,14 @@
 {
+    "login": {
+        "title": "مرحباً بك مجدداً",
+        "subtitle": "سجل الدخول إلى AtlasERP لإدارة عملياتك.",
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور",
+        "button": "تسجيل الدخول",
+        "authenticating": "جاري التحقق...",
+        "no_account": "ليس لديك حساب؟",
+        "register": "طلب وصول"
+    },
     "common": {
         "title": "أطلس",
         "brand_suffix": "ERP",
@@ -66,30 +76,57 @@
         },
         "missing_fields": "يرجى ملء جميع الحقول المطلوبة",
         "general_info": "معلومات عامة",
-        "select_placeholder": "اختر عنصراً..."
+        "select_placeholder": "اختر عنصراً...",
+        "create_so": "بيع",
+        "create_po": "شراء",
+        "create_mo": "تصنيع",
+        "new_customer": "عميل",
+        "inventory_check": "مخزون",
+        "finance_report": "خزينة"
     },
     "nav": {
-        "dashboard": "لوحة التحكم",
+        "dashboard": "لوحة المعلومات",
         "groups": {
-            "catalogue": "الكتالوج والمنتجات",
+            "dashboard": "لوحة المعلومات",
+            "administration": "الإدارة والوصول",
+            "commerce": "المبيعات والمشتريات",
+            "catalogue": "الكتالوج والمواد",
             "production": "العمليات والمخزون",
-            "commerce": "التدفقات التجارية",
             "finance": "الإدارة المالية",
-            "administration": "الإدارة"
+            "analytics": "التحليلات",
+            "hr": "الموارد البشرية",
+            "collaboration": "التعاون والمشاريع"
         },
         "items": {
-            "products": "المنتجات",
-            "families": "الفئات",
-            "inventory": "حالة المخزون",
-            "manufacturing": "التصنيع",
-            "customers": "العملاء",
-            "sales": "المبيعات",
-            "suppliers": "الموردين",
+            "dashboard_overview": "نظرة عامة",
+            "users_roles": "المستخدمون والأدوار",
+            "permissions": "صلاحيات الوصول",
+            "activity_log": "سجل النشاط",
+            "settings": "إعدادات النظام",
+            "customers": "قاعدة العملاء",
+            "sales": "طلبات المبيعات",
+            "suppliers": "الموردون",
             "purchase_orders": "طلبات الشراء",
             "receptions": "الاستلامات",
+            "products": "المنتجات",
+            "families": "عائلات المنتجات",
+            "inventory": "حالة المخزون",
+            "manufacturing": "أوامر التصنيع",
             "invoices": "فواتير العملاء",
-            "expenses": "المصاريف",
-            "settings": "الإعدادات"
+            "aged_receivables": "الذمم المدينة",
+            "cash_flow": "التدفق النقدي",
+            "expenses": "المصروفات",
+            "analytics_overview": "نظرة عامة",
+            "abc_analysis": "تحليل ABC",
+            "dead_stock": "المخزون الراكد",
+            "hr_employees": "الموظفون",
+            "hr_leaves": "الإجازات",
+            "hr_payroll": "الرواتب",
+            "hr_recruitment": "التوظيف",
+            "hr_performance": "الأداء",
+            "collaboration_calendar": "التقويم",
+            "collaboration_projects": "المشاريع",
+            "collaboration_activity": "النشاط"
         }
     },
     "dashboard": {
@@ -133,7 +170,16 @@
             "stable": "مستقر",
             "positive": "إيجابي",
             "negative": "سلبي"
-        }
+        },
+        "human_resources": "الموارد البشرية",
+        "active_employees": "الموظفين النشطين",
+        "pending_leaves": "إجازات معلقة",
+        "recruitment": "التوظيف",
+        "active_pipeline": "قائمة المرشحين",
+        "manage_candidates": "إدارة المرشحين",
+        "performance": "الأداء",
+        "appraisals": "التقييمات",
+        "active_cycle": "الدورة الحالية"
     },
     "products": {
         "title": "كتالوج المنتجات",
@@ -325,7 +371,11 @@
         "analytics": {
             "overview": "ذكاء المخزون",
             "coming_soon": "وحدة تنبؤية"
-        }
+        },
+        "low_stock": "مخزون منخفض",
+        "out_of_stock": "نفاد المخزون",
+        "replenishment": "إعادة التموين",
+        "suggestions": "مقترحات الشراء"
     },
     "manufacturing_orders": {
         "title": "أوامر التصنيع",
@@ -411,6 +461,15 @@
     "purchases": {
         "title": "إدارة المشتريات",
         "subtitle": "إدارة الموردين وطلبات الشراء",
+        "status": {
+            "draft": "مسودة",
+            "sent": "مرسل",
+            "confirmed": "مؤكد",
+            "partially_received": "مستلم جزئياً",
+            "received": "مستلم",
+            "fully_received": "مستلم بالكامل",
+            "cancelled": "ملغى"
+        },
         "orders": {
             "title": "إدارة المشتريات",
             "subtitle": "إدارة طلبات الشراء من الموردين",
@@ -421,6 +480,9 @@
                 "total_cost": "الالتزام المالي HT",
                 "received": "مستلمة ومغلقة",
                 "pending": "مستلمة جزئياً"
+            },
+            "sections": {
+                "items": "العناصر المطلوبة"
             },
             "form": {
                 "supplier": "المورد *",
@@ -450,6 +512,8 @@
             "name_required": "اسم المورد مطلوب",
             "name_label": "الاسم التجاري",
             "nif": "الرقم الضريبي",
+            "ai": "رقم المادة",
+            "rc": "السجل التجاري",
             "code_sku": "رمز المورد / SKU",
             "email_label": "البريد الإلكتروني",
             "phone_label": "هاتف الاتصال",
@@ -460,7 +524,19 @@
             "edit_supplier": "تعديل المورد",
             "total_suppliers": "إجمالي الموردين",
             "active_suppliers": "الموردون النشطون",
-            "pending_orders": "الطلبات المعلقة"
+            "pending_orders": "الطلبات المعلقة",
+            "add": "مورد جديد",
+            "edit": "تعديل المورد",
+            "sections": {
+                "identity": "الهوية",
+                "communication": "الاتصال",
+                "commercial": "التجارة"
+            },
+            "fields": {
+                "name": "الاسم التجاري",
+                "phone": "الهاتف",
+                "address": "العنوان"
+            }
         },
         "receptions": {
             "title": "الاستلام والمخزون",
@@ -492,17 +568,88 @@
                 "note": "ملاحظة الاستلام (الحالة، الطرود...)",
                 "validation_title": "تأكيد حركة المخزون",
                 "validation_warning": "تنبيه: تأكيد الاستلام سيحدث مستويات المخزون فوراً. هذا الإجراء لا يمكن التراجع عنه.",
-                "validate_button": "تأكيد ودخول المخزون"
+                "validate_button": "تأكيد ودخول المخزون",
+                "ready_title": "جاهز لإدخال المخزون؟",
+                "ready_desc": "بمجرد التأكيد، سيتم تحديث مستويات المخزون. لا يمكن التراجع عن هذه العملية.",
+                "tabs": {
+                    "origin": "الأصل",
+                    "config": "الإعدادات",
+                    "info": "المعلومات",
+                    "items": "الأصناف"
+                },
+                "table": {
+                    "full": "كامل",
+                    "partial": "جزئي",
+                    "none": "لا يوجد"
+                }
             },
             "toast": {
-                "created": "تم إنشاء الاستلام بنجاح"
+                "created": "تم إنشاء الاستلام بنجاح",
+                "validated": "تم تحديث المخزون بنجاح",
+                "error_qty": "الكمية المستلمة تتجاوز الكمية المطلوبة لبعض الأصناف"
+            },
+            "form": {
+                "title": "استلام جديد",
+                "select_po": "اختر طلب شراء",
+                "select_warehouse": "مستودع الوجهة",
+                "lines_title": "الأصناف المطلوب استلامها",
+                "qty_ordered": "المطلوب",
+                "qty_received": "المستلم",
+                "partial_receipt": "جزئي",
+                "validate": "تأكيد الاستلام"
+            }
+        },
+        "orders": {
+            "title": "طلبات الشراء",
+            "subtitle": "إدارة التوريدات والطلبات الخاصة بك",
+            "add": "طلب شراء جديد",
+            "add_subtitle": "إنشاء التزام شراء",
+            "list": "سجل الطلبات",
+            "form": {
+                "supplier": "اختر المورد",
+                "order_date": "تاريخ الطلب",
+                "expected_date": "تاريخ التسليم المتوقع",
+                "notes": "تعليمات وملاحظات داخلية",
+                "items_title": "تفاصيل الأصناف",
+                "add_line": "إضافة صنف",
+                "product_placeholder": "البحث عن صنف...",
+                "summary_title": "الملخص والتأكيد",
+                "save": "حفظ طلب الشراء",
+                "financial_summary": "الملخص المالي",
+                "direct_stock": "إدخال مباشر للمخزون",
+                "direct_stock_desc": "تحديد كمستلم وتغذية المخزون",
+                "stock_feed_title": "تغذية المخزون الحقيقي",
+                "stock_feed_desc": "التأكيد سينشئ استلاماً وحركات مخزون تلقائياً.",
+                "order_mode_title": "وضع الطلب (مسودة/مرسل)",
+                "order_mode_desc": "سيتم إنشاء الطلب دون التأثير على المخزون فوراً.",
+                "tabs": {
+                    "general": "معلومات عامة",
+                    "items": "الأصناف",
+                    "summary": "التأكيد"
+                }
+            },
+            "errors": {
+                "no_supplier": "يرجى اختيار مورد",
+                "invalid_lines": "يرجى التحقق من الأصناف والكميات"
+            },
+            "success": {
+                "created": "تم إنشاء طلب الشراء بنجاح"
             }
         },
         "reference": "مرجع طلب الشراء",
         "supplier": "شريك مورد",
         "order_date": "تاريخ الإصدار",
         "expected_date": "تاريخ التسليم المتوقع",
-        "total_ttc": "الإجمالي شامل الضريبة"
+        "total_ttc": "الإجمالي شامل الضريبة",
+        "order_detail_description": "تتبع مفصل لالتزام الشراء والاستلامات المرتبطة.",
+        "STATUS": {
+            "DRAFT": "مسودة",
+            "SENT": "مرسل",
+            "CONFIRMED": "مؤكد",
+            "PARTIALLY_RECEIVED": "استلام جزئي",
+            "FULLY_RECEIVED": "تم الاستلام",
+            "CANCELLED": "ملغى"
+        }
     },
     "sales": {
         "orders": {
@@ -781,6 +928,67 @@
             "send_reminder": "إرسال تذكير",
             "log_activity": "تسجيل نشاط",
             "block_credit": "حظر الائتمان"
+        }
+    },
+    "collaboration": {
+        "calendar": "التقويم",
+        "projects": "المشاريع",
+        "activity_feed": "سجل النشاط",
+        "new_event": "حدث جديد",
+        "new_project": "مشروع جديد",
+        "new_task": "مهمة جديدة",
+            "team_calendar": "تقويم الفريق",
+        "project_list": "قائمة المشاريع",
+        "kanban_board": "لوحة كانبان",
+        "activity_log": "سجل النشاطات",
+        "notifications": "التنبيهات"
+    },
+    "admin": {
+        "users": {
+            "title": "إدارة المستخدمين",
+            "subtitle": "إدارة حسابات المستخدمين وصلاحيات الوصول الخاصة بهم.",
+            "invite": "دعوة متعاون",
+            "search": "البحث عن مستخدم...",
+            "count": "{count} مستخدم",
+            "table": {
+                "user": "المستخدم",
+                "roles": "الأدوار النشطة",
+                "status": "الحالة",
+                "actions": "الإجراءات"
+            },
+            "invite_modal": {
+                "title": "دعوة متعاون",
+                "subtitle": "حساب مستخدم جديد",
+                "email": "البريد الإلكتروني",
+                "role": "الدور الرئيسي",
+                "send": "إرسال الدعوة"
+            },
+            "role_modal": {
+                "title": "تعيين دور",
+                "add": "إضافة"
+            }
+        },
+        "roles": {
+            "title": "الأدوار والصلاحيات",
+            "subtitle": "تكوين مستويات الوصول وأذونات النظام.",
+            "create": "إنشاء دور",
+            "table": {
+                "role": "الدور",
+                "permissions": "الصلاحيات",
+                "users": "المستخدمون"
+            }
+        },
+        "audit": {
+            "title": "سجل النشاط",
+            "subtitle": "تتبع كامل للإجراءات التي تم تنفيذها على المنصة.",
+            "search": "تصفية النشاط...",
+            "table": {
+                "date": "التاريخ والوقت",
+                "user": "المستخدم",
+                "action": "الإجراء",
+                "module": "الوحدة",
+                "details": "التفاصيل"
+            }
         }
     }
 }

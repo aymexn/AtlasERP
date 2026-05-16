@@ -52,6 +52,12 @@ export class RecruitmentController {
     return this.recruitmentService.hireCandidate(req.user.companyId, id);
   }
 
+  @Post('applications')
+  @CheckPermission('hr', 'recruitment', 'manage')
+  async applyToJob(@Body() data: any) {
+    return this.recruitmentService.applyToJob(data.jobPostingId, data.candidateId, data.notes);
+  }
+
   @Post('applications/:id/interviews')
   @CheckPermission('hr', 'recruitment', 'manage')
   async scheduleInterview(@Param('id') id: string, @Body() data: any) {

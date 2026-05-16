@@ -5,8 +5,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
     Users, Plus, Search, Loader2, Mail, Phone, MapPin,
     Edit2, Trash2, Building2, Store, ShieldCheck,
-    CreditCard, Save, X, Tag, Info, Briefcase, Printer
+    CreditCard, Save, X, Tag, Info, Briefcase, Printer, MoreVertical, ExternalLink
 } from 'lucide-react';
+import { SupplierCatalog } from './SupplierCatalog';
 import { downloadPdf } from '@/lib/download-pdf';
 import { Supplier } from '@/services/suppliers';
 import { toast } from 'sonner';
@@ -30,7 +31,7 @@ export default function SuppliersClient() {
     // Modal & Form State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [activeTab, setActiveTab] = useState<'identity' | 'contact' | 'commercial'>('identity');
+    const [activeTab, setActiveTab] = useState<'identity' | 'contact' | 'commercial' | 'catalog'>('identity');
     const [currentSupplier, setCurrentSupplier] = useState<Partial<Supplier> | null>(null);
 
     useEffect(() => {
@@ -299,6 +300,7 @@ export default function SuppliersClient() {
                                 { id: 'identity', label: t('suppliers.sections.identity') },
                                 { id: 'contact', label: t('suppliers.sections.communication') },
                                 { id: 'commercial', label: t('suppliers.sections.commercial') },
+                                { id: 'catalog', label: 'Catalogue Articles' },
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
@@ -314,7 +316,7 @@ export default function SuppliersClient() {
                         </div>
 
                         {/* Form Content */}
-                        <form id="supplier-form" onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[55vh] flex-1">
+                        <form id="supplier-form" onSubmit={handleSubmit} className={`p-8 space-y-6 overflow-y-auto max-h-[55vh] flex-1 ${activeTab === 'catalog' ? 'bg-slate-50/30' : ''}`}>
                             {activeTab === 'identity' && (
                                 <div className="space-y-7 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="space-y-2.5">
@@ -333,35 +335,47 @@ export default function SuppliersClient() {
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4">
                                         <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('nif')}</label>
-                                            <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
-                                                value={currentSupplier?.nif || ''}
-                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, nif: e.target.value })}
-                                            />
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Numéro d'Article (AI)</label>
+                                            <div className="relative">
+                                                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                                <input
+                                                    placeholder="000000000"
+                                                    className="w-full pl-11 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
+                                                    value={currentSupplier?.ai || ''}
+                                                    onChange={(e) => setCurrentSupplier({ ...currentSupplier, ai: e.target.value })}
+                                                />
+                                            </div>
                                         </div>
                                         <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('ai') || "AI"}</label>
-                                            <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
-                                                value={currentSupplier?.ai || ''}
-                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, ai: e.target.value })}
-                                            />
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Registre de Commerce (RC)</label>
+                                            <div className="relative">
+                                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                                <input
+                                                    placeholder="00B0000000"
+                                                    className="w-full pl-11 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
+                                                    value={currentSupplier?.rc || ''}
+                                                    onChange={(e) => setCurrentSupplier({ ...currentSupplier, rc: e.target.value })}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{st('rc') || "RC"}</label>
-                                            <input
-                                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
-                                                value={currentSupplier?.rc || ''}
-                                                onChange={(e) => setCurrentSupplier({ ...currentSupplier, rc: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 leading-none">{st('code_sku')}</label>
+                                        <div className="col-span-2 space-y-2.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Identifiant Fiscal (NIF)</label>
                                             <div className="relative">
                                                 <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                                                 <input
-                                                    placeholder="Automatique"
+                                                    placeholder="000000000000000"
+                                                    className="w-full pl-11 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-700 h-14"
+                                                    value={currentSupplier?.nif || ''}
+                                                    onChange={(e) => setCurrentSupplier({ ...currentSupplier, nif: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-2 space-y-2.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 leading-none">Référence Interne (Code)</label>
+                                            <div className="relative">
+                                                <Info className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                                <input
+                                                    placeholder="Automatique (FR-000X)"
                                                     className="w-full pl-11 pr-5 py-4 bg-slate-100/50 border-2 border-dashed border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-mono font-black text-slate-500 h-14"
                                                     value={currentSupplier?.code || ''}
                                                     onChange={(e) => setCurrentSupplier({ ...currentSupplier, code: e.target.value })}
@@ -435,6 +449,10 @@ export default function SuppliersClient() {
                                         </button>
                                     </div>
                                 </div>
+                            )}
+
+                            {activeTab === 'catalog' && currentSupplier?.id && (
+                                <SupplierCatalog supplierId={currentSupplier.id} />
                             )}
                         </form>
 

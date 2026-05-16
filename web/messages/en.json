@@ -1,4 +1,14 @@
 {
+    "login": {
+        "title": "Welcome Back",
+        "subtitle": "Sign in to AtlasERP to manage your operations.",
+        "email": "Email Address",
+        "password": "Password",
+        "button": "Sign In",
+        "authenticating": "Authenticating...",
+        "no_account": "Don't have an account?",
+        "register": "Request Access"
+    },
     "common": {
         "title": "Atlas",
         "brand_suffix": "ERP",
@@ -73,30 +83,57 @@
         "total_ttc": "Total TTC",
         "select_placeholder": "Select an item...",
         "select_all": "Select All",
-        "deselect_all": "Deselect All"
+        "deselect_all": "Deselect All",
+        "create_so": "Sales",
+        "create_po": "Purchase",
+        "create_mo": "Manufacturing",
+        "new_customer": "Customer",
+        "inventory_check": "Inventory",
+        "finance_report": "Treasury"
     },
     "nav": {
         "dashboard": "Dashboard",
         "groups": {
-            "catalogue": "Catalogue & Items",
-            "production": "Operations & Stocks",
-            "commerce": "Commercial Flows",
+            "dashboard": "Dashboard",
+            "administration": "Administration & Access",
+            "commerce": "Sales & Purchasing",
+            "catalogue": "Catalog & Articles",
+            "production": "Operations & Stock",
             "finance": "Financial Management",
-            "administration": "Administration"
+            "analytics": "Analytics",
+            "hr": "Human Resources",
+            "collaboration": "Collaboration & Projects"
         },
         "items": {
-            "products": "Products",
-            "families": "Families",
-            "inventory": "Stock Status",
-            "manufacturing": "Manufacturing (MO)",
-            "customers": "Customers",
-            "sales": "Sales (SO)",
+            "dashboard_overview": "Overview",
+            "users_roles": "Users & Roles",
+            "permissions": "Access Permissions",
+            "activity_log": "Activity Log",
+            "settings": "System Settings",
+            "customers": "Customer Base",
+            "sales": "Sales Orders",
             "suppliers": "Suppliers",
             "purchase_orders": "Purchase Orders",
-            "receptions": "Receptions / GRN",
+            "receptions": "Receptions",
+            "products": "Products",
+            "families": "Product Families",
+            "inventory": "Inventory Status",
+            "manufacturing": "Manufacturing Orders",
             "invoices": "Customer Invoices",
+            "aged_receivables": "Aged Receivables",
+            "cash_flow": "Cash Flow",
             "expenses": "Expenses",
-            "settings": "Settings"
+            "analytics_overview": "Overview",
+            "abc_analysis": "ABC Analysis",
+            "dead_stock": "Dead Stock",
+            "hr_employees": "Employees",
+            "hr_leaves": "Leaves",
+            "hr_payroll": "Payroll",
+            "hr_recruitment": "Recruitment",
+            "hr_performance": "Performance",
+            "collaboration_calendar": "Calendar",
+            "collaboration_projects": "Projects",
+            "collaboration_activity": "Activity"
         }
     },
     "dashboard": {
@@ -148,25 +185,90 @@
     },
     "finances": {
         "invoices": {
+            "title": "Customer Invoicing",
+            "subtitle": "Track receivables and cash flow",
             "list_title": "Customer Invoices",
             "sheet_title": "Invoice Payment",
             "sheet_description": "Record an incoming payment for this invoice.",
+            "add": "Generate Invoice",
+            "reference": "Invoice No.",
+            "date": "Invoice Date",
+            "no_invoices": "No invoices found",
+            "search": "Search invoices...",
             "amount_to_pay": "Amount to collect",
             "total_ttc": "Total TTC",
             "status": {
-                "sent": "Sent",
-                "draft": "Draft",
+                "unpaid": "Unpaid",
+                "partial": "Partial",
                 "paid": "Paid",
-                "partial": "Partial"
+                "cancelled": "Cancelled",
+                "all": "All statuses",
+                "draft": "Draft",
+                "sent": "Sent",
+                "validated": "Validated"
+            },
+            "fields": {
+                "customer": "Customer",
+                "total_ttc": "Total Amount",
+                "status": "Status",
+                "actions": "Actions"
+            },
+            "kpi": {
+                "total_invoiced": "Total Invoiced",
+                "total_paid": "Total Received",
+                "total_pending": "Pending Recovery",
+                "recovered_rate": "Rate"
             }
         },
         "payments": {
+            "title": "Payment Management",
+            "add": "Record Payment",
+            "validate": "Record Payment",
+            "fields": {
+                "amount": "Amount to collect",
+                "method": "Payment method",
+                "date": "Reception date",
+                "reference": "Reference / Doc No.",
+                "notes": "Notes"
+            },
             "methods": {
                 "cash": "Cash",
-                "check": "Check",
-                "transfer": "Transfer"
+                "cheque": "Cheque",
+                "check": "Cheque",
+                "virement": "Bank Transfer",
+                "transfer": "Bank Transfer",
+                "other": "Other"
+            }
+        },
+        "expenses": {
+            "title": "Expenses",
+            "subtitle": "Manage operating expenses",
+            "add": "Add Expense",
+            "search": "Search expenses...",
+            "stats": {
+                "total": "Total Expenses"
             },
-            "validate": "Record Payment"
+            "fields": {
+                "title": "Expense Title",
+                "category": "Category",
+                "amount": "Amount",
+                "date": "Expense Date",
+                "method": "Payment Method",
+                "supplier": "Related Supplier"
+            },
+            "categories": {
+                "rent": "Rent",
+                "utilities": "Utilities",
+                "office": "Office Supplies",
+                "transport": "Transport",
+                "salary": "Salaries",
+                "salaries": "Salaries",
+                "marketing": "Marketing",
+                "materials": "Materials & Supplies",
+                "logistics": "Logistics",
+                "consulting": "Consulting & Services",
+                "other": "Other"
+            }
         }
     },
     "products": {
@@ -359,7 +461,11 @@
         "analytics": {
             "overview": "Stock Intelligence",
             "coming_soon": "Predictive Module"
-        }
+        },
+        "low_stock": "Low Stock",
+        "out_of_stock": "Out of Stock",
+        "replenishment": "Replenishment",
+        "suggestions": "Purchase Suggestions"
     },
     "manufacturing_orders": {
         "title": "Manufacturing Orders",
@@ -457,6 +563,15 @@
     "purchases": {
         "title": "Purchase Management",
         "subtitle": "Manage suppliers and purchase orders",
+        "status": {
+            "draft": "Draft",
+            "sent": "Sent",
+            "confirmed": "Confirmed",
+            "partially_received": "Partially Received",
+            "received": "Received",
+            "fully_received": "Fully Received",
+            "cancelled": "Cancelled"
+        },
         "orders": {
             "title": "Purchase Management",
             "subtitle": "Manage supplier purchase orders",
@@ -467,6 +582,9 @@
                 "total_cost": "Financial Commitment HT",
                 "received": "Received & Closed",
                 "pending": "Partially received"
+            },
+            "sections": {
+                "items": "Ordered Items"
             },
             "form": {
                 "supplier": "Supplier *",
@@ -506,7 +624,19 @@
             "edit_supplier": "Edit Supplier",
             "total_suppliers": "Total Suppliers",
             "active_suppliers": "Active Suppliers",
-            "pending_orders": "Pending Orders"
+            "pending_orders": "Pending Orders",
+            "add": "New Supplier",
+            "edit": "Edit Supplier",
+            "sections": {
+                "identity": "Identity",
+                "communication": "Contact",
+                "commercial": "Commerce"
+            },
+            "fields": {
+                "name": "Company Name",
+                "phone": "Phone",
+                "address": "Address"
+            }
         },
         "receptions": {
             "title": "Receptions & GRN",
@@ -538,35 +668,88 @@
                 "note": "Reception Note",
                 "validation_title": "Stock Movement Validation",
                 "validation_warning": "Warning: Validating a reception will update physical stock immediately. This action is irreversible.",
-                "validate_button": "Validate & Enter Stock"
+                "validate_button": "Validate & Enter Stock",
+                "ready_title": "Ready to Stock?",
+                "ready_desc": "Once validated, stock levels will be updated. This operation is irreversible.",
+                "tabs": {
+                    "origin": "Origin",
+                    "config": "Configuration",
+                    "info": "Information",
+                    "items": "Items"
+                },
+                "table": {
+                    "full": "Full",
+                    "partial": "Partial",
+                    "none": "None"
+                }
             },
             "toast": {
-                "created": "Reception created successfully"
+                "created": "Reception created successfully",
+                "validated": "Stock updated successfully",
+                "error_qty": "Received quantity exceeds ordered for some items"
+            },
+            "form": {
+                "title": "New Reception",
+                "select_po": "Select Purchase Order",
+                "select_warehouse": "Destination Warehouse",
+                "lines_title": "Items to receive",
+                "qty_ordered": "Ordered",
+                "qty_received": "Received",
+                "partial_receipt": "Partial",
+                "validate": "Validate Reception"
+            }
+        },
+        "orders": {
+            "title": "Purchase Orders",
+            "subtitle": "Manage your procurements and orders",
+            "add": "New PO",
+            "add_subtitle": "Create a purchase commitment",
+            "list": "Order Registry",
+            "form": {
+                "supplier": "Select Supplier",
+                "order_date": "Order Date",
+                "expected_date": "Expected Delivery Date",
+                "notes": "Internal Instructions & Notes",
+                "items_title": "Item Details",
+                "add_line": "Add Item",
+                "product_placeholder": "Search for an item...",
+                "summary_title": "Summary & Validation",
+                "save": "Save Purchase Order",
+                "financial_summary": "Financial Summary",
+                "direct_stock": "Direct Stock Entry",
+                "direct_stock_desc": "Mark as received and feed inventory",
+                "stock_feed_title": "Real Stock Feeding",
+                "stock_feed_desc": "Validation will automatically create a reception and stock movements.",
+                "order_mode_title": "Order Mode (Draft/Sent)",
+                "order_mode_desc": "The order will be created without impacting stock immediately.",
+                "tabs": {
+                    "general": "General Info",
+                    "items": "Items",
+                    "summary": "Validation"
+                }
+            },
+            "errors": {
+                "no_supplier": "Please select a supplier",
+                "invalid_lines": "Please check items and quantities"
+            },
+            "success": {
+                "created": "Purchase Order created successfully"
             }
         },
         "reference": "PO Reference",
         "supplier": "Supplier Partner",
         "order_date": "Emission Date",
         "expected_date": "Expected Delivery",
-        "total_ttc": "Total TTC"
-    },
-    "suppliers": {
-        "title": "Supplier Management",
-        "subtitle": "Manage your supplier partners",
-        "identity_and_code": "Identity & Legal Codes",
-        "communication_and_location": "Contact & Location",
-        "procurement_settings": "Procurement Terms",
-        "name_required": "Supplier name is required",
-        "name_label": "Company Name *",
-        "nif": "NIF",
-        "ai": "AI",
-        "rc": "RC",
-        "code_sku": "SKU Code",
-        "email_label": "Email",
-        "phone_label": "Phone",
-        "address_label": "Address",
-        "payment_terms": "Payment Terms (days)",
-        "initial_status": "Initial Status"
+        "total_ttc": "Total TTC",
+        "order_detail_description": "Detailed tracking of purchase commitment and associated receptions.",
+        "STATUS": {
+            "DRAFT": "DRAFT",
+            "SENT": "SENT",
+            "CONFIRMED": "CONFIRMED",
+            "PARTIALLY_RECEIVED": "PARTIALLY RECEIVED",
+            "FULLY_RECEIVED": "FULLY RECEIVED",
+            "CANCELLED": "CANCELLED"
+        }
     },
     "sales": {
         "orders": {
@@ -708,88 +891,7 @@
             }
         }
     },
-    "finances": {
-        "invoices": {
-            "title": "Customer Invoicing",
-            "subtitle": "Track receivables and cash flow",
-            "add": "Generate Invoice",
-            "reference": "Invoice No.",
-            "date": "Invoice Date",
-            "no_invoices": "No invoices found",
-            "search": "Search invoices...",
-            "status": {
-                "unpaid": "Unpaid",
-                "partial": "Partial",
-                "paid": "Paid",
-                "cancelled": "Cancelled",
-                "all": "All statuses",
-                "draft": "Draft",
-                "validated": "Validated"
-            },
-            "fields": {
-                "customer": "Customer",
-                "total_ttc": "Total Amount",
-                "status": "Status",
-                "actions": "Actions"
-            },
-            "kpi": {
-                "total_invoiced": "Total Invoiced",
-                "total_paid": "Total Received",
-                "total_pending": "Pending Recovery",
-                "recovered_rate": "Rate"
-            },
-            "total_ttc": "TOTAL TTC"
-        },
-        "payments": {
-            "title": "Payment Management",
-            "add": "Record Payment",
-            "fields": {
-                "amount": "Amount to collect",
-                "method": "Payment method",
-                "date": "Reception date",
-                "reference": "Reference / Doc No.",
-                "notes": "Notes"
-            },
-            "methods": {
-                "cash": "Cash",
-                "cheque": "Cheque",
-                "check": "Cheque",
-                "virement": "Bank Transfer",
-                "transfer": "Bank Transfer",
-                "other": "Other"
-            }
-        },
-        "expenses": {
-            "title": "Expenses",
-            "subtitle": "Manage operating expenses",
-            "add": "Add Expense",
-            "search": "Search expenses...",
-            "stats": {
-                "total": "Total Expenses"
-            },
-            "fields": {
-                "title": "Expense Title",
-                "category": "Category",
-                "amount": "Amount",
-                "date": "Expense Date",
-                "method": "Payment Method",
-                "supplier": "Related Supplier"
-            },
-            "categories": {
-                "rent": "Rent",
-                "utilities": "Utilities",
-                "office": "Office Supplies",
-                "transport": "Transport",
-                "salary": "Salaries",
-                "salaries": "Salaries",
-                "marketing": "Marketing",
-                "materials": "Materials & Supplies",
-                "logistics": "Logistics",
-                "consulting": "Consulting & Services",
-                "other": "Other"
-            }
-        }
-    },
+
     "settings": {
         "title": "Organization Settings",
         "subtitle": "Fiscal and structural data configuration",
@@ -969,6 +1071,54 @@
             "reviews": "Reviews",
             "rating": "Final Rating",
             "objectives": "Objectives"
+        }
+    },
+    "admin": {
+        "users": {
+            "title": "User Management",
+            "subtitle": "Manage user accounts and their access permissions.",
+            "invite": "Invite Collaborator",
+            "search": "Search user...",
+            "count": "{count} Users",
+            "table": {
+                "user": "User",
+                "roles": "Active Roles",
+                "status": "Status",
+                "actions": "Actions"
+            },
+            "invite_modal": {
+                "title": "Invite Collaborator",
+                "subtitle": "New user account",
+                "email": "Email Address",
+                "role": "Primary Role",
+                "send": "Send Invitation"
+            },
+            "role_modal": {
+                "title": "Assign a Role",
+                "add": "Add"
+            }
+        },
+        "roles": {
+            "title": "Roles & Permissions",
+            "subtitle": "Configure access levels and system permissions.",
+            "create": "Create Role",
+            "table": {
+                "role": "Role",
+                "permissions": "Permissions",
+                "users": "Users"
+            }
+        },
+        "audit": {
+            "title": "Activity Log",
+            "subtitle": "Complete tracking of actions performed on the platform.",
+            "search": "Filter activity...",
+            "table": {
+                "date": "Date & Time",
+                "user": "User",
+                "action": "Action",
+                "module": "Module",
+                "details": "Details"
+            }
         }
     }
 }

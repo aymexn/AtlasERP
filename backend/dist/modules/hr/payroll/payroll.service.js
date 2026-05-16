@@ -13,18 +13,20 @@ exports.PayrollService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const notifications_service_1 = require("../../notifications/notifications.service");
 let PayrollService = class PayrollService {
-    constructor(prisma) {
+    constructor(prisma, notificationService) {
         this.prisma = prisma;
+        this.notificationService = notificationService;
     }
     async createPeriod(companyId, data) {
         return this.prisma.payrollPeriod.create({
             data: {
-                ...data,
                 companyId,
                 periodStart: new Date(data.periodStart),
                 periodEnd: new Date(data.periodEnd),
                 paymentDate: new Date(data.paymentDate),
+                ...(data.periodName ? { notes: data.periodName } : {}),
             },
         });
     }
@@ -83,8 +85,8 @@ let PayrollService = class PayrollService {
                     status: 'calculated',
                 },
                 create: {
-                    payrollPeriodId: periodId,
-                    employeeId: employee.id,
+                    payrollPeriod: { connect: { id: periodId } },
+                    employee: { connect: { id: employee.id } },
                     grossSalary: gross,
                     totalEarnings: gross,
                     totalDeductions,
@@ -96,10 +98,14 @@ let PayrollService = class PayrollService {
             });
             results.push(run);
         }
-        await this.prisma.payrollPeriod.update({
+        const updatedPeriod = await this.prisma.payrollPeriod.update({
             where: { id: periodId },
             data: { status: client_1.PayrollStatus.CALCULATED },
         });
+        const emails = employees.map(e => e.email).filter(Boolean);
+        if (emails.length > 0) {
+            this.notificationService.notifyPayrollProcessed(updatedPeriod, emails).catch(console.error);
+        }
         return results;
     }
     calculateIRG(taxableIncome) {
@@ -139,6 +145,17 @@ let PayrollService = class PayrollService {
             include: { employee: true },
         });
     }
+    async getPayrollRunForPdf(runId) {
+        return this.prisma.payrollRun.findUnique({
+            where: { id: runId },
+            include: {
+                employee: {
+                    include: { company: true }
+                },
+                payrollPeriod: true
+            },
+        });
+    }
     async getPayslips(employeeId) {
         return this.prisma.payslip.findMany({
             where: { employeeId },
@@ -172,6 +189,7 @@ let PayrollService = class PayrollService {
 exports.PayrollService = PayrollService;
 exports.PayrollService = PayrollService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationService])
 ], PayrollService);
 //# sourceMappingURL=payroll.service.js.map

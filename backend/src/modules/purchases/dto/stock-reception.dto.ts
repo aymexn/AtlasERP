@@ -48,8 +48,33 @@ export class CreateStockReceptionDto {
   @IsOptional()
   notes?: string;
 
-  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateStockReceptionLineDto)
   lines: CreateStockReceptionLineDto[];
+}
+
+export class UpdateStockReceptionLineDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  receivedQty: number;
+}
+
+export class UpdateStockReceptionDto {
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateStockReceptionLineDto)
+  lines?: UpdateStockReceptionLineDto[];
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @IsString()
+  @IsOptional()
+  warehouseId?: string;
 }

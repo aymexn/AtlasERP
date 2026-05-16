@@ -10,6 +10,7 @@ export class SuppliersController {
 
   @Post()
   create(@Request() req, @Body() createDto: CreateSupplierDto) {
+    console.log('[SuppliersController.create] Payload:', createDto);
     return this.suppliersService.create(req.user.companyId, createDto);
   }
 
@@ -30,11 +31,29 @@ export class SuppliersController {
 
   @Patch(':id')
   update(@Request() req, @Param('id') id: string, @Body() updateDto: UpdateSupplierDto) {
+    console.log(`[SuppliersController.update] ID: ${id}, Payload:`, updateDto);
     return this.suppliersService.update(id, req.user.companyId, updateDto);
   }
 
   @Delete(':id')
   remove(@Request() req, @Param('id') id: string) {
     return this.suppliersService.remove(id, req.user.companyId);
+  }
+
+  // --- CATALOG ENDPOINTS ---
+
+  @Get(':id/products')
+  getCatalog(@Param('id') id: string) {
+    return this.suppliersService.getCatalog(id);
+  }
+
+  @Post(':id/products')
+  addProductToCatalog(@Param('id') id: string, @Body() data: any) {
+    return this.suppliersService.addProductToCatalog(id, data);
+  }
+
+  @Delete('products/:id')
+  removeProductFromCatalog(@Param('id') id: string) {
+    return this.suppliersService.removeProductFromCatalog(id);
   }
 }

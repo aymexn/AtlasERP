@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppraisalStatus, ReviewStatus } from '@prisma/client';
+import { NotificationService } from '../../notifications/notifications.service';
 
 @Injectable()
 export class PerformanceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService
+  ) {}
 
   async getCycles(companyId: string) {
     return this.prisma.appraisalCycle.findMany({
@@ -27,7 +31,16 @@ export class PerformanceService {
   async initializeReviews(cycleId: string) {
     const cycle = await this.prisma.appraisalCycle.findUnique({
       where: { id: cycleId },
-      include: { company: { include: { employees: { where: { status: 'ACTIVE' } } } } },
+      include: { 
+        company: { 
+          include: { 
+            employees: { 
+              where: { status: 'ACTIVE' },
+              include: { manager: true }
+            } 
+          } 
+        } 
+      },
     });
 
     if (!cycle) throw new NotFoundException('Cycle not found');
@@ -47,6 +60,17 @@ export class PerformanceService {
         },
       });
       reviews.push(review);
+
+      // Notify Reviewer (Manager)
+      const empWithManager = employee as any;
+      if (empWithManager.manager?.email) {
+          this.notificationService.sendEmail(
+              empWithManager.manager.email,
+              `Nouvelle évaluation à réaliser : ${employee.firstName} ${employee.lastName}`,
+              'performance-review-assigned',
+              { cycle: cycle.name, employee: `${employee.firstName} ${employee.lastName}` }
+          ).catch(console.error);
+      }
     }
 
     return reviews;

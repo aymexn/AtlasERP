@@ -54,6 +54,9 @@ let ManufacturingOrdersController = class ManufacturingOrdersController {
     complete(req, id, completeDto) {
         return this.manufacturingOrdersService.complete(req.user.companyId, req.user.id, id, completeDto);
     }
+    close(req, id, body) {
+        return this.manufacturingOrdersService.closeManufacturingOrder(req.user.companyId, req.user.id, id, body?.producedQuantity);
+    }
     cancel(req, id) {
         return this.manufacturingOrdersService.cancel(req.user.companyId, id);
     }
@@ -126,6 +129,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, manufacturing_order_dto_1.CompleteManufacturingOrderDto]),
     __metadata("design:returntype", void 0)
 ], ManufacturingOrdersController.prototype, "complete", null);
+__decorate([
+    (0, common_1.Post)(':id/close'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], ManufacturingOrdersController.prototype, "close", null);
 __decorate([
     (0, common_1.Post)(':id/cancel'),
     __param(0, (0, common_1.Request)()),

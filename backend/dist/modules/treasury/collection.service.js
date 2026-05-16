@@ -61,11 +61,10 @@ let CollectionService = class CollectionService {
                 companyId,
                 customerId: data.customerId,
                 invoiceId: data.invoiceId,
-                activityType: data.activityType,
+                type: data.activityType,
                 notes: data.notes,
-                outcome: data.outcome,
-                nextAction: data.nextAction ? new Date(data.nextAction) : null,
-                assignedTo: data.assignedTo,
+                actionDate: new Date(),
+                followUpDate: data.nextAction ? new Date(data.nextAction) : null,
             }
         });
     }

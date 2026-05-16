@@ -14,12 +14,13 @@ const inventory_service_1 = require("./services/inventory.service");
 const warehouses_service_1 = require("./services/warehouses.service");
 const prisma_module_1 = require("../prisma/prisma.module");
 const warehouses_controller_1 = require("./warehouses.controller");
+const products_module_1 = require("../products/products.module");
 let InventoryModule = class InventoryModule {
 };
 exports.InventoryModule = InventoryModule;
 exports.InventoryModule = InventoryModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, products_module_1.ProductsModule],
         controllers: [inventory_controller_1.InventoryController, warehouses_controller_1.WarehousesController],
         providers: [stock_movement_service_1.StockMovementService, inventory_service_1.InventoryService, warehouses_service_1.WarehousesService],
         exports: [stock_movement_service_1.StockMovementService, inventory_service_1.InventoryService, warehouses_service_1.WarehousesService],

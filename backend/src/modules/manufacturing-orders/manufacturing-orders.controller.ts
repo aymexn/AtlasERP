@@ -62,6 +62,11 @@ export class ManufacturingOrdersController {
     return this.manufacturingOrdersService.complete(req.user.companyId, req.user.id, id, completeDto);
   }
 
+  @Post(':id/close')
+  close(@Request() req, @Param('id') id: string, @Body() body: any) {
+    return this.manufacturingOrdersService.closeManufacturingOrder(req.user.companyId, req.user.id, id, body?.producedQuantity);
+  }
+
   @Post(':id/cancel')
   cancel(@Request() req, @Param('id') id: string) {
     return this.manufacturingOrdersService.cancel(req.user.companyId, id);

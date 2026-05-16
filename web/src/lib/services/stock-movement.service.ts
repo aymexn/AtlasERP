@@ -97,9 +97,9 @@ export const StockMovementService = {
   /**
    * Validates a reception and creates IN movements for all lines.
    */
-  async validateReception(receptionId: string) {
+  async validateReception(receptionId: string, companyId: string) {
     const reception = await prisma.stockReception.findUnique({
-      where: { id: receptionId },
+      where: { id: receptionId, companyId },
       include: { lines: true, company: true }
     });
 
@@ -136,9 +136,9 @@ export const StockMovementService = {
   /**
    * Completes a sales order and creates OUT movements for all lines.
    */
-  async completeSalesOrder(salesOrderId: string) {
+  async completeSalesOrder(salesOrderId: string, companyId: string) {
     const order = await prisma.salesOrder.findUnique({
-      where: { id: salesOrderId },
+      where: { id: salesOrderId, companyId },
       include: { lines: { include: { product: true } } }
     });
 
@@ -176,9 +176,9 @@ export const StockMovementService = {
    * 2. Produces finished goods
    * 3. Calculates production cost and updates product standard cost
    */
-  async completeManufacturingOrder(moId: string) {
+  async completeManufacturingOrder(moId: string, companyId: string) {
     const mo = await prisma.manufacturingOrder.findUnique({
-      where: { id: moId },
+      where: { id: moId, companyId },
       include: { 
         product: true,
         lines: { include: { component: true } }
@@ -247,9 +247,9 @@ export const StockMovementService = {
   /**
    * Get movement history for a product.
    */
-  async getProductMovements(productId: string) {
+  async getProductMovements(productId: string, companyId: string) {
     return await prisma.stockMovement.findMany({
-      where: { productId },
+      where: { productId, companyId },
       orderBy: { date: 'desc' },
       take: 50
     });

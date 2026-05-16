@@ -118,8 +118,8 @@ export default function CustomersClient() {
         switch (segment) {
             case 'A': return <Badge variant="active" className="bg-amber-100 text-amber-700 border-amber-200">GOLD A</Badge>;
             case 'B': return <Badge variant="active" className="bg-slate-100 text-slate-700 border-slate-200">SILVER B</Badge>;
-            case 'C': return <Badge variant="secondary">STANDARD C</Badge>;
-            default: return <Badge variant="secondary">---</Badge>;
+            case 'C': return <Badge variant="default">STANDARD C</Badge>;
+            default: return <Badge variant="default">---</Badge>;
         }
     };
 

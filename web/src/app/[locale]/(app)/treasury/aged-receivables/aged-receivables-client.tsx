@@ -91,7 +91,7 @@ export default function AgedReceivablesClient() {
         
         <div className="flex gap-3">
           <Link 
-            href="/treasury/collections"
+            href={"/treasury/collections" as any}
             className="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 px-6 py-3 rounded-2xl font-bold shadow-sm transition-all hover:bg-slate-50 active:scale-95"
           >
             <AlertCircle size={20} className="text-blue-600" />
@@ -219,7 +219,7 @@ export default function AgedReceivablesClient() {
                     </td>
                     <td className="px-8 py-6 text-right">
                       <Link 
-                        href={`/treasury/customers/${customer.id}/aging`}
+                        href={`/treasury/customers/${customer.id}/aging` as any}
                         className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-white hover:shadow-lg hover:shadow-blue-100 transition-all inline-flex"
                       >
                         <ChevronRight size={20} />

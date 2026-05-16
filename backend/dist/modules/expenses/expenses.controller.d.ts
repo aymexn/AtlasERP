@@ -26,14 +26,15 @@ export declare class ExpensesController {
             country: string;
             taxId: string | null;
             paymentTermsDays: number;
+            leadTimeDays: number;
             notes: string | null;
         };
     } & {
         id: string;
         companyId: string;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
+        updatedAt: Date;
         reference: string | null;
         date: Date;
         notes: string | null;
@@ -66,14 +67,15 @@ export declare class ExpensesController {
             country: string;
             taxId: string | null;
             paymentTermsDays: number;
+            leadTimeDays: number;
             notes: string | null;
         };
     } & {
         id: string;
         companyId: string;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
+        updatedAt: Date;
         reference: string | null;
         date: Date;
         notes: string | null;
@@ -86,8 +88,8 @@ export declare class ExpensesController {
         id: string;
         companyId: string;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
+        updatedAt: Date;
         reference: string | null;
         date: Date;
         notes: string | null;
@@ -100,8 +102,8 @@ export declare class ExpensesController {
         id: string;
         companyId: string;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
+        updatedAt: Date;
         reference: string | null;
         date: Date;
         notes: string | null;
@@ -114,8 +116,8 @@ export declare class ExpensesController {
         id: string;
         companyId: string;
         createdAt: Date;
-        updatedAt: Date;
         title: string;
+        updatedAt: Date;
         reference: string | null;
         date: Date;
         notes: string | null;

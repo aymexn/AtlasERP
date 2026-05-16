@@ -40,7 +40,7 @@ export function SalesOrdersClient() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
-    // Create Order state
+    const [kpis, setKpis] = useState<any>(null);
     const [newOrder, setNewOrder] = useState({
         customerId: '',
         notes: '',
@@ -50,7 +50,17 @@ export function SalesOrdersClient() {
     useEffect(() => {
         setIsMounted(true);
         loadData();
+        loadKpis();
     }, []);
+
+    const loadKpis = async () => {
+        try {
+            const res = await dashboardService.getSalesKpis();
+            setKpis(res.data);
+        } catch (err) {
+            console.error('Failed to load sales KPIs', err);
+        }
+    };
 
     const loadData = async () => {
         try {
@@ -83,6 +93,7 @@ export function SalesOrdersClient() {
             setIsCreateModalOpen(false);
             setNewOrder({ customerId: '', notes: '', lines: [] });
             loadData();
+            loadKpis();
         } catch (err) {
             toast.error(ct('error'));
         } finally {
@@ -95,9 +106,10 @@ export function SalesOrdersClient() {
         setIsSubmitting(true);
         try {
             await salesOrdersService.ship(id);
-            toast.success(t('toast.shipped' as any)); // Existing toast keys might need adding to fr.json or I'll use common
+            toast.success(t('toast.shipped' as any)); 
             setIsDetailsOpen(false);
             loadData();
+            loadKpis();
         } catch (err: any) {
             toast.error(err.message || ct('error'));
         } finally {
@@ -113,6 +125,7 @@ export function SalesOrdersClient() {
             toast.success(t('toast.invoiced' as any));
             setIsDetailsOpen(false);
             loadData();
+            loadKpis();
         } catch (err: any) {
             toast.error(err.message || ct('error'));
         } finally {
@@ -128,6 +141,7 @@ export function SalesOrdersClient() {
             toast.success(ct('save_success'));
             setIsDetailsOpen(false);
             loadData();
+            loadKpis();
         } catch (err: any) {
             toast.error(err.message || ct('error'));
         } finally {
@@ -143,6 +157,7 @@ export function SalesOrdersClient() {
             toast.success(ct('save_success'));
             setIsDetailsOpen(false);
             loadData();
+            loadKpis();
         } catch (err: any) {
             toast.error(err.message || ct('error'));
         } finally {
@@ -292,10 +307,10 @@ export function SalesOrdersClient() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <KpiCard title={t('kpi.pending_sales')} value={orders.filter(o => o.status !== 'CANCELLED' && o.status !== 'INVOICED').length} icon={Receipt} variant="slate" type="count" loading={loading} />
-                <KpiCard title={t('kpi.confirmed_ca')} value={orders.filter(o => ['SHIPPED', 'INVOICED'].includes(o.status)).reduce((acc, o) => acc + Number(o.totalAmountHt), 0)} icon={TrendingUp} variant="success" loading={loading} />
-                <KpiCard title={t('title')} value={orders.length} icon={ShoppingCart} variant="primary" type="count" loading={loading} />
-                <KpiCard title={t('kpi.critical_stock')} value={products.filter(p => Number(p.stockQuantity) <= Number(p.minStock)).length} icon={AlertTriangle} variant="danger" type="count" loading={loading} />
+                <KpiCard title="BC OUVERTS" value={kpis?.openOrders || 0} icon={Receipt} variant="slate" type="count" loading={!kpis} />
+                <KpiCard title="CA ENGAGÉ" value={kpis?.committedRevenue || 0} icon={TrendingUp} variant="success" loading={!kpis} />
+                <KpiCard title="BONS DE COMMANDE" value={kpis?.totalSalesOrders || 0} icon={ShoppingCart} variant="primary" type="count" loading={!kpis} />
+                <KpiCard title="ALERTES STOCK" value={kpis?.stockAlerts || 0} icon={AlertTriangle} variant="danger" type="count" loading={!kpis} />
             </div>
 
             <div className="space-y-4">

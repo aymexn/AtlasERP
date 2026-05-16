@@ -123,7 +123,9 @@ export class PurchaseOrdersService {
           unitPriceHt: price,
           taxRate: tax,
           totalHt: lineTotalHt,
-          note: line.note
+          note: line.note,
+          variantId: line.variantId,
+          uomId: line.uomId
         });
       }
 
@@ -158,11 +160,13 @@ export class PurchaseOrdersService {
                             productId: l.productId,
                             quantity: Number(l.quantity),
                             unit: l.unit,
+                            uomId: l.uomId,
+                            variantId: l.variantId,
                             unitPriceHt: Number(l.unitPriceHt),
                             taxRate: Number(l.taxRate),
                             totalHt: Number(l.totalHt),
                             note: l.note,
-                            receivedQty: finalStatus === 'RECEIVED' ? Number(l.quantity) : 0
+                            receivedQty: finalStatus === PurchaseOrderStatus.FULLY_RECEIVED ? Number(l.quantity) : 0
                         }))
                     }
                 },
@@ -173,7 +177,7 @@ export class PurchaseOrdersService {
             });
 
             // Handle Immediate Stock Movement if status is RECEIVED (DIRECT STOCK ENTRY)
-            if (finalStatus === 'RECEIVED') {
+            if (finalStatus === PurchaseOrderStatus.FULLY_RECEIVED) {
                 // 1. Determine warehouse
                 let warehouseId = dto.warehouseId;
                 if (!warehouseId) {
@@ -219,6 +223,8 @@ export class PurchaseOrdersService {
                                 expectedQty: Number(line.quantity),
                                 receivedQty: Number(line.quantity),
                                 unit: line.unit,
+                                uomId: line.uomId,
+                                variantId: line.variantId,
                                 unitCost: Number(line.unitPriceHt)
                             }))
                         }
@@ -235,7 +241,9 @@ export class PurchaseOrdersService {
                         reference: order.reference,
                         reason: `Réception Directe BCF ${order.reference}`,
                         unitCost: Number(line.unitPriceHt),
-                        unit: line.unit
+                        unit: line.unit,
+                        uomId: line.uomId,
+                        variantId: line.variantId
                     }, tx);
                 }
             }
@@ -303,8 +311,23 @@ export class PurchaseOrdersService {
 
     if (!order) throw new NotFoundException('Bon de commande introuvable.');
 
-    if (!['CONFIRMED', 'PARTIALLY_RECEIVED'].includes(order.status)) {
+    if (!['CONFIRMED', 'SENT', 'PARTIALLY_RECEIVED'].includes(order.status)) {
       throw new BadRequestException('Impossible de créer une réception pour une commande à ce stade.');
+    }
+
+    // Bug 2 Fix: Check if a DRAFT reception already exists for this PO
+    const existingDraft = await this.prisma.stockReception.findFirst({
+      where: { 
+        purchaseOrderId: id, 
+        companyId, 
+        status: 'DRAFT' 
+      },
+      include: { lines: true }
+    });
+
+    if (existingDraft) {
+      console.log(`[PurchaseOrdersService] Found existing DRAFT reception for PO ${id}: ${existingDraft.id}`);
+      return existingDraft;
     }
 
     // Generate reference for reception: REC-YYYYMM-XXXX
@@ -333,6 +356,8 @@ export class PurchaseOrdersService {
         expectedQty: Number(line.quantity) - Number(line.receivedQty),
         receivedQty: Number(line.quantity) - Number(line.receivedQty), // Default to full remaining
         unit: line.unit,
+        uomId: line.uomId,
+        variantId: line.variantId,
         unitCost: line.unitPriceHt,
       }))
       .filter(line => line.expectedQty > 0);
@@ -354,6 +379,92 @@ export class PurchaseOrdersService {
         }
       },
       include: { lines: true }
+    });
+  }
+  async update(id: string, companyId: string, dto: UpdatePurchaseOrderDto) {
+    const existing = await this.prisma.purchaseOrder.findFirst({
+      where: { id, companyId }
+    });
+
+    if (!existing) throw new NotFoundException('Bon de commande introuvable.');
+    if (existing.status !== 'DRAFT') {
+      throw new BadRequestException('Seuls les bons de commande en brouillon peuvent être modifiés.');
+    }
+
+    // Validate supplier
+    const supplier = await this.prisma.supplier.findFirst({
+      where: { id: dto.supplierId, companyId }
+    });
+    if (!supplier) throw new BadRequestException('Fournisseur invalide.');
+
+    // Validate products and calculate totals
+    let totalHt = 0;
+    let totalTva = 0;
+    const lineData = [];
+
+    for (const line of dto.lines) {
+      const product = await this.prisma.product.findFirst({
+        where: { id: line.productId, companyId }
+      });
+      if (!product) throw new BadRequestException(`Produit ID ${line.productId} invalide.`);
+
+      const qty = Number(line.quantity) || 0;
+      const price = Number(line.unitPriceHt) || 0;
+      const tax = Number(line.taxRate || 0.19);
+
+      const lineTotalHt = Number((qty * price).toFixed(2));
+      const lineTotalTva = Number((lineTotalHt * tax).toFixed(2));
+
+      totalHt += lineTotalHt;
+      totalTva += lineTotalTva;
+
+      lineData.push({
+        purchaseOrderId: id,
+        productId: line.productId,
+        quantity: qty,
+        unit: line.unit,
+        unitPriceHt: price,
+        taxRate: tax,
+        totalHt: lineTotalHt,
+        note: line.note,
+        variantId: line.variantId,
+        uomId: line.uomId
+      });
+    }
+
+    const totalTtc = Number((totalHt + totalTva).toFixed(2));
+
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Delete existing lines
+      await tx.purchaseOrderLine.deleteMany({
+        where: { purchaseOrderId: id }
+      });
+
+      // 2. Update the Order
+      const updated = await tx.purchaseOrder.update({
+        where: { id },
+        data: {
+          supplierId: dto.supplierId,
+          orderDate: new Date(dto.orderDate),
+          expectedDate: dto.expectedDate ? new Date(dto.expectedDate) : null,
+          notes: dto.notes,
+          totalHt,
+          totalTva,
+          totalTtc,
+          status: (dto.status as PurchaseOrderStatus) || 'DRAFT'
+        },
+        include: {
+          supplier: true,
+          lines: { include: { product: true } }
+        }
+      });
+
+      // 3. Create new lines
+      await tx.purchaseOrderLine.createMany({
+        data: lineData
+      });
+
+      return updated;
     });
   }
 }

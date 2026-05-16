@@ -26,6 +26,8 @@ interface PurchaseSuggestion {
     unit: string;
     unitPriceHt: number;
     isCritical: boolean;
+    priority: 'critical' | 'high' | 'medium' | 'low';
+    reason: string;
 }
 
 interface PurchaseNeedModalProps {
@@ -158,14 +160,12 @@ export function PurchaseNeedModal({ isOpen, onClose, onSuccess }: PurchaseNeedMo
                         </div>
                     ) : suggestions.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-4xl border border-slate-100 shadow-sm">
-                            <div className="h-24 w-24 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-8">
-                                <AlertCircle size={48} />
+                            <div className="h-24 w-24 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-8">
+                                <CheckCircle2 size={48} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Aucun besoin détecté</h3>
+                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{t('all_clear' as any) || 'Aucun besoin détecté'}</h3>
                             <p className="text-slate-500 max-w-sm mx-auto mt-3 font-medium">
-                                L'API a renvoyé 0 résultats pour la compagnie 61324390-5b8f-488f-a287-fe3dd79bdeee.
-                                <br />
-                                <span className="text-xs text-slate-400 mt-2 block italic">Vérifiez les logs du serveur pour plus de détails.</span>
+                                {t('no_reorder_needed' as any) || 'Tous les stocks sont suffisants pour la production en cours.'}
                             </p>
                         </div>
                     ) : (
@@ -196,6 +196,7 @@ export function PurchaseNeedModal({ isOpen, onClose, onSuccess }: PurchaseNeedMo
                                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('current_stock')}</th>
                                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('min_stock')}</th>
                                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('suggested_qty')}</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('reason' as any) || 'Motif'}</th>
                                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('supplier')}</th>
                                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Action</th>
                                         </tr>
@@ -215,9 +216,19 @@ export function PurchaseNeedModal({ isOpen, onClose, onSuccess }: PurchaseNeedMo
                                                     <div className="flex flex-col gap-1">
                                                         <div className="flex items-center gap-2">
                                                             <div className="font-black text-slate-900 text-base">{s.name}</div>
-                                                            {s.isCritical && (
+                                                            {s.priority === 'critical' && (
                                                                 <span className="px-2 py-0.5 bg-rose-600 text-white text-[9px] font-black rounded-full uppercase tracking-tighter animate-pulse shadow-sm shadow-rose-200">
                                                                     CRITIQUE
+                                                                </span>
+                                                            )}
+                                                            {s.priority === 'high' && (
+                                                                <span className="px-2 py-0.5 bg-orange-500 text-white text-[9px] font-black rounded-full uppercase tracking-tighter">
+                                                                    HAUTE
+                                                                </span>
+                                                            )}
+                                                            {s.priority === 'medium' && (
+                                                                <span className="px-2 py-0.5 bg-amber-400 text-white text-[9px] font-black rounded-full uppercase tracking-tighter">
+                                                                    MOYENNE
                                                                 </span>
                                                             )}
                                                         </div>
@@ -241,7 +252,16 @@ export function PurchaseNeedModal({ isOpen, onClose, onSuccess }: PurchaseNeedMo
                                                             onChange={(e) => updateQty(s.productId, e.target.value)}
                                                             className="w-20 bg-white border border-slate-100 rounded-xl px-3 py-2 text-center font-black text-blue-600 outline-none focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
                                                         />
-                                                        <span className="text-[10px] font-black text-slate-400 pr-2">{s.unit}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="text-[10px] font-bold text-slate-500 max-w-[200px] leading-relaxed">
+                                                        {s.reason.split('|').map((r, idx) => (
+                                                            <div key={idx} className="flex items-center gap-2">
+                                                                <div className="h-1 w-1 bg-slate-300 rounded-full" />
+                                                                {r.trim()}
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-6">

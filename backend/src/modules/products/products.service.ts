@@ -11,9 +11,18 @@ export class ProductsService {
         private formulaService: FormulaService
     ) { }
 
-    async list(companyId: string) {
+    async list(companyId: string, search?: string) {
+        const where: any = { companyId };
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search } },
+                { sku: { contains: search } }
+            ];
+        }
+
         return this.prisma.product.findMany({
-            where: { companyId },
+            where,
             include: { 
                 family: true,
                 bomsAsFinishedProduct: {
@@ -188,5 +197,20 @@ export class ProductsService {
     async recalculateCost(id: string, companyId: string) {
         // Just a wrapper to call formula service (using any to bypass private visibility or I could make the service method public)
         return (this.formulaService as any).calculateProductProductionCost(id, companyId);
+    }
+
+    async getSuppliersForProduct(productId: string, companyId: string) {
+        return this.prisma.supplierProduct.findMany({
+            where: {
+                productId,
+                product: { companyId }
+            },
+            include: {
+                supplier: true
+            },
+            orderBy: {
+                isPreferred: 'desc'
+            }
+        });
     }
 }

@@ -2,6 +2,8 @@ export declare class CreatePurchaseOrderLineDto {
     productId: string;
     quantity: number;
     unit: string;
+    uomId?: string;
+    variantId?: string;
     unitPriceHt: number;
     taxRate?: number;
     note?: string;

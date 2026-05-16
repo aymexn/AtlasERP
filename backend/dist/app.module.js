@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const auth_module_1 = require("./modules/auth/auth.module");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const tenants_module_1 = require("./modules/tenants/tenants.module");
 const users_module_1 = require("./modules/users/users.module");
 const prisma_module_1 = require("./modules/prisma/prisma.module");
@@ -27,6 +28,7 @@ const common_module_1 = require("./common/common.module");
 const audit_module_1 = require("./modules/audit/audit.module");
 const core_1 = require("@nestjs/core");
 const audit_interceptor_1 = require("./common/interceptors/audit.interceptor");
+const tenant_interceptor_1 = require("./common/interceptors/tenant.interceptor");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const treasury_module_1 = require("./modules/treasury/treasury.module");
 const rbac_module_1 = require("./modules/rbac/rbac.module");
@@ -36,12 +38,14 @@ const leaves_module_1 = require("./modules/hr/leaves/leaves.module");
 const payroll_module_1 = require("./modules/hr/payroll/payroll.module");
 const recruitment_module_1 = require("./modules/hr/recruitment/recruitment.module");
 const performance_module_1 = require("./modules/hr/performance/performance.module");
+const collaboration_module_1 = require("./modules/collaboration/collaboration.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            event_emitter_1.EventEmitterModule.forRoot(),
             auth_module_1.AuthModule,
             tenants_module_1.TenantsModule,
             users_module_1.UsersModule,
@@ -67,13 +71,18 @@ exports.AppModule = AppModule = __decorate([
             leaves_module_1.LeavesModule,
             payroll_module_1.PayrollModule,
             recruitment_module_1.RecruitmentModule,
-            performance_module_1.PerformanceModule
+            performance_module_1.PerformanceModule,
+            collaboration_module_1.CollaborationModule
         ],
         controllers: [],
         providers: [
             {
                 provide: core_1.APP_INTERCEPTOR,
                 useClass: audit_interceptor_1.AuditInterceptor,
+            },
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: tenant_interceptor_1.TenantInterceptor,
             },
         ],
     })

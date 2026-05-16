@@ -26,6 +26,7 @@ export declare class ManufacturingOrdersController {
             purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
             minStock: import("@prisma/client/runtime/library").Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -54,6 +55,7 @@ export declare class ManufacturingOrdersController {
                 purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                 minStock: import("@prisma/client/runtime/library").Decimal;
                 trackStock: boolean;
+                stockUomId: string | null;
                 barcode: string | null;
                 internalReference: string | null;
                 isBlocked: boolean;
@@ -69,6 +71,8 @@ export declare class ManufacturingOrdersController {
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
+            variantId: string | null;
+            uomId: string | null;
             manufacturingOrderId: string;
             bomComponentId: string | null;
             requiredQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -85,12 +89,13 @@ export declare class ManufacturingOrdersController {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
-            productId: string;
             version: string;
             code: string | null;
             outputQuantity: import("@prisma/client/runtime/library").Decimal;
             outputUnit: string;
             scrapPercent: import("@prisma/client/runtime/library").Decimal;
+            productId: string;
+            variantId: string | null;
         };
     } & {
         id: string;
@@ -100,6 +105,7 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -136,6 +142,7 @@ export declare class ManufacturingOrdersController {
             purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
             minStock: import("@prisma/client/runtime/library").Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -151,6 +158,7 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -171,6 +179,7 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -191,6 +200,7 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -224,6 +234,7 @@ export declare class ManufacturingOrdersController {
             purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
             minStock: import("@prisma/client/runtime/library").Decimal;
             trackStock: boolean;
+            stockUomId: string | null;
             barcode: string | null;
             internalReference: string | null;
             isBlocked: boolean;
@@ -239,6 +250,8 @@ export declare class ManufacturingOrdersController {
             componentProductId: string;
             wastagePercent: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
+            variantId: string | null;
+            uomId: string | null;
             manufacturingOrderId: string;
             bomComponentId: string | null;
             requiredQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -254,6 +267,28 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
+        reference: string;
+        notes: string | null;
+        warehouseId: string | null;
+        completedAt: Date | null;
+        formulaId: string;
+        plannedQuantity: import("@prisma/client/runtime/library").Decimal;
+        producedQuantity: import("@prisma/client/runtime/library").Decimal;
+        plannedDate: Date;
+        startedAt: Date | null;
+        totalEstimatedCost: import("@prisma/client/runtime/library").Decimal;
+        totalActualCost: import("@prisma/client/runtime/library").Decimal | null;
+    }>;
+    close(req: any, id: string, body: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.ManufacturingOrderStatus;
+        companyId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        unit: string;
+        productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;
@@ -274,6 +309,7 @@ export declare class ManufacturingOrdersController {
         updatedAt: Date;
         unit: string;
         productId: string;
+        variantId: string | null;
         reference: string;
         notes: string | null;
         warehouseId: string | null;

@@ -11,11 +11,11 @@ export declare class ReorderPointService {
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        leadTimeDays: number | null;
         warehouseId: string | null;
         safetyStock: Decimal;
         reorderQuantity: Decimal;
         maximumStock: Decimal | null;
-        leadTimeDays: number | null;
         averageDailyDemand: Decimal | null;
         demandVariability: Decimal | null;
         serviceLevel: Decimal;

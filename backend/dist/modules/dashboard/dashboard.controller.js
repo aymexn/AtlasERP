@@ -16,25 +16,60 @@ exports.DashboardController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const dashboard_service_1 = require("./dashboard.service");
+const kpi_service_1 = require("./services/kpi.service");
+const prisma_service_1 = require("../prisma/prisma.service");
 let DashboardController = class DashboardController {
-    constructor(dashboardService) {
+    constructor(dashboardService, kpiService, prisma) {
         this.dashboardService = dashboardService;
+        this.kpiService = kpiService;
+        this.prisma = prisma;
     }
-    async getProductionStats(req) {
-        return this.dashboardService.getProductionStats(req.user.companyId);
+    async getKpi(req) {
+        const companyId = req.user.companyId;
+        const kpis = await this.kpiService.getAll(companyId);
+        if (Object.keys(kpis).length === 0) {
+            const allMetrics = [
+                'total_sales', 'revenue', 'cash_flow', 'inventory_value',
+                'stock_alerts', 'active_purchase_orders', 'total_receptions',
+                'validated_receptions', 'pending_receptions', 'active_employees',
+                'pending_leaves', 'profitability', 'revenue_today', 'revenue_month'
+            ];
+            await this.kpiService.recalculate(companyId, allMetrics);
+            return await this.kpiService.getAll(companyId);
+        }
+        return kpis;
+    }
+    async refreshKpi(req) {
+        const allMetrics = [
+            'total_sales', 'revenue', 'cash_flow', 'inventory_value',
+            'stock_alerts', 'active_purchase_orders', 'total_receptions',
+            'validated_receptions', 'pending_receptions', 'active_employees',
+            'pending_leaves', 'profitability', 'revenue_today', 'revenue_month'
+        ];
+        await this.kpiService.recalculate(req.user.companyId, allMetrics);
+        return { success: true };
     }
 };
 exports.DashboardController = DashboardController;
 __decorate([
-    (0, common_1.Get)('production-stats'),
+    (0, common_1.Get)('kpis'),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], DashboardController.prototype, "getProductionStats", null);
+], DashboardController.prototype, "getKpi", null);
+__decorate([
+    (0, common_1.Post)('refresh'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], DashboardController.prototype, "refreshKpi", null);
 exports.DashboardController = DashboardController = __decorate([
     (0, common_1.Controller)('dashboard'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [dashboard_service_1.DashboardService])
+    __metadata("design:paramtypes", [dashboard_service_1.DashboardService,
+        kpi_service_1.KpiService,
+        prisma_service_1.PrismaService])
 ], DashboardController);
 //# sourceMappingURL=dashboard.controller.js.map

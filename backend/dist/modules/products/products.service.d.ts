@@ -5,15 +5,17 @@ export declare class ProductsService {
     private prisma;
     private formulaService;
     constructor(prisma: PrismaService, formulaService: FormulaService);
-    list(companyId: string): Promise<({
+    list(companyId: string, search?: string): Promise<({
         stockMovements: {
             id: string;
             companyId: string;
             createdAt: Date;
             type: import(".prisma/client").$Enums.MovementType;
             unit: string;
-            productId: string;
             quantity: import("@prisma/client/runtime/library").Decimal;
+            productId: string;
+            variantId: string | null;
+            uomId: string | null;
             movementType: string;
             reference: string;
             reason: string | null;
@@ -31,12 +33,14 @@ export declare class ProductsService {
                 createdAt: Date;
                 updatedAt: Date;
                 unit: string;
-                sortOrder: number;
-                bomId: string;
                 componentProductId: string;
                 quantity: import("@prisma/client/runtime/library").Decimal;
                 wastagePercent: import("@prisma/client/runtime/library").Decimal;
+                sortOrder: number;
                 note: string | null;
+                variantId: string | null;
+                bomId: string;
+                uomId: string | null;
             }[];
         } & {
             id: string;
@@ -47,12 +51,13 @@ export declare class ProductsService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
-            productId: string;
             version: string;
             code: string | null;
             outputQuantity: import("@prisma/client/runtime/library").Decimal;
             outputUnit: string;
             scrapPercent: import("@prisma/client/runtime/library").Decimal;
+            productId: string;
+            variantId: string | null;
         })[];
         family: {
             id: string;
@@ -62,10 +67,10 @@ export declare class ProductsService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
+            sortOrder: number;
             code: string | null;
             colorBadge: string | null;
             parentId: string | null;
-            sortOrder: number;
         };
     } & {
         id: string;
@@ -87,6 +92,7 @@ export declare class ProductsService {
         purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
         minStock: import("@prisma/client/runtime/library").Decimal;
         trackStock: boolean;
+        stockUomId: string | null;
         barcode: string | null;
         internalReference: string | null;
         isBlocked: boolean;
@@ -101,12 +107,14 @@ export declare class ProductsService {
                 createdAt: Date;
                 updatedAt: Date;
                 unit: string;
-                sortOrder: number;
-                bomId: string;
                 componentProductId: string;
                 quantity: import("@prisma/client/runtime/library").Decimal;
                 wastagePercent: import("@prisma/client/runtime/library").Decimal;
+                sortOrder: number;
                 note: string | null;
+                variantId: string | null;
+                bomId: string;
+                uomId: string | null;
             }[];
         } & {
             id: string;
@@ -117,12 +125,13 @@ export declare class ProductsService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
-            productId: string;
             version: string;
             code: string | null;
             outputQuantity: import("@prisma/client/runtime/library").Decimal;
             outputUnit: string;
             scrapPercent: import("@prisma/client/runtime/library").Decimal;
+            productId: string;
+            variantId: string | null;
         })[];
         family: {
             id: string;
@@ -132,10 +141,10 @@ export declare class ProductsService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
+            sortOrder: number;
             code: string | null;
             colorBadge: string | null;
             parentId: string | null;
-            sortOrder: number;
         };
     } & {
         id: string;
@@ -157,6 +166,7 @@ export declare class ProductsService {
         purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
         minStock: import("@prisma/client/runtime/library").Decimal;
         trackStock: boolean;
+        stockUomId: string | null;
         barcode: string | null;
         internalReference: string | null;
         isBlocked: boolean;
@@ -173,10 +183,10 @@ export declare class ProductsService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
+            sortOrder: number;
             code: string | null;
             colorBadge: string | null;
             parentId: string | null;
-            sortOrder: number;
         };
     } & {
         id: string;
@@ -198,6 +208,7 @@ export declare class ProductsService {
         purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
         minStock: import("@prisma/client/runtime/library").Decimal;
         trackStock: boolean;
+        stockUomId: string | null;
         barcode: string | null;
         internalReference: string | null;
         isBlocked: boolean;
@@ -214,10 +225,10 @@ export declare class ProductsService {
             isActive: boolean;
             description: string | null;
             updatedAt: Date;
+            sortOrder: number;
             code: string | null;
             colorBadge: string | null;
             parentId: string | null;
-            sortOrder: number;
         };
     } & {
         id: string;
@@ -239,6 +250,7 @@ export declare class ProductsService {
         purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
         minStock: import("@prisma/client/runtime/library").Decimal;
         trackStock: boolean;
+        stockUomId: string | null;
         barcode: string | null;
         internalReference: string | null;
         isBlocked: boolean;
@@ -266,6 +278,7 @@ export declare class ProductsService {
         purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
         minStock: import("@prisma/client/runtime/library").Decimal;
         trackStock: boolean;
+        stockUomId: string | null;
         barcode: string | null;
         internalReference: string | null;
         isBlocked: boolean;
@@ -274,4 +287,38 @@ export declare class ProductsService {
         stockValue: import("@prisma/client/runtime/library").Decimal;
     }>;
     recalculateCost(id: string, companyId: string): Promise<any>;
+    getSuppliersForProduct(productId: string, companyId: string): Promise<({
+        supplier: {
+            id: string;
+            email: string | null;
+            companyId: string;
+            createdAt: Date;
+            name: string;
+            isActive: boolean;
+            address: string | null;
+            ai: string | null;
+            nif: string | null;
+            phone: string | null;
+            rc: string | null;
+            updatedAt: Date;
+            code: string | null;
+            city: string | null;
+            country: string;
+            taxId: string | null;
+            paymentTermsDays: number;
+            leadTimeDays: number;
+            notes: string | null;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        productId: string;
+        leadTimeDays: number | null;
+        notes: string | null;
+        supplierId: string;
+        supplierSku: string | null;
+        costPrice: import("@prisma/client/runtime/library").Decimal | null;
+        minOrderQuantity: import("@prisma/client/runtime/library").Decimal;
+        isPreferred: boolean;
+    })[]>;
 }

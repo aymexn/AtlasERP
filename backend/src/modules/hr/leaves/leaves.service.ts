@@ -1,10 +1,16 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LeaveStatus } from '@prisma/client';
+import { NotificationService } from '../../notifications/notifications.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class LeavesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+    private eventEmitter: EventEmitter2
+  ) {}
 
   async getLeaveTypes(companyId: string) {
     return this.prisma.leaveType.findMany({
@@ -61,18 +67,25 @@ export class LeavesService {
       });
     }
 
-    return this.prisma.leaveRequest.create({
+    const request = await this.prisma.leaveRequest.create({
       data: {
-        employeeId,
-        leaveTypeId,
+        employee: { connect: { id: employeeId } },
+        leaveType: { connect: { id: leaveTypeId } },
         startDate: start,
         endDate: end,
         totalDays,
         reason,
-        documentId,
         status: LeaveStatus.PENDING,
+        ...(documentId ? { document: { connect: { id: documentId } } } : {}),
       },
+      include: { employee: true, leaveType: true },
     });
+
+    // Notify Manager (mock: sending to a general HR/Manager email if employee's manager is not set)
+    this.notificationService.notifyLeaveRequested(request, 'manager@atlaserp.dz').catch(console.error);
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return request;
   }
 
   async findAll(companyId: string, filters: any = {}) {
@@ -101,7 +114,7 @@ export class LeavesService {
       throw new NotFoundException('Leave request not found');
     }
 
-    return this.prisma.leaveRequest.update({
+    const result = await this.prisma.leaveRequest.update({
       where: { id: requestId },
       data: {
         status: LeaveStatus.APPROVED_BY_MANAGER,
@@ -109,6 +122,9 @@ export class LeavesService {
         managerComment: comment,
       },
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async approveByHr(companyId: string, requestId: string, hrId: string, comment?: string) {
@@ -121,7 +137,7 @@ export class LeavesService {
       throw new NotFoundException('Leave request not found');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Update request status
       const updatedRequest = await tx.leaveRequest.update({
         where: { id: requestId },
@@ -130,6 +146,7 @@ export class LeavesService {
           approvedByHr: hrId,
           hrComment: comment,
         },
+        include: { employee: true },
       });
 
       // 2. Update balance
@@ -153,8 +170,16 @@ export class LeavesService {
         }
       }
 
+      // 3. Notify Employee
+      if (updatedRequest.employee?.email) {
+        this.notificationService.notifyLeaveStatusUpdate(updatedRequest, updatedRequest.employee.email).catch(console.error);
+      }
+
       return updatedRequest;
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async reject(companyId: string, requestId: string, rejectedBy: string, comment?: string) {
@@ -167,7 +192,7 @@ export class LeavesService {
       throw new NotFoundException('Leave request not found');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const updatedRequest = await tx.leaveRequest.update({
         where: { id: requestId },
         data: {
@@ -198,6 +223,9 @@ export class LeavesService {
 
       return updatedRequest;
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 
   async getCalendar(companyId: string, start: Date, end: Date) {

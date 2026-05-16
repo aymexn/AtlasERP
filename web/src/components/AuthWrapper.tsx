@@ -5,6 +5,8 @@ import { useRouter, usePathname } from '@/navigation';
 import { apiFetch, probeBackendHealth } from '@/lib/api';
 import { useLocale, useTranslations } from 'next-intl';
 import { AlertCircle, RefreshCw, Loader2, Wifi, WifiOff, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { SocketProvider } from '@/contexts/SocketContext';
 
 // ─── Recovery Phase State Machine ────────────────────────────────────────────
 type Phase =
@@ -22,6 +24,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     const [phase, setPhase] = useState<Phase>('loading');
     const [retryAttempt, setRetryAttempt] = useState(0);
     const [manualRestarts, setManualRestarts] = useState(0);
+    const { user, setUser } = useAuth();
 
     const router = useRouter();
     const pathname = usePathname();
@@ -40,6 +43,9 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
         try {
             const tenant = await apiFetch('/tenants/me');
+            if (tenant?.user) {
+                setUser(tenant.user);
+            }
 
             if (!tenant && !pathname.includes('/tenant')) {
                 router.push('/tenant');
@@ -130,7 +136,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     // ─── Render: Loading ──────────────────────────────────────────────────────
     if (phase === 'loading') {
         return (
-            <div className="fixed inset-0 bg-white z-9999 flex items-center justify-center">
+            <div className="fixed inset-0 bg-white z-9999 flex items-center justify-center" suppressHydrationWarning>
                 <div className="flex flex-col items-center gap-5">
                     <div className="relative">
                         <div className="h-16 w-16 rounded-2xl bg-linear-to-br from-primary to-blue-700 flex items-center justify-center shadow-2xl shadow-primary/20">
@@ -260,6 +266,10 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         );
     }
 
-    return <>{children}</>;
+    return (
+        <SocketProvider userId={user?.id}>
+            {children}
+        </SocketProvider>
+    );
 }
 

@@ -4,6 +4,8 @@ export declare class InventoryService {
     constructor(prisma: PrismaService);
     getProductsStock(companyId: string, warehouseId?: string): Promise<{
         quantity: number;
+        stockQuantity: number;
+        minStock: number;
         reservedQuantity: number;
         availableQuantity: number;
         product: {
@@ -12,6 +14,7 @@ export declare class InventoryService {
             sku: string;
             standardCost: import("@prisma/client/runtime/library").Decimal;
             unit: string;
+            minStock: import("@prisma/client/runtime/library").Decimal;
             family: {
                 name: string;
             };
@@ -20,6 +23,7 @@ export declare class InventoryService {
         companyId: string;
         updatedAt: Date;
         productId: string;
+        variantId: string | null;
         warehouseId: string;
         minThreshold: import("@prisma/client/runtime/library").Decimal;
         maxThreshold: import("@prisma/client/runtime/library").Decimal | null;

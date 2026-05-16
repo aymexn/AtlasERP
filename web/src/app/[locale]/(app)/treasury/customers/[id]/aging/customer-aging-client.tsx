@@ -71,7 +71,7 @@ export default function CustomerAgingClient({ id }: { id: string }) {
            <div className={`h-2 w-2 rounded-full ${colorClass}`} />
            <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">{title}</h3>
         </div>
-        <Badge variant="outline" className="text-[10px] font-bold">{invoices.length} Invoices</Badge>
+        <Badge variant="default" className="text-[10px] font-bold">{invoices.length} Invoices</Badge>
       </div>
       
       {invoices.length === 0 ? (

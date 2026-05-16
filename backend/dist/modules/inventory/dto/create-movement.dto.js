@@ -34,6 +34,12 @@ __decorate([
     __metadata("design:type", String)
 ], CreateStockMovementDto.prototype, "productId", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateStockMovementDto.prototype, "variantId", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ enum: MovementType }),
     (0, class_validator_1.IsEnum)(MovementType),
     __metadata("design:type", String)
@@ -85,6 +91,12 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateStockMovementDto.prototype, "destinationLocation", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateStockMovementDto.prototype, "uomId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),

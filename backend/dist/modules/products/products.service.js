@@ -21,9 +21,16 @@ let ProductsService = class ProductsService {
         this.prisma = prisma;
         this.formulaService = formulaService;
     }
-    async list(companyId) {
+    async list(companyId, search) {
+        const where = { companyId };
+        if (search) {
+            where.OR = [
+                { name: { contains: search } },
+                { sku: { contains: search } }
+            ];
+        }
         return this.prisma.product.findMany({
-            where: { companyId },
+            where,
             include: {
                 family: true,
                 bomsAsFinishedProduct: {
@@ -172,6 +179,20 @@ let ProductsService = class ProductsService {
     }
     async recalculateCost(id, companyId) {
         return this.formulaService.calculateProductProductionCost(id, companyId);
+    }
+    async getSuppliersForProduct(productId, companyId) {
+        return this.prisma.supplierProduct.findMany({
+            where: {
+                productId,
+                product: { companyId }
+            },
+            include: {
+                supplier: true
+            },
+            orderBy: {
+                isPreferred: 'desc'
+            }
+        });
     }
 };
 exports.ProductsService = ProductsService;

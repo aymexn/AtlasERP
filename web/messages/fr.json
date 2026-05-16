@@ -1,4 +1,14 @@
 {
+    "login": {
+        "title": "Bon Retour",
+        "subtitle": "Connectez-vous à AtlasERP pour gérer vos opérations.",
+        "email": "Adresse Email",
+        "password": "Mot de Passe",
+        "button": "Se Connecter",
+        "authenticating": "Authentification...",
+        "no_account": "Vous n'avez pas de compte ?",
+        "register": "Demander l'Accès"
+    },
     "common": {
         "title": "Atlas",
         "brand_suffix": "ERP",
@@ -73,31 +83,91 @@
         },
         "missing_fields": "Veuillez remplir tous les champs obligatoires",
         "select_all": "Tout Sélectionner",
-        "deselect_all": "Tout Désélectionner"
+        "deselect_all": "Tout Désélectionner",
+        "create_so": "Vente",
+        "create_po": "Achat",
+        "create_mo": "Fabrication",
+        "new_customer": "Client",
+        "inventory_check": "Inventaire",
+        "finance_report": "Trésorerie"
     },
     "nav": {
         "dashboard": "Tableau de Bord",
         "groups": {
+            "dashboard": "Tableau de Bord",
+            "administration": "Administration & Accès",
+            "commerce": "Flux Commerciaux",
             "catalogue": "Catalogue & Articles",
             "production": "Opérations & Stocks",
-            "commerce": "Flux Commerciaux",
             "finance": "Gestion Financière",
-            "administration": "Administration"
+            "analytics": "Analytique",
+            "hr": "Ressources Humaines",
+            "collaboration": "Collaboration & Projets"
         },
         "items": {
-            "products": "Produits",
-            "families": "Familles",
-            "inventory": "État des Stocks",
-            "manufacturing": "Fabrication (OF)",
+            "dashboard_overview": "Vue d'Ensemble",
+            "users_roles": "Utilisateurs et Rôles",
+            "permissions": "Permissions d'Accès",
+            "activity_log": "Journal d'Activité",
+            "settings": "Paramètres Système",
             "customers": "Base Clients",
             "sales": "Ventes (BC)",
             "suppliers": "Fournisseurs",
             "purchase_orders": "Commandes Achats",
             "receptions": "Réceptions / BL",
+            "products": "Produits",
+            "families": "Familles",
+            "inventory": "État des Stocks",
+            "manufacturing": "Fabrication (OF)",
             "invoices": "Factures Clients",
+            "aged_receivables": "Balance Agée",
+            "cash_flow": "Cash Flow",
             "expenses": "Dépenses & Frais",
-            "settings": "Paramètres"
+            "analytics_overview": "Vue d'Ensemble",
+            "abc_analysis": "Classification ABC",
+            "dead_stock": "Stock Mort",
+            "hr_employees": "Employés",
+            "hr_leaves": "Congés",
+            "hr_payroll": "Paie",
+            "hr_recruitment": "Recrutement",
+            "hr_performance": "Performance",
+            "collaboration_calendar": "Calendrier",
+            "collaboration_projects": "Projets",
+            "collaboration_activity": "Activité"
         }
+    },
+    "collaboration": {
+        "title": "Collaboration & Projets",
+        "calendar_title": "Calendrier d'Équipe",
+        "calendar": "Calendrier",
+        "projects": "Projets",
+        "activity_feed": "Fil d'Activité",
+        "new_event": "Nouvel Événement",
+        "new_project": "Nouveau Projet",
+        "new_task": "Nouvelle Tâche",
+        "team_calendar": "Calendrier d'Équipe",
+        "project_list": "Liste des Projets",
+        "project_name": "Nom du Projet",
+        "priority": "Priorité",
+        "description": "Description",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "tasks": "tâches",
+        "progression": "Progression",
+        "no_projects": "Aucun projet trouvé",
+        "kanban": {
+            "todo": "À Faire",
+            "in_progress": "En Cours",
+            "in_review": "En Révision",
+            "done": "Terminé"
+        },
+        "kanban_board": "Tableau Kanban",
+        "activity": {
+            "title": "Flux d'Activité",
+            "empty": "Aucune activité récente"
+        },
+        "activity_log": "Registre d'Activité",
+        "notifications": "Notifications"
     },
     "dashboard": {
         "title": "Cockpit Opérationnel",
@@ -144,29 +214,122 @@
         "chart": {
             "procurement": "Achats / Dépenses",
             "revenue": "Chiffre d'Affaires"
-        }
+        },
+        "human_resources": "Ressources Humaines",
+        "active_employees": "Employés Actifs",
+        "pending_leaves": "Congés en Attente",
+        "recruitment": "Recrutement",
+        "active_pipeline": "Pipeline Actif",
+        "manage_candidates": "Gérer les candidats",
+        "performance": "Performance",
+        "appraisals": "Évaluations",
+        "active_cycle": "Cycle en cours"
     },
     "finances": {
         "invoices": {
-            "list_title": "Liste des Factures Clients",
-            "sheet_title": "Règlement de Facture",
-            "sheet_description": "Enregistrez un paiement entrant pour cette facture.",
-            "amount_to_pay": "Montant à percevoir",
-            "total_ttc": "Total TTC",
+            "title": "Facturation Clients",
+            "subtitle": "Suivi des créances et trésorerie",
+            "list_title": "Registre des Factures",
+            "sheet_title": "Enregistrer un Paiement",
+            "sheet_description": "Facture #{reference} — Solde restant: {remaining}",
+            "add": "Générer Facture",
+            "reference": "N° de Facture",
+            "date": "Date Facture",
+            "no_invoices": "Aucune facture trouvée",
+            "search": "Rechercher une facture...",
+            "amount_to_pay": "Montant du versement (DA) *",
+            "total_ttc": "TOTAL TTC",
             "status": {
-                "sent": "Envoyée",
+                "unpaid": "Non Payée",
+                "partial": "Solde Partiel",
+                "paid": "Soldée",
+                "cancelled": "Annulée",
+                "all": "Tous les statuts",
                 "draft": "Brouillon",
-                "paid": "Payée",
-                "partial": "Partiel"
+                "sent": "Envoyée",
+                "validated": "Validé"
+            },
+            "fields": {
+                "customer": "Client",
+                "total_ttc": "Montant TTC",
+                "status": "Statut",
+                "actions": "Actions"
+            },
+            "kpi": {
+                "total_invoiced": "Total Facturé",
+                "total_invoiced_subtitle": "Chiffre d'affaires",
+                "total_paid": "Total Encaissé",
+                "total_paid_subtitle": "Trésorerie réelle",
+                "total_pending": "Reste à Recouvrer",
+                "total_pending_subtitle": "Créances clients",
+                "recovered_rate": "Taux de Recouvrement",
+                "recovered_rate_subtitle": "Flux encaissé"
             }
         },
         "payments": {
+            "title": "Gestion des Paiements",
+            "add": "Saisir Encaissement",
+            "validate": "Valider le Paiement",
+            "fields": {
+                "amount": "Montant à encaisser",
+                "method": "Mode de règlement",
+                "date": "Date de réception",
+                "reference": "Référence / N° Pièce",
+                "notes": "Observations",
+                "remaining_to_pay": "Reste à payer",
+                "payment_for": "Encaissement pour {reference}",
+                "check_placeholder": "Ex: N° Chèque..."
+            },
             "methods": {
+                "CASH": "Espèces",
+                "CHECK": "Chèque",
+                "TRANSFER": "Virement Bancaire",
+                "other": "Autre",
                 "cash": "Espèces",
                 "check": "Chèque",
-                "transfer": "Virement"
+                "transfer": "Virement Bancaire"
+            }
+        },
+        "expenses": {
+            "title": "Dépenses & Frais",
+            "subtitle": "Gérez vos charges et dépenses opérationnelles",
+            "add": "Saisir une Dépense",
+            "search": "Rechercher une dépense...",
+            "list_title": "Registre des Dépenses",
+            "sheet_title": "Nouvelle Dépense",
+            "sheet_description": "Enregistrez une dépense ponctuelle ou récurrente dans votre comptabilité.",
+            "monthly_total": "Total Dépenses ce mois",
+            "stats": {
+                "total": "Total Dépenses"
             },
-            "validate": "Valider le Paiement"
+            "fields": {
+                "title": "Libellé de la Dépense",
+                "title_placeholder": "Ex: Loyer, Fournitures...",
+                "category": "Catégorie",
+                "amount": "Montant (DA) *",
+                "date": "Date de la Dépense",
+                "method": "Mode de Règlement",
+                "supplier": "Fournisseur lié",
+                "notes_and_reference": "Notes et Référence",
+                "notes_placeholder": "Précisions supplémentaires sur la dépense..."
+            },
+            "categories": {
+                "rent": "Loyer",
+                "utilities": "Services et Énergie",
+                "office": "Fournitures de Bureau",
+                "transport": "Transport",
+                "salary": "Salaires",
+                "salaries": "Salaries",
+                "marketing": "Marketing",
+                "materials": "Matières et Fournitures",
+                "logistics": "Logistique",
+                "consulting": "Conseil et Services",
+                "maintenance": "Maintenance",
+                "other": "Autre"
+            },
+            "sections": {
+                "financial_details": "Détails Financiers et Règlement"
+            }
         }
     },
     "products": {
@@ -360,7 +523,11 @@
         "analytics": {
             "overview": "Intelligence Stock",
             "coming_soon": "Module Prédictif"
-        }
+        },
+        "low_stock": "Stock Bas",
+        "out_of_stock": "Rupture de Stock",
+        "replenishment": "Réapprovisionnement",
+        "suggestions": "Suggestions d'Achat"
     },
     "manufacturing_orders": {
         "title": "Ordres de Fabrication",
@@ -373,7 +540,8 @@
         "product": "Produit Principal",
         "planned_qty": "Volume Prévu",
         "planned_date": "Date Production",
-        "warehouse_label": "Entrepôt Source",
+        "warehouse_label": "Entrepôt de Destination (Produit Fini)",
+        "warehouse_destination": "Entrepôt de Destination",
         "status_label": "État du flux Production",
         "cost_variance": "Variance Coût",
         "variance": "Variance Réelle",
@@ -450,7 +618,9 @@
         "purchase_need_subtitle": "Algorithme de réapprovisionnement intelligent",
         "analyzing_stock": "Analyse des stocks en cours...",
         "stock_optimal": "Stocks optimaux",
-        "no_reorder_needed": "Tous vos niveaux de stock sont supérieurs aux seuils minimaux.",
+        "no_reorder_needed": "Tous les stocks sont suffisants pour la production en cours.",
+        "all_clear": "Aucun besoin détecté",
+        "reason": "Motif de réapprovisionnement",
         "items_flagged": "articles nécessitent un réapprovisionnement",
         "current_stock": "Stock Actuel",
         "min_stock": "Stock Min",
@@ -464,39 +634,70 @@
     "purchases": {
         "title": "Gestion des Achats",
         "subtitle": "Pilotage des fournisseurs et commandes",
+        "common": {
+            "fields": {
+                "name": "Désignation"
+            },
+            "qty": "Qté",
+            "received": "Reçu"
+        },
+        "status": {
+            "draft": "Brouillon",
+            "sent": "Envoyé",
+            "confirmed": "Confirmé",
+            "partially_received": "Réception Partielle",
+            "received": "Reçu",
+            "fully_received": "Entièrement Reçu",
+            "cancelled": "Annulé"
+        },
         "orders": {
-            "title": "Gestion des Achats",
-            "subtitle": "Pilotage des ordres de commande fournisseurs",
+            "title": "Bons de Commande Fournisseur",
+            "subtitle": "Gérez vos approvisionnements et commandes",
             "add": "Nouveau BCF",
-            "add_subtitle": "Engagement d'achat industriel",
+            "add_subtitle": "Création d'un engagement d'achat",
+            "list": "Registre des Commandes",
             "kpi": {
-                "active_orders": "Commandes Ouvertes",
-                "total_cost": "Engagement Financier HT",
-                "received": "Reçues & Closes",
-                "pending": "Partiellement reçues"
+                "active_orders": "Commandes Actives",
+                "total_cost": "Coût Total HT",
+                "received": "Réceptionnées",
+                "pending": "En Attente"
+            },
+            "sections": {
+                "items": "Articles"
+            },
+            "tabs": {
+                "general": "Général",
+                "items": "Articles",
+                "summary": "Récapitulatif"
             },
             "form": {
-                "supplier": "Fournisseur *",
-                "order_date": "Date émission",
-                "expected_date": "Livraison prévue",
-                "items_title": "Articles & Lignes de commande",
-                "add_line": "Ajouter Ligne",
-                "product_placeholder": "Sélectionner un article...",
-                "notes": "Notes & Conditions",
-                "summary_title": "Récapitulatif Financier",
-                "save": "Enregistrer le BCF"
+                "supplier": "Sélectionner le Fournisseur",
+                "order_date": "Date de la Commande",
+                "expected_date": "Date de Livraison Estimée",
+                "notes": "Instructions & Notes Internes",
+                "items_title": "Détails des Articles",
+                "add_line": "Ajouter un Article",
+                "product_placeholder": "Chercher un article...",
+                "summary_title": "Résumé & Validation",
+                "save": "Enregistrer le BCF",
+                "financial_summary": "Récapitulatif Financier",
+                "direct_stock": "Entrée en stock directe",
+                "direct_stock_desc": "Marquer comme reçu et alimenter l'inventaire",
+                "stock_feed_title": "Alimentation réelle des stocks",
+                "stock_feed_desc": "La validation créera automatiquement une réception et les mouvements de stock.",
+                "order_mode_title": "Mode Commande (Brouillon/Envoyé)",
+                "order_mode_desc": "La commande sera créée sans impacter les stocks immédiatement."
             },
             "errors": {
                 "no_supplier": "Veuillez sélectionner un fournisseur",
-                "invalid_lines": "Veuillez compléter correctement toutes les lignes"
+                "invalid_lines": "Veuillez vérifier les articles et quantités"
             },
             "success": {
-                "created": "BCF créé avec succès"
+                "created": "Bon de Commande créé avec succès"
             }
         },
         "suppliers": {
             "title": "Gestion Fournisseurs",
-            "suppliers": "Gestion Fournisseurs",
             "subtitle": "Pilotage des partenaires fournisseurs",
             "identity_and_code": "Identité et Mentions Légales",
             "communication_and_location": "Coordonnées et Localisation",
@@ -560,10 +761,35 @@
                 "note": "Note de réception (Colisage, Etat...)",
                 "validation_title": "Validation du mouvement de stock",
                 "validation_warning": "Attention: La validation d'une réception mettra immédiatement à jour vos niveaux de stock physique dans l'entrepôt sélectionné. Cette action est irréversible.",
-                "validate_button": "Valider & Entrer en Stock"
+                "validate_button": "Valider & Entrer en Stock",
+                "ready_title": "Prêt pour l'entrée en stock ?",
+                "ready_desc": "Une fois validée, les niveaux de stock seront mis à jour. Cette opération est irréversible.",
+                "tabs": {
+                    "origin": "Origine",
+                    "config": "Configuration",
+                    "info": "Informations",
+                    "items": "Articles"
+                },
+                "table": {
+                    "full": "Complet",
+                    "partial": "Partiel",
+                    "none": "Aucun"
+                }
             },
             "toast": {
-                "created": "Réception créée avec succès"
+                "created": "Réception créée avec succès",
+                "validated": "Stock mis à jour avec succès",
+                "error_qty": "La quantité reçue dépasse la commande pour certain(s) article(s)"
+            },
+            "form": {
+                "title": "Nouvelle Réception",
+                "select_po": "Sélectionner un Bon de Commande",
+                "select_warehouse": "Entrepôt de destination",
+                "lines_title": "Articles à réceptionner",
+                "qty_ordered": "Commandé",
+                "qty_received": "Reçu",
+                "partial_receipt": "Partiel",
+                "validate": "Valider la réception"
             }
         },
         "reference": "Référence BCF",
@@ -571,30 +797,7 @@
         "order_date": "Date Émission",
         "expected_date": "Date de Livraison Prévue",
         "total_ttc": "CA Global TTC",
-        "new_supplier": "Nouveau Fournisseur",
-        "total_suppliers": "Total Fournisseurs",
-        "active_suppliers": "Fournisseurs Actifs",
-        "pending_orders": "Commandes en Attente"
-    },
-    "suppliers": {
-        "title": "Gestion Fournisseurs",
-        "subtitle": "Pilotage des partenaires fournisseurs",
-        "identity_and_code": "Identité & Codes fiscaux",
-        "communication_and_location": "Coordonnées & Siège",
-        "procurement_settings": "Conditions d'Achat",
-        "create_subtitle": "Créer un nouveau partenaire fournisseur",
-        "status_subtitle": "État du compte fournisseur",
-        "nif": "NIF",
-        "ai": "AI",
-        "rc": "RC",
-        "code_sku": "CODE SKU",
-        "name_label": "Raison Sociale *",
-        "email_label": "Email",
-        "phone_label": "Téléphone",
-        "address_label": "Adresse",
-        "payment_terms": "Délai Paiement (jours)",
-        "initial_status": "Statut Initial",
-        "name_required": "Le nom du fournisseur est obligatoire"
+        "order_detail_description": "Suivi détaillé de l'engagement d'achat et des réceptions associées."
     },
     "sales": {
         "orders": {
@@ -740,113 +943,6 @@
             },
             "form": {
                 "subtitle": "Créez un nouveau partenaire commercial"
-            }
-        }
-    },
-    "finances": {
-        "invoices": {
-            "title": "Facturation Clients",
-            "subtitle": "Suivi des créances et trésorerie",
-            "add": "Générer Facture",
-            "reference": "N° de Facture",
-            "date": "Date Facture",
-            "no_invoices": "Aucune facture trouvée",
-            "search": "Rechercher une facture...",
-            "status": {
-                "unpaid": "Non Payée",
-                "partial": "Solde Partiel",
-                "paid": "Soldée",
-                "cancelled": "Annulée",
-                "all": "Tous les statuts",
-                "draft": "Brouillon",
-                "sent": "Envoyée",
-                "validated": "Validé"
-            },
-            "fields": {
-                "customer": "Client",
-                "total_ttc": "Montant TTC",
-                "status": "Statut",
-                "actions": "Actions"
-            },
-            "kpi": {
-                "total_invoiced": "Total Facturé",
-                "total_invoiced_subtitle": "Chiffre d'affaires",
-                "total_paid": "Total Encaissé",
-                "total_paid_subtitle": "Trésorerie réelle",
-                "total_pending": "Reste à Recouvrer",
-                "total_pending_subtitle": "Créances clients",
-                "recovered_rate": "Taux de Recouvrement",
-                "recovered_rate_subtitle": "Flux encaissé"
-            },
-            "list_title": "Registre des Factures",
-            "add_payment": "Enregistrer un paiement",
-            "sheet_title": "Enregistrer un Paiement",
-            "sheet_description": "Facture #{reference} — Solde restant: {remaining}",
-            "amount_to_pay": "Montant du versement (DA) *",
-            "total_ttc": "TOTAL TTC"
-        },
-        "payments": {
-            "title": "Gestion des Paiements",
-            "add": "Saisir Encaissement",
-            "fields": {
-                "amount": "Montant à encaisser",
-                "method": "Mode de règlement",
-                "date": "Date de réception",
-                "reference": "Référence / N° Pièce",
-                "notes": "Observations",
-                "remaining_to_pay": "Reste à payer",
-                "payment_for": "Encaissement pour {reference}",
-                "check_placeholder": "Ex: N° Chèque..."
-            },
-            "methods": {
-                "CASH": "Espèces",
-                "CHECK": "Chèque",
-                "TRANSFER": "Virement Bancaire",
-                "other": "Autre",
-                "cash": "Espèces",
-                "check": "Chèque",
-                "transfer": "Virement Bancaire"
-            }
-        },
-        "expenses": {
-            "title": "Dépenses & Frais",
-            "subtitle": "Gérez vos charges et dépenses opérationnelles",
-            "add": "Saisir une Dépense",
-            "search": "Rechercher une dépense...",
-            "list_title": "Registre des Dépenses",
-            "sheet_title": "Nouvelle Dépense",
-            "sheet_description": "Enregistrez une dépense ponctuelle ou récurrente dans votre comptabilité.",
-            "monthly_total": "Total Dépenses ce mois",
-            "stats": {
-                "total": "Total Dépenses"
-            },
-            "fields": {
-                "title": "Libellé de la Dépense",
-                "title_placeholder": "Ex: Loyer, Fournitures...",
-                "category": "Catégorie",
-                "amount": "Montant (DA) *",
-                "date": "Date de la Dépense",
-                "method": "Mode de Règlement",
-                "supplier": "Fournisseur lié",
-                "notes_and_reference": "Notes et Référence",
-                "notes_placeholder": "Précisions supplémentaires sur la dépense..."
-            },
-            "categories": {
-                "rent": "Loyer",
-                "utilities": "Services et Énergie",
-                "office": "Fournitures de Bureau",
-                "transport": "Transport",
-                "salary": "Salaires",
-                "salaries": "Salaires",
-                "marketing": "Marketing",
-                "materials": "Matières et Fournitures",
-                "logistics": "Logistique",
-                "consulting": "Conseil et Services",
-                "maintenance": "Maintenance",
-                "other": "Autre"
-            },
-            "sections": {
-                "financial_details": "Détails Financiers et Règlement"
             }
         }
     },
@@ -1029,6 +1125,54 @@
             "reviews": "Évaluations",
             "rating": "Note Finale",
             "objectives": "Objectifs"
+        }
+    },
+    "admin": {
+        "users": {
+            "title": "Gestion des Utilisateurs",
+            "subtitle": "Gérez les comptes utilisateurs et leurs habilitations d'accès.",
+            "invite": "Inviter un Collaborateur",
+            "search": "Rechercher un utilisateur...",
+            "count": "{count} Utilisateurs",
+            "table": {
+                "user": "Utilisateur",
+                "roles": "Rôles Actifs",
+                "status": "Statut",
+                "actions": "Actions"
+            },
+            "invite_modal": {
+                "title": "Inviter un Collaborateur",
+                "subtitle": "Nouveau compte utilisateur",
+                "email": "Adresse E-mail",
+                "role": "Rôle Principal",
+                "send": "Envoyer l'Invitation"
+            },
+            "role_modal": {
+                "title": "Assigner un Rôle",
+                "add": "Ajouter"
+            }
+        },
+        "roles": {
+            "title": "Rôles & Permissions",
+            "subtitle": "Configurez les niveaux d'accès et les permissions système.",
+            "create": "Créer un Rôle",
+            "table": {
+                "role": "Rôle",
+                "permissions": "Permissions",
+                "users": "Utilisateurs"
+            }
+        },
+        "audit": {
+            "title": "Journal d'Activité",
+            "subtitle": "Suivi complet des actions effectuées sur la plateforme.",
+            "search": "Filtrer l'activité...",
+            "table": {
+                "date": "Date & Heure",
+                "user": "Utilisateur",
+                "action": "Action",
+                "module": "Module",
+                "details": "Détails"
+            }
         }
     }
 }

@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JobStatus, CandidateStatus, ApplicationStage } from '@prisma/client';
+import { NotificationService } from '../../notifications/notifications.service';
 
 @Injectable()
 export class RecruitmentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService
+  ) {}
 
   // Job Postings
   async getJobPostings(companyId: string) {
@@ -122,6 +126,18 @@ export class RecruitmentService {
 
       // 3. Close Job Posting if needed (Optional)
       
+      // 4. Notify HR/Admin
+      this.notificationService.sendEmail(
+        'hr-manager@atlaserp.dz',
+        `Nouveau recrutement : ${employee.firstName} ${employee.lastName}`,
+        'new-hire-alert',
+        { 
+            employee: `${employee.firstName} ${employee.lastName}`,
+            position: employee.position,
+            startDate: employee.hireDate
+        }
+      ).catch(console.error);
+
       return employee;
     });
   }

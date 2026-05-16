@@ -49,6 +49,126 @@ export class PdfService {
   //  PUBLIC ENTRY POINTS
   // ─────────────────────────────────────────────────────────────────────────
 
+  async generatePayslipPdf(run: any, res: any) {
+    if (!run) throw new InternalServerErrorException('No payroll run data provided');
+    
+    console.log(`[PdfService.generatePayslipPdf] Generating for Employee: ${run.employee?.firstName} ${run.employee?.lastName}`);
+    
+    try {
+      const doc = new PDFDocument({ margin: 40, size: 'A4', bufferPages: true });
+      doc.pipe(res);
+
+      const company = run.employee?.company || {};
+      const employee = run.employee || {};
+      const period = run.payrollPeriod || {};
+      const details = run.calculationDetails || { earnings: [], deductions: [] };
+
+      // ── Header Section ──
+      this.drawOfficialHeader(doc, company, 'BULLETIN DE PAIE');
+
+      // ── Period & Reference ──
+      doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold')
+        .text(`PÉRIODE: ${period.periodStart ? new Date(period.periodStart).toLocaleDateString('fr-DZ', { month: 'long', year: 'numeric' }).toUpperCase() : '—'}`, 350, 150, { align: 'right' });
+      doc.font('Helvetica').fontSize(9)
+        .text(`Date de virement: ${new Date(period.paymentDate || Date.now()).toLocaleDateString('fr-DZ')}`, 350, 165, { align: 'right' });
+
+      // ── Employee & Company Info ──
+      const infoTop = 200;
+      
+      // Company Details (Left)
+      doc.rect(40, infoTop - 5, 250, 90).fill('#F9FAFB').stroke('#E5E7EB');
+      doc.fillColor('#2563eb').fontSize(8).font('Helvetica-Bold').text('EMPLOYEUR:', 50, infoTop);
+      doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold')
+        .text(this.str(company.name, 'ATLASERP CLIENT'), 50, infoTop + 14, { width: 230 });
+      doc.fontSize(8).font('Helvetica')
+        .text(this.str(company.address, ''), 50, infoTop + 28, { width: 230 })
+        .text(`NIF: ${this.str(company.nif)}`, 50, infoTop + 48)
+        .text(`AI: ${this.str(company.ai)} | RC: ${this.str(company.rc)}`, 50, infoTop + 58)
+        .text(`SS: ${this.str(company.ssNumber || 'N/A')}`, 50, infoTop + 68);
+
+      // Employee Details (Right)
+      doc.rect(305, infoTop - 5, 250, 90).fill('#F9FAFB').stroke('#E5E7EB');
+      doc.fillColor('#2563eb').fontSize(8).font('Helvetica-Bold').text('SALARIÉ:', 315, infoTop);
+      doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold')
+        .text(`${this.str(employee.firstName)} ${this.str(employee.lastName)}`.toUpperCase(), 315, infoTop + 14, { width: 230 });
+      doc.fontSize(8).font('Helvetica')
+        .text(`Poste: ${this.str(employee.position, 'N/A')}`, 315, infoTop + 28)
+        .text(`Matricule: ${this.str(employee.employeeCode, '—')}`, 315, infoTop + 38)
+        .text(`N° SS: ${this.str(employee.socialSecurityNumber, '—')}`, 315, infoTop + 48)
+        .text(`Entrée: ${new Date(employee.hireDate).toLocaleDateString('fr-DZ')}`, 315, infoTop + 58)
+        .text(`Dépt: ${this.str(employee.department, '—')}`, 315, infoTop + 68);
+
+      // ── Payroll Table ──
+      const tableTop = 310;
+      doc.rect(40, tableTop - 5, 515, 20).fill('#2563eb');
+      doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(8.5);
+      doc.text('Libellé des Rubriques', 50, tableTop);
+      doc.text('Base', 250, tableTop, { width: 60, align: 'right' });
+      doc.text('Taux / Nombre', 320, tableTop, { width: 70, align: 'center' });
+      doc.text('Gains (DA)', 400, tableTop, { width: 70, align: 'right' });
+      doc.text('Retenues (DA)', 480, tableTop, { width: 70, align: 'right' });
+
+      doc.font('Helvetica').fillColor('#000000');
+      let currentY = tableTop + 25;
+
+      // 1. Base Salary
+      const baseSalary = details.base || this.toNumber(run.grossSalary);
+      doc.text('Salaire de base', 50, currentY);
+      doc.text(this.formatAmount(baseSalary), 250, currentY, { width: 60, align: 'right' });
+      doc.text('30.00 j', 320, currentY, { width: 70, align: 'center' });
+      doc.text(this.formatAmount(baseSalary), 400, currentY, { width: 70, align: 'right' });
+      currentY += 18;
+
+      // 2. Earnings
+      for (const e of (details.earnings || [])) {
+        if (e.name === 'Salaire de base') continue;
+        doc.text(e.name, 50, currentY);
+        doc.text(this.formatAmount(e.amount), 400, currentY, { width: 70, align: 'right' });
+        currentY += 18;
+      }
+
+      // Separator for Gross
+      this.generateLine(doc, currentY, '#E5E7EB');
+      currentY += 10;
+      doc.font('Helvetica-Bold').text('SALAIRE BRUT', 50, currentY);
+      doc.text(this.formatAmount(run.grossSalary), 400, currentY, { width: 70, align: 'right' });
+      currentY += 22;
+      doc.font('Helvetica');
+
+      // 3. Deductions (CNAS, IRG, etc.)
+      for (const d of (details.deductions || [])) {
+        doc.text(d.name, 50, currentY);
+        doc.text(this.formatAmount(d.amount), 480, currentY, { width: 70, align: 'right' });
+        currentY += 18;
+      }
+
+      // ── Summary Block (Bottom) ──
+      const summaryY = 650;
+      doc.rect(40, summaryY, 515, 80).stroke('#2563eb');
+      
+      // Net to pay (Large)
+      doc.rect(350, summaryY, 205, 80).fill('#2563eb');
+      doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(10)
+        .text('NET À PAYER (DA)', 360, summaryY + 15)
+        .fontSize(20).text(this.formatAmount(run.netSalary), 360, summaryY + 35, { width: 185, align: 'right' });
+
+      // Left summary
+      doc.fillColor('#000000').font('Helvetica-Bold').fontSize(9)
+        .text('Cumuls Période:', 55, summaryY + 15);
+      doc.font('Helvetica').fontSize(8)
+        .text(`Total Gains: ${this.formatAmount(run.totalEarnings)} DA`, 55, summaryY + 30)
+        .text(`Total Retenues: ${this.formatAmount(run.totalDeductions)} DA`, 55, summaryY + 42)
+        .text(`Coût Employeur: ${this.formatAmount(run.employerCost)} DA`, 55, summaryY + 54);
+
+      // ── Footer ──
+      this.drawFooter(doc, company);
+      doc.end();
+    } catch (error) {
+      console.error('Payslip PDF generation failed:', error.message);
+      throw new InternalServerErrorException('Error generating payslip PDF');
+    }
+  }
+
   async generateInvoicePdf(invoice: any, res: any) {
     if (!invoice) throw new InternalServerErrorException('No invoice data provided');
     

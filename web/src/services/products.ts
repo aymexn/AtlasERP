@@ -133,5 +133,64 @@ export const productsService = {
 
     getInventoryPdfUrl() {
         return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products/export/pdf`;
+    },
+
+    // UoM Methods
+    async getUoms() {
+        return apiFetch('/uoms');
+    },
+
+    async getProductUoms(productId: string) {
+        return apiFetch(`/uoms/product/${productId}`);
+    },
+
+    async addProductUom(productId: string, data: any) {
+        return apiFetch(`/uoms/product/${productId}`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    async removeProductUom(id: string) {
+        return apiFetch(`/uoms/product/${id}`, {
+            method: 'DELETE',
+        });
+    },
+
+    // Variants Methods
+    async getVariants(productId: string) {
+        return apiFetch(`/products/${productId}/variants`);
+    },
+
+    async generateVariantMatrix(productId: string, attributes: any) {
+        return apiFetch(`/products/${productId}/variants/matrix`, {
+            method: 'POST',
+            body: JSON.stringify(attributes),
+        });
+    },
+
+    async updateVariant(productId: string, variantId: string, data: any) {
+        return apiFetch(`/products/${productId}/variants/${variantId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Supplier Catalog Methods
+    async getSupplierCatalog(supplierId: string) {
+        return apiFetch(`/suppliers/${supplierId}/products`);
+    },
+
+    async addProductToSupplier(supplierId: string, data: any) {
+        return apiFetch(`/suppliers/${supplierId}/products`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    async removeSupplierProduct(id: string) {
+        return apiFetch(`/suppliers/products/${id}`, {
+            method: 'DELETE',
+        });
     }
 };

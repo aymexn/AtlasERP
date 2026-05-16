@@ -11,6 +11,10 @@ export class CreateManufacturingOrderDto {
   @IsNotEmpty()
   formulaId: string;
 
+  @IsString()
+  @IsOptional()
+  variantId?: string;
+
   @IsNumber()
   @Min(0.001)
   @Type(() => Number)

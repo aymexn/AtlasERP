@@ -1,6 +1,6 @@
 import { apiFetch } from '@/lib/api';
 
-export type PurchaseOrderStatus = 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED' | 'INVOICED';
+export type PurchaseOrderStatus = 'DRAFT' | 'SENT' | 'FULLY_RECEIVED' | 'CANCELLED' | 'INVOICED';
 
 export interface PurchaseOrderLine {
   id: string;

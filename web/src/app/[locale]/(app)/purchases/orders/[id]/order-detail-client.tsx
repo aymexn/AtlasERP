@@ -7,7 +7,7 @@ import {
     Send, Ban, Truck, Calendar, User, Package,
     Receipt, Info, Printer, Download, Clock,
     AlertTriangle, ChevronRight, Layers, Target, Play,
-    Calculator, PackageSearch, Warehouse as WarehouseIcon
+    Calculator, PackageSearch, Warehouse as WarehouseIcon, History, ArrowRight
 } from 'lucide-react';
 import { purchasesService, PurchaseOrder } from '@/services/purchases';
 import { inventoryService, Warehouse } from '@/services/inventory';
@@ -101,7 +101,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
             toast.success('Réception créée avec succès');
             setIsReceptionSheetOpen(false);
             setCreateForm({ ...createForm, notes: '' });
-            router.push(`/${locale}/purchases/receptions`);
+            router.push(`/${locale}/purchases/receptions/${result.id}`);
         } catch (err: any) {
             toast.error(err.message || ct('toast.error'));
         } finally {
@@ -110,15 +110,15 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
         }
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusVariant = (status: string) => {
         switch(status) {
-            case 'DRAFT': return 'bg-slate-100 text-slate-700 border-slate-200';
-            case 'SENT': return 'bg-blue-50 text-blue-700 border-blue-100';
-            case 'CONFIRMED': return 'bg-blue-50 text-blue-700 border-blue-100';
-            case 'PARTIALLY_RECEIVED': return 'bg-amber-50 text-amber-700 border-amber-100';
-            case 'RECEIVED': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-            case 'CANCELLED': return 'bg-rose-50 text-rose-700 border-rose-100';
-            default: return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'DRAFT': return 'draft';
+            case 'SENT': return 'info';
+            case 'CONFIRMED': return 'confirmed';
+            case 'PARTIALLY_RECEIVED': return 'warning';
+            case 'FULLY_RECEIVED': return 'active';
+            case 'CANCELLED': return 'cancelled';
+            default: return 'primary';
         }
     };
 
@@ -148,9 +148,17 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                         <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">
                             {order.reference}
                         </h1>
-                        <Badge className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusColor(order.status)}`}>
-                            {t(`status.${order.status.toLowerCase()}`)}
+                        <Badge variant={getStatusVariant(order.status) as any}>
+                            {t(`STATUS.${order.status}`)}
                         </Badge>
+                        {order.status === 'DRAFT' && (
+                            <button 
+                                onClick={() => router.push(`/${locale}/purchases/orders/${order.id}/edit`)}
+                                className="ml-4 h-10 px-4 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all active:scale-95 border border-blue-100"
+                            >
+                                <Play size={14} /> {ct('edit')}
+                            </button>
+                        )}
                     </div>
                     <p className="text-gray-500 font-medium">{t('order_detail_description')}</p>
                 </div>
@@ -262,7 +270,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                                 <Truck size={20} /> CRÉER RÉCEPTION
                             </button>
                         )}
-                         {!['RECEIVED', 'CANCELLED'].includes(order.status) && (
+                         {!['FULLY_RECEIVED', 'CANCELLED'].includes(order.status) && (
                             <button 
                                 onClick={() => handleAction('cancel')}
                                 disabled={submitting}
@@ -271,7 +279,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                                 <Ban size={20} /> ANNULER LA COMMANDE
                             </button>
                         )}
-                        {order.status === 'RECEIVED' && (
+                        {order.status === 'FULLY_RECEIVED' && (
                              <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-3xl flex flex-col items-center gap-2 text-center">
                                 <CheckCircle2 className="text-emerald-600" size={32} />
                                 <p className="text-sm font-black text-emerald-700 uppercase tracking-widest">{t('status.received')}</p>
@@ -348,7 +356,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
 
             {/* Note Section */}
             {order.notes && (
-                <div className="bg-amber-50/30 border border-amber-100 rounded-4xl p-8">
+                <div className="bg-amber-50/30 border border-amber-100 rounded-4xl p-8 mb-8">
                     <h4 className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Info size={14} /> NOTES & OBSERVATIONS
                     </h4>
@@ -356,6 +364,55 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                         "{order.notes}"
                     </p>
                 </div>
+            )}
+
+            {/* Receptions History */}
+            {order.stockReceptions && order.stockReceptions.length > 0 && (
+                <Card className="border-none shadow-sm bg-white rounded-4xl overflow-hidden">
+                    <CardHeader className="py-6 border-b border-gray-50 flex flex-row items-center justify-between">
+                        <CardTitle className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <History className="w-4 h-4 text-emerald-600" />
+                            HISTORIQUE DES RÉCEPTIONS
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50">
+                                    <tr className="border-b border-slate-100">
+                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉFÉRENCE</th>
+                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">DATE</th>
+                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">ENTREPÔT</th>
+                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">STATUT</th>
+                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {order.stockReceptions.map((rec) => (
+                                        <tr key={rec.id} className="hover:bg-slate-50/50 transition-all group">
+                                            <td className="px-8 py-4 font-black text-slate-900 text-sm tracking-tight">{rec.reference}</td>
+                                            <td className="px-8 py-4 text-sm font-bold text-slate-500">{new Date(rec.receivedAt || rec.createdAt).toLocaleDateString(locale)}</td>
+                                            <td className="px-8 py-4 text-sm font-bold text-slate-500">{rec.warehouse?.name}</td>
+                                            <td className="px-8 py-4">
+                                                <Badge variant={rec.status === 'VALIDATED' ? 'active' : 'draft' as any}>
+                                                    {t(`receptions.status.${rec.status.toLowerCase()}`)}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-8 py-4 text-right">
+                                                <button 
+                                                    onClick={() => router.push(`/${locale}/purchases/receptions/${rec.id}`)}
+                                                    className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                                >
+                                                    <ArrowRight size={20} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Receptions Creation Sheet directly inside Order Detail */}

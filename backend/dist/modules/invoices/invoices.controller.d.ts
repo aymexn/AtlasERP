@@ -48,6 +48,7 @@ export declare class InvoicesController {
                     purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                     minStock: import("@prisma/client/runtime/library").Decimal;
                     trackStock: boolean;
+                    stockUomId: string | null;
                     barcode: string | null;
                     internalReference: string | null;
                     isBlocked: boolean;
@@ -59,11 +60,12 @@ export declare class InvoicesController {
                 id: string;
                 taxRate: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
-                productId: string;
                 quantity: import("@prisma/client/runtime/library").Decimal;
+                productId: string;
+                uomId: string | null;
                 salesOrderId: string;
-                shippedQuantity: import("@prisma/client/runtime/library").Decimal;
                 unitPriceHt: import("@prisma/client/runtime/library").Decimal;
+                shippedQuantity: import("@prisma/client/runtime/library").Decimal;
                 unitCostSnapshot: import("@prisma/client/runtime/library").Decimal;
                 lineTotalHt: import("@prisma/client/runtime/library").Decimal;
                 lineTotalTtc: import("@prisma/client/runtime/library").Decimal;
@@ -91,9 +93,9 @@ export declare class InvoicesController {
             reference: string | null;
             date: Date;
             notes: string | null;
+            method: import(".prisma/client").$Enums.PaymentMethod;
             amount: import("@prisma/client/runtime/library").Decimal;
             invoiceId: string;
-            method: import(".prisma/client").$Enums.PaymentMethod;
         }[];
     } & {
         id: string;
@@ -176,6 +178,7 @@ export declare class InvoicesController {
                     purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                     minStock: import("@prisma/client/runtime/library").Decimal;
                     trackStock: boolean;
+                    stockUomId: string | null;
                     barcode: string | null;
                     internalReference: string | null;
                     isBlocked: boolean;
@@ -187,11 +190,12 @@ export declare class InvoicesController {
                 id: string;
                 taxRate: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
-                productId: string;
                 quantity: import("@prisma/client/runtime/library").Decimal;
+                productId: string;
+                uomId: string | null;
                 salesOrderId: string;
-                shippedQuantity: import("@prisma/client/runtime/library").Decimal;
                 unitPriceHt: import("@prisma/client/runtime/library").Decimal;
+                shippedQuantity: import("@prisma/client/runtime/library").Decimal;
                 unitCostSnapshot: import("@prisma/client/runtime/library").Decimal;
                 lineTotalHt: import("@prisma/client/runtime/library").Decimal;
                 lineTotalTtc: import("@prisma/client/runtime/library").Decimal;
@@ -219,9 +223,9 @@ export declare class InvoicesController {
             reference: string | null;
             date: Date;
             notes: string | null;
+            method: import(".prisma/client").$Enums.PaymentMethod;
             amount: import("@prisma/client/runtime/library").Decimal;
             invoiceId: string;
-            method: import(".prisma/client").$Enums.PaymentMethod;
         }[];
     } & {
         id: string;
@@ -291,6 +295,7 @@ export declare class InvoicesController {
                     purchasePriceHt: import("@prisma/client/runtime/library").Decimal | null;
                     minStock: import("@prisma/client/runtime/library").Decimal;
                     trackStock: boolean;
+                    stockUomId: string | null;
                     barcode: string | null;
                     internalReference: string | null;
                     isBlocked: boolean;
@@ -302,11 +307,12 @@ export declare class InvoicesController {
                 id: string;
                 taxRate: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
-                productId: string;
                 quantity: import("@prisma/client/runtime/library").Decimal;
+                productId: string;
+                uomId: string | null;
                 salesOrderId: string;
-                shippedQuantity: import("@prisma/client/runtime/library").Decimal;
                 unitPriceHt: import("@prisma/client/runtime/library").Decimal;
+                shippedQuantity: import("@prisma/client/runtime/library").Decimal;
                 unitCostSnapshot: import("@prisma/client/runtime/library").Decimal;
                 lineTotalHt: import("@prisma/client/runtime/library").Decimal;
                 lineTotalTtc: import("@prisma/client/runtime/library").Decimal;

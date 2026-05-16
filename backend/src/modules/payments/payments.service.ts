@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentMethod, Prisma } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventEmitter: EventEmitter2
+  ) {}
 
   async findAll(companyId: string) {
     return this.prisma.payment.findMany({
@@ -36,7 +40,7 @@ export class PaymentsService {
         throw new BadRequestException(`Payment amount exceeds remaining balance (${invoice.amountRemaining} DA)`);
     }
 
-    return await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Create the Payment record
       const payment = await tx.payment.create({
         data: {
@@ -72,5 +76,8 @@ export class PaymentsService {
 
       return payment;
     });
+
+    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    return result;
   }
 }
