@@ -71,7 +71,7 @@ let StockReceptionsService = class StockReceptionsService {
                 }
             });
         });
-        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
         return result;
     }
     async update(id, companyId, dto) {

@@ -12,9 +12,9 @@ export declare class NotificationService {
         resourceType?: string;
         resourceId?: string;
     }): Promise<{
-        message: string | null;
         id: string;
         createdAt: Date;
+        message: string | null;
         userId: string;
         actionType: string | null;
         resourceType: string | null;
@@ -29,9 +29,9 @@ export declare class NotificationService {
     }>;
     getUnreadCount(userId: string): Promise<number>;
     getNotifications(userId: string): Promise<{
-        message: string | null;
         id: string;
         createdAt: Date;
+        message: string | null;
         userId: string;
         actionType: string | null;
         resourceType: string | null;
@@ -45,9 +45,9 @@ export declare class NotificationService {
         sentViaPush: boolean;
     }[]>;
     markAsRead(id: string): Promise<{
-        message: string | null;
         id: string;
         createdAt: Date;
+        message: string | null;
         userId: string;
         actionType: string | null;
         resourceType: string | null;

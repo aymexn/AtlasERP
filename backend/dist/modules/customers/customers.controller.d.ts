@@ -6,14 +6,14 @@ export declare class CustomersController {
         totalRevenue: number;
         invoices: any;
         id: string;
-        email: string | null;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
         address: string | null;
+        email: string | null;
         phone: string | null;
-        updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
@@ -27,14 +27,14 @@ export declare class CustomersController {
         customer: {
             totalRevenue: number;
             id: string;
-            email: string | null;
-            companyId: string;
             createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             name: string;
             isActive: boolean;
             address: string | null;
+            email: string | null;
             phone: string | null;
-            updatedAt: Date;
             taxId: string | null;
             contact: string | null;
             creditLimit: import("@prisma/client/runtime/library").Decimal;
@@ -81,14 +81,14 @@ export declare class CustomersController {
     }>;
     findOne(req: any, id: string): Promise<{
         id: string;
-        email: string | null;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
         address: string | null;
+        email: string | null;
         phone: string | null;
-        updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
@@ -101,14 +101,14 @@ export declare class CustomersController {
     }>;
     create(req: any, data: any): Promise<{
         id: string;
-        email: string | null;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
         address: string | null;
+        email: string | null;
         phone: string | null;
-        updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
@@ -121,14 +121,14 @@ export declare class CustomersController {
     }>;
     update(req: any, id: string, data: any): Promise<{
         id: string;
-        email: string | null;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
         address: string | null;
+        email: string | null;
         phone: string | null;
-        updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;
@@ -141,14 +141,14 @@ export declare class CustomersController {
     }>;
     remove(req: any, id: string): Promise<{
         id: string;
-        email: string | null;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
         address: string | null;
+        email: string | null;
         phone: string | null;
-        updatedAt: Date;
         taxId: string | null;
         contact: string | null;
         creditLimit: import("@prisma/client/runtime/library").Decimal;

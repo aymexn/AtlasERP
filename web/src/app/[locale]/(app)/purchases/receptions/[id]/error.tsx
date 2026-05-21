@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Fixed Tailwind rounded class
 
 import { useEffect } from 'react';
 import { AlertCircle, RotateCcw, Home } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function ReceptionError({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center animate-in fade-in zoom-in-95 duration-500">
-      <div className="w-24 h-24 rounded-[2.5rem] bg-red-50 text-red-600 flex items-center justify-center mb-10 shadow-2xl shadow-red-100">
+      <div className="w-24 h-24 rounded-4xl bg-red-50 text-red-600 flex items-center justify-center mb-10 shadow-2xl shadow-red-100">
         <AlertCircle size={48} />
       </div>
       

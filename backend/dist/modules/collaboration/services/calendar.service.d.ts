@@ -9,14 +9,14 @@ export declare class CalendarService {
     createEvent(companyId: string, userId: string, data: any): Promise<{
         id: string;
         status: string;
-        companyId: string;
         createdAt: Date;
-        description: string | null;
-        title: string;
         updatedAt: Date;
-        createdBy: string | null;
+        companyId: string;
+        description: string | null;
         location: string | null;
+        createdBy: string | null;
         color: string | null;
+        title: string;
         isRecurring: boolean;
         visibility: string;
         departmentId: string | null;
@@ -39,14 +39,14 @@ export declare class CalendarService {
     updateEvent(id: string, data: any): Promise<{
         id: string;
         status: string;
-        companyId: string;
         createdAt: Date;
-        description: string | null;
-        title: string;
         updatedAt: Date;
-        createdBy: string | null;
+        companyId: string;
+        description: string | null;
         location: string | null;
+        createdBy: string | null;
         color: string | null;
+        title: string;
         isRecurring: boolean;
         visibility: string;
         departmentId: string | null;
@@ -67,14 +67,14 @@ export declare class CalendarService {
     deleteEvent(id: string): Promise<{
         id: string;
         status: string;
-        companyId: string;
         createdAt: Date;
-        description: string | null;
-        title: string;
         updatedAt: Date;
-        createdBy: string | null;
+        companyId: string;
+        description: string | null;
         location: string | null;
+        createdBy: string | null;
         color: string | null;
+        title: string;
         isRecurring: boolean;
         visibility: string;
         departmentId: string | null;

@@ -10,18 +10,18 @@ export declare class InventoryService {
         availableQuantity: number;
         product: {
             id: string;
+            unit: string;
             name: string;
             sku: string;
-            standardCost: import("@prisma/client/runtime/library").Decimal;
-            unit: string;
             minStock: import("@prisma/client/runtime/library").Decimal;
+            standardCost: import("@prisma/client/runtime/library").Decimal;
             family: {
                 name: string;
             };
         };
         id: string;
-        companyId: string;
         updatedAt: Date;
+        companyId: string;
         productId: string;
         variantId: string | null;
         warehouseId: string;
@@ -32,13 +32,13 @@ export declare class InventoryService {
         reservedQuantity: number;
         availableQuantity: number;
         id: string;
+        unit: string;
         name: string;
         sku: string;
-        standardCost: import("@prisma/client/runtime/library").Decimal;
-        unit: string;
-        purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
         minStock: import("@prisma/client/runtime/library").Decimal;
+        purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
         maxStock: import("@prisma/client/runtime/library").Decimal;
+        standardCost: import("@prisma/client/runtime/library").Decimal;
         stockValue: import("@prisma/client/runtime/library").Decimal;
         family: {
             name: string;
@@ -52,10 +52,10 @@ export declare class InventoryService {
     }>;
     getLowStockAlerts(companyId: string): Promise<{
         id: string;
+        unit: string;
         name: string;
         sku: string;
-        stockQuantity: import("@prisma/client/runtime/library").Decimal;
-        unit: string;
         minStock: import("@prisma/client/runtime/library").Decimal;
+        stockQuantity: import("@prisma/client/runtime/library").Decimal;
     }[]>;
 }

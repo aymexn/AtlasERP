@@ -26,8 +26,12 @@ export class ProductsController {
 
     @Get()
     @ApiOperation({ summary: 'List all products for the current tenant' })
-    findAll(@Request() req: any, @Query('search') search?: string) {
-        return this.productsService.list(req.user.companyId, search);
+    findAll(
+        @Request() req: any,
+        @Query('search') search?: string,
+        @Query('productType') productType?: string
+    ) {
+        return this.productsService.list(req.user.companyId, search, productType);
     }
 
     @Get('export/pdf')

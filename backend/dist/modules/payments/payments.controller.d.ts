@@ -4,33 +4,33 @@ export declare class PaymentsController {
     constructor(paymentsService: PaymentsService);
     findAll(req: any): Promise<({
         invoice: {
+            reference: string;
             customer: {
                 name: string;
             };
-            reference: string;
         };
     } & {
         id: string;
-        companyId: string;
+        reference: string | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        reference: string | null;
+        companyId: string;
         date: Date;
-        notes: string | null;
-        method: import(".prisma/client").$Enums.PaymentMethod;
-        amount: import("@prisma/client/runtime/library").Decimal;
         invoiceId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        method: import(".prisma/client").$Enums.PaymentMethod;
     })[]>;
     recordPayment(body: any, req: any): Promise<{
         id: string;
-        companyId: string;
+        reference: string | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        reference: string | null;
+        companyId: string;
         date: Date;
-        notes: string | null;
-        method: import(".prisma/client").$Enums.PaymentMethod;
-        amount: import("@prisma/client/runtime/library").Decimal;
         invoiceId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        method: import(".prisma/client").$Enums.PaymentMethod;
     }>;
 }

@@ -17,22 +17,22 @@ export declare class DashboardAnalyticsService {
         };
     } & {
         id: string;
+        reference: string;
         status: import(".prisma/client").$Enums.InvoiceStatus;
-        companyId: string;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        reference: string;
+        companyId: string;
         date: Date;
         salesOrderId: string | null;
-        notes: string | null;
         customerId: string;
-        totalAmountHt: import("@prisma/client/runtime/library").Decimal;
-        totalAmountTva: import("@prisma/client/runtime/library").Decimal;
-        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         dueDate: Date | null;
         lastReminderSent: Date | null;
         reminderCount: number;
+        totalAmountHt: import("@prisma/client/runtime/library").Decimal;
+        totalAmountTva: import("@prisma/client/runtime/library").Decimal;
         totalAmountStamp: import("@prisma/client/runtime/library").Decimal;
+        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         amountPaid: import("@prisma/client/runtime/library").Decimal;
         amountRemaining: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
@@ -54,25 +54,25 @@ export declare class DashboardAnalyticsService {
     }[]>;
     getRecentTransactions(companyId: string, limit?: number): Promise<({
         product: {
-            name: string;
             unit: string;
+            name: string;
         };
     } & {
         id: string;
-        companyId: string;
-        createdAt: Date;
-        type: import(".prisma/client").$Enums.MovementType;
+        reference: string;
         unit: string;
-        quantity: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        companyId: string;
         productId: string;
         variantId: string | null;
         uomId: string | null;
-        movementType: string;
-        reference: string;
-        reason: string | null;
-        date: Date;
+        quantity: import("@prisma/client/runtime/library").Decimal;
+        type: import(".prisma/client").$Enums.MovementType;
         unitCost: import("@prisma/client/runtime/library").Decimal;
         totalCost: import("@prisma/client/runtime/library").Decimal;
+        movementType: string;
+        reason: string | null;
+        date: Date;
         createdBy: string | null;
         warehouseFromId: string | null;
         warehouseToId: string | null;

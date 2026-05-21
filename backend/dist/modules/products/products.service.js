@@ -21,13 +21,31 @@ let ProductsService = class ProductsService {
         this.prisma = prisma;
         this.formulaService = formulaService;
     }
-    async list(companyId, search) {
+    async list(companyId, search, productType) {
         const where = { companyId };
         if (search) {
             where.OR = [
                 { name: { contains: search } },
                 { sku: { contains: search } }
             ];
+        }
+        if (productType) {
+            const lowerType = productType.toLowerCase();
+            if (lowerType === 'raw_material') {
+                where.articleType = 'RAW_MATERIAL';
+            }
+            else if (lowerType === 'finished_good' || lowerType === 'finished_product') {
+                where.articleType = 'FINISHED_PRODUCT';
+            }
+            else if (lowerType === 'packaging') {
+                where.articleType = 'PACKAGING';
+            }
+            else if (lowerType === 'semi_finished') {
+                where.articleType = 'SEMI_FINISHED';
+            }
+            else if (lowerType === 'consumable') {
+                where.articleType = 'CONSUMABLE';
+            }
         }
         return this.prisma.product.findMany({
             where,

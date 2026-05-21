@@ -5,13 +5,13 @@ export declare class TenantsService {
     constructor(prisma: PrismaService);
     create(dto: CreateTenantDto, userId: string): Promise<{
         id: string;
-        email: string | null;
         createdAt: Date;
         name: string;
         slug: string;
         address: string | null;
         ai: string | null;
         allowNegativeStock: boolean;
+        email: string | null;
         logoUrl: string | null;
         nif: string | null;
         phone: string | null;
@@ -21,13 +21,13 @@ export declare class TenantsService {
     }>;
     findByUserId(userId: string): Promise<{
         id: string;
-        email: string | null;
         createdAt: Date;
         name: string;
         slug: string;
         address: string | null;
         ai: string | null;
         allowNegativeStock: boolean;
+        email: string | null;
         logoUrl: string | null;
         nif: string | null;
         phone: string | null;
@@ -37,13 +37,13 @@ export declare class TenantsService {
     }>;
     updateCompany(userId: string, dto: any): Promise<{
         id: string;
-        email: string | null;
         createdAt: Date;
         name: string;
         slug: string;
         address: string | null;
         ai: string | null;
         allowNegativeStock: boolean;
+        email: string | null;
         logoUrl: string | null;
         nif: string | null;
         phone: string | null;

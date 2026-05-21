@@ -15,11 +15,11 @@ export declare class CollectionService {
     logActivity(companyId: string, data: any): Promise<{
         id: string;
         status: string;
-        companyId: string;
-        createdAt: Date;
-        type: string;
-        updatedAt: Date;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        type: string;
         customerId: string;
         invoiceId: string | null;
         actionDate: Date;
@@ -28,22 +28,22 @@ export declare class CollectionService {
     getActivities(companyId: string, customerId: string): Promise<({
         invoice: {
             id: string;
+            reference: string;
             status: import(".prisma/client").$Enums.InvoiceStatus;
-            companyId: string;
+            notes: string | null;
             createdAt: Date;
             updatedAt: Date;
-            reference: string;
+            companyId: string;
             date: Date;
             salesOrderId: string | null;
-            notes: string | null;
             customerId: string;
-            totalAmountHt: import("@prisma/client/runtime/library").Decimal;
-            totalAmountTva: import("@prisma/client/runtime/library").Decimal;
-            totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
             dueDate: Date | null;
             lastReminderSent: Date | null;
             reminderCount: number;
+            totalAmountHt: import("@prisma/client/runtime/library").Decimal;
+            totalAmountTva: import("@prisma/client/runtime/library").Decimal;
             totalAmountStamp: import("@prisma/client/runtime/library").Decimal;
+            totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
             amountPaid: import("@prisma/client/runtime/library").Decimal;
             amountRemaining: import("@prisma/client/runtime/library").Decimal;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
@@ -51,11 +51,11 @@ export declare class CollectionService {
     } & {
         id: string;
         status: string;
-        companyId: string;
-        createdAt: Date;
-        type: string;
-        updatedAt: Date;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        type: string;
         customerId: string;
         invoiceId: string | null;
         actionDate: Date;

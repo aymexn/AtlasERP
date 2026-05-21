@@ -100,7 +100,7 @@ export default function SettingsPage() {
 
             <div className="max-w-4xl space-y-8">
                 {/* Language Selection Card */}
-                <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-100/20 space-y-6">
+                <div className="bg-white p-10 rounded-4xl border border-gray-100 shadow-xl shadow-gray-100/20 space-y-6">
                     <div className="flex items-center gap-3 pb-6 border-b border-gray-50">
                         <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
                             <Globe size={24} />
@@ -116,7 +116,7 @@ export default function SettingsPage() {
                 </div>
 
                 <form onSubmit={handleSave} className="space-y-6">
-                    <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-100/20 space-y-8">
+                    <div className="bg-white p-10 rounded-4xl border border-gray-100 shadow-xl shadow-gray-100/20 space-y-8">
                         <div className="flex items-center gap-3 pb-6 border-b border-gray-50">
                             <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
                                 <Building2 size={24} />

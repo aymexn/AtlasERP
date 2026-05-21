@@ -14,11 +14,11 @@ export declare class CollaborationController {
             email: string;
         };
         id: string;
-        companyId: string;
         createdAt: Date;
-        userId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        companyId: string;
         description: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        userId: string;
         resourceType: string;
         resourceId: string;
         activityType: string;
@@ -37,11 +37,11 @@ export declare class CollaborationController {
             email: string;
         };
         id: string;
-        companyId: string;
         createdAt: Date;
-        userId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        companyId: string;
         description: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        userId: string;
         resourceType: string;
         resourceId: string;
         activityType: string;
@@ -51,9 +51,9 @@ export declare class CollaborationController {
         projectId: string | null;
     }>;
     getNotifications(req: any): Promise<{
-        message: string | null;
         id: string;
         createdAt: Date;
+        message: string | null;
         userId: string;
         actionType: string | null;
         resourceType: string | null;
@@ -68,9 +68,9 @@ export declare class CollaborationController {
     }[]>;
     getUnreadCount(req: any): Promise<number>;
     markAsRead(id: string): Promise<{
-        message: string | null;
         id: string;
         createdAt: Date;
+        message: string | null;
         userId: string;
         actionType: string | null;
         resourceType: string | null;

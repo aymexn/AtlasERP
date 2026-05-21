@@ -64,11 +64,50 @@ let SalesOrdersService = class SalesOrdersService {
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
+    async calculateProductUnitCost(productId, companyId, tx) {
+        const prisma = tx || this.prisma;
+        const product = await prisma.product.findUnique({
+            where: { id: productId }
+        });
+        if (!product)
+            return 0;
+        if (product.articleType === 'FINISHED_PRODUCT') {
+            const formula = await prisma.billOfMaterials.findFirst({
+                where: { productId, companyId, isActive: true },
+                include: {
+                    components: {
+                        include: {
+                            component: {
+                                select: {
+                                    standardCost: true,
+                                    purchasePriceHt: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            if (formula && formula.components && formula.components.length > 0) {
+                let totalCost = 0;
+                for (const line of formula.components) {
+                    const costPerUnit = Number(line.component?.standardCost) || Number(line.component?.purchasePriceHt) || 0;
+                    const quantity = Number(line.quantity) || 0;
+                    const wastagePercent = Number(line.wastagePercent) || 0;
+                    const quantityWithWastage = quantity * (1 + (wastagePercent / 100));
+                    totalCost += quantityWithWastage * costPerUnit;
+                }
+                const outputQuantity = Number(formula.outputQuantity) || 1;
+                return outputQuantity > 0 ? totalCost / outputQuantity : 0;
+            }
+        }
+        return Number(product.standardCost) || Number(product.purchasePriceHt) || 0;
+    }
     async create(companyId, data) {
         const { customerId, lines, notes } = data;
         let totalAmountHt = new client_1.Prisma.Decimal(0);
         let totalAmountTva = new client_1.Prisma.Decimal(0);
-        const formattedLines = lines.map((l) => {
+        const formattedLines = [];
+        for (const l of lines) {
             const qty = new client_1.Prisma.Decimal(l.quantity || 0);
             const price = new client_1.Prisma.Decimal(l.unitPriceHt || 0);
             const taxRate = new client_1.Prisma.Decimal(l.taxRate || 0.19);
@@ -76,17 +115,18 @@ let SalesOrdersService = class SalesOrdersService {
             const lineTva = lineHt.mul(taxRate);
             totalAmountHt = totalAmountHt.add(lineHt);
             totalAmountTva = totalAmountTva.add(lineTva);
-            return {
+            const unitCost = await this.calculateProductUnitCost(l.productId, companyId);
+            formattedLines.push({
                 productId: l.productId,
                 quantity: qty,
                 unit: l.unit || 'pcs',
                 unitPriceHt: price,
-                unitCostSnapshot: 0,
+                unitCostSnapshot: new client_1.Prisma.Decimal(unitCost),
                 taxRate: taxRate,
                 lineTotalHt: lineHt,
                 lineTotalTtc: lineHt.add(lineTva),
-            };
-        });
+            });
+        }
         const totalAmountTtc = totalAmountHt.add(totalAmountTva);
         const count = await this.prisma.salesOrder.count({ where: { companyId } });
         const reference = `BC-CLI-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
@@ -109,7 +149,7 @@ let SalesOrdersService = class SalesOrdersService {
                 lines: true
             }
         });
-        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
         return order;
     }
     async ship(companyId, userId, id) {
@@ -141,7 +181,7 @@ let SalesOrdersService = class SalesOrdersService {
                     where: { id: line.id },
                     data: {
                         shippedQuantity: line.quantity,
-                        unitCostSnapshot: line.product.standardCost || 0
+                        unitCostSnapshot: line.unitCostSnapshot && Number(line.unitCostSnapshot) > 0 ? line.unitCostSnapshot : (line.product.standardCost || 0)
                     }
                 });
             }
@@ -153,7 +193,7 @@ let SalesOrdersService = class SalesOrdersService {
             }
             return tx.salesOrder.findUnique({ where: { id } });
         });
-        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
         return result;
     }
     async validateOrder(companyId, id) {
@@ -168,7 +208,7 @@ let SalesOrdersService = class SalesOrdersService {
             where: { id },
             data: { status: client_1.SalesOrderStatus.VALIDATED }
         });
-        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
         return result;
     }
     async cancelOrder(companyId, id) {
@@ -184,7 +224,7 @@ let SalesOrdersService = class SalesOrdersService {
             where: { id },
             data: { status: client_1.SalesOrderStatus.CANCELLED }
         });
-        this.eventEmitter.emit('dashboard.refresh', { companyId });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
         return result;
     }
     async getProfitability(companyId, id) {
@@ -195,6 +235,7 @@ let SalesOrdersService = class SalesOrdersService {
             const margin = revenue.minus(cost);
             const marginPercent = revenue.isZero() ? 0 : margin.div(revenue).mul(100).toNumber();
             return {
+                productId: line.productId,
                 product: line.product.name,
                 quantity: line.quantity,
                 revenue: revenue.toNumber(),

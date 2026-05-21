@@ -11,8 +11,8 @@ export declare class PerformanceService {
     } & {
         id: string;
         status: import(".prisma/client").$Enums.AppraisalStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         name: string | null;
         startDate: Date | null;
         endDate: Date | null;
@@ -20,8 +20,8 @@ export declare class PerformanceService {
     createCycle(companyId: string, data: any): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.AppraisalStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         name: string | null;
         startDate: Date | null;
         endDate: Date | null;
@@ -30,16 +30,16 @@ export declare class PerformanceService {
     getReviews(cycleId: string): Promise<({
         employee: {
             id: string;
-            email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
-            companyId: string;
-            createdAt: Date;
-            userId: string | null;
-            address: string | null;
-            phone: string | null;
-            updatedAt: Date;
-            taxId: string | null;
             notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            address: string | null;
+            email: string | null;
+            phone: string | null;
+            userId: string | null;
+            taxId: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -62,16 +62,16 @@ export declare class PerformanceService {
         };
         reviewer: {
             id: string;
-            email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
-            companyId: string;
-            createdAt: Date;
-            userId: string | null;
-            address: string | null;
-            phone: string | null;
-            updatedAt: Date;
-            taxId: string | null;
             notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            address: string | null;
+            email: string | null;
+            phone: string | null;
+            userId: string | null;
+            taxId: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -166,8 +166,8 @@ export declare class PerformanceService {
         cycle: {
             id: string;
             status: import(".prisma/client").$Enums.AppraisalStatus;
-            companyId: string;
             createdAt: Date;
+            companyId: string;
             name: string | null;
             startDate: Date | null;
             endDate: Date | null;

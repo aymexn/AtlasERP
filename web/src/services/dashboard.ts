@@ -9,6 +9,7 @@ export const dashboardService = {
     getSales: () => apiFetch('/api/dashboard/sales'),
     getActivity: () => apiFetch('/api/dashboard/activity'),
     getKpis: () => apiFetch('/api/dashboard/kpis'),
+    getHealth: () => apiFetch('/api/dashboard/health'),
     getSalesKpis: () => apiFetch('/api/sales/kpis'),
-    refreshKpis: () => apiFetch('/api/dashboard/refresh', { method: 'POST' }),
+    refreshKpis: () => apiFetch('/dashboard/refresh', { method: 'POST' }),
 };

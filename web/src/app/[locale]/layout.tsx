@@ -32,7 +32,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-        <main dir={direction} className="min-h-screen text-foreground selection:bg-primary/20 bg-gray-50/50">
+        <main dir={direction} className="min-h-screen text-foreground selection:bg-primary/20 bg-gray-50/50" suppressHydrationWarning>
           {children}
         </main>
     </NextIntlClientProvider>

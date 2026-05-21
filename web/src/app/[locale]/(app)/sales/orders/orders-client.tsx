@@ -14,6 +14,8 @@ import { salesOrdersService, SalesOrder, ProfitabilityReport } from '@/services/
 import { invoicesService } from '@/services/invoices';
 import { customersService, Customer } from '@/services/customers';
 import { productsService, Product } from '@/services/products';
+import { dashboardService } from '@/services/dashboard';
+import { ProductCombobox } from '@/components/ui/product-combobox';
 import { formatCurrency } from '@/lib/format';
 import { useParams } from 'next/navigation';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -62,6 +64,20 @@ export function SalesOrdersClient() {
         }
     };
 
+    const refreshStock = async () => {
+        try {
+            const productsData = await productsService.list();
+            const filteredProducts = (productsData as Product[] || []).filter((p: Product) => 
+                !(p as any).isBlocked && 
+                (p.articleType === 'FINISHED_PRODUCT' || (p.family && (p.family as any).code === 'PF'))
+            );
+            setProducts(filteredProducts);
+        } catch (err) {
+            console.error('Failed to refresh stock:', err);
+            toast.error("Erreur de rafraîchissement des stocks");
+        }
+    };
+
     const loadData = async () => {
         try {
             setLoading(true);
@@ -72,7 +88,11 @@ export function SalesOrdersClient() {
             ]);
             setOrders(ordersData || []);
             setCustomers(customersData || []);
-            setProducts((productsData as Product[] || []).filter((p: Product) => !(p as any).isBlocked));
+            const filteredProducts = (productsData as Product[] || []).filter((p: Product) => 
+                !(p as any).isBlocked && 
+                (p.articleType === 'FINISHED_PRODUCT' || (p.family && (p.family as any).code === 'PF'))
+            );
+            setProducts(filteredProducts);
         } catch (err) {
             toast.error(ct('error'));
         } finally {
@@ -354,10 +374,14 @@ export function SalesOrdersClient() {
                                     {newOrder.lines.map((line, idx) => (
                                         <div key={idx} className="bg-gray-50/50 p-4 rounded-3xl border border-gray-100 flex items-center gap-4 group">
                                             <div className="flex-2 space-y-1">
-                                                <select required className="w-full px-4 py-2.5 bg-card border border-border rounded-xl outline-none focus:border-primary font-bold text-sm" value={line.productId} onChange={e => updateLine(idx, 'productId', e.target.value)}>
-                                                    <option value="">{t('select_product')}</option>
-                                                    {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.stockQuantity} dispos)</option>)}
-                                                </select>
+                                                <ProductCombobox 
+                                                    products={products}
+                                                    value={line.productId}
+                                                    onChange={(val) => updateLine(idx, 'productId', val)}
+                                                    placeholder={t('select_product')}
+                                                    priceMode="sale"
+                                                    onRefresh={refreshStock}
+                                                />
                                             </div>
                                             <div className="flex-1">
                                                 <input required type="number" step="0.01" className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl outline-none focus:border-primary font-black text-sm text-center" value={line.quantity} onChange={e => updateLine(idx, 'quantity', Number(e.target.value))} placeholder="Quantité" />
@@ -405,12 +429,41 @@ export function SalesOrdersClient() {
                             <div className="space-y-4">
                                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('title')}</h3>
                                 <div className="space-y-3">
-                                    {selectedOrder.lines.map((line, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
-                                            <div className="flex items-center gap-4"><div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400"><Package size={20} /></div><div><div className="font-black text-gray-900 text-sm uppercase">{line.product.name}</div><div className="text-[10px] font-bold text-gray-400">{ct('fields.quantity')}: {line.quantity} {line.unit} × {formatCurrency(line.unitPriceHt)}</div></div></div>
-                                            <div className="text-right"><div className="font-black text-gray-900">{formatCurrency(line.lineTotalTtc)}</div></div>
-                                        </div>
-                                    ))}
+                                    {selectedOrder.lines.map((line, idx) => {
+                                        const lineProfit = profitability?.details?.find((d: any) => d.productId === line.productId);
+                                        return (
+                                            <div key={idx} className="flex flex-col gap-3 p-5 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 shrink-0">
+                                                            <Package size={20} />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="font-black text-gray-900 text-sm uppercase truncate">{line.product.name}</div>
+                                                            <div className="text-[10px] font-bold text-gray-400">
+                                                                {ct('fields.quantity')}: {line.quantity} {line.unit} × {formatCurrency(line.unitPriceHt)} HT
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right font-black text-gray-900 shrink-0">
+                                                        {formatCurrency(line.lineTotalHt)} HT
+                                                    </div>
+                                                </div>
+                                                {lineProfit && (
+                                                    <div className="flex items-center justify-between border-t border-dashed border-gray-100 pt-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                        <div>
+                                                            Coût: <span className="text-slate-900">{formatCurrency(lineProfit.cost)}</span>
+                                                        </div>
+                                                        <div>
+                                                            Marge: <span className={lineProfit.margin >= 0 ? "text-emerald-600" : "text-rose-600"}>
+                                                                {formatCurrency(lineProfit.margin)} ({lineProfit.marginPercent.toFixed(1)}%)
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

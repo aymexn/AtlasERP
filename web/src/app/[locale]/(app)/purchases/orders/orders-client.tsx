@@ -542,7 +542,7 @@ export default function OrdersClient() {
                                         </div>
                                     </div>
 
-                                    <div className="p-8 bg-white border-2 border-slate-100 rounded-[2.5rem] space-y-6 shadow-sm">
+                                    <div className="p-8 bg-white border-2 border-slate-100 rounded-4xl space-y-6 shadow-sm">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-lg ${formState.status === 'FULLY_RECEIVED' ? 'bg-green-600 text-white shadow-green-100' : 'bg-slate-100 text-slate-400'}`}>

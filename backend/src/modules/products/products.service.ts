@@ -11,7 +11,7 @@ export class ProductsService {
         private formulaService: FormulaService
     ) { }
 
-    async list(companyId: string, search?: string) {
+    async list(companyId: string, search?: string, productType?: string) {
         const where: any = { companyId };
 
         if (search) {
@@ -19,6 +19,21 @@ export class ProductsService {
                 { name: { contains: search } },
                 { sku: { contains: search } }
             ];
+        }
+
+        if (productType) {
+            const lowerType = productType.toLowerCase();
+            if (lowerType === 'raw_material') {
+                where.articleType = 'RAW_MATERIAL';
+            } else if (lowerType === 'finished_good' || lowerType === 'finished_product') {
+                where.articleType = 'FINISHED_PRODUCT';
+            } else if (lowerType === 'packaging') {
+                where.articleType = 'PACKAGING';
+            } else if (lowerType === 'semi_finished') {
+                where.articleType = 'SEMI_FINISHED';
+            } else if (lowerType === 'consumable') {
+                where.articleType = 'CONSUMABLE';
+            }
         }
 
         return this.prisma.product.findMany({

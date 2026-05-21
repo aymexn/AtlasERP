@@ -14,6 +14,7 @@ import { Product } from '@/services/products';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
 import { apiFetch } from '@/lib/api';
+import { ProductCombobox } from '@/components/ui/product-combobox';
 import { Combobox } from '@/components/ui/combobox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,6 +69,20 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
         loadData();
     }, []);
 
+    const refreshStock = async () => {
+        try {
+            const productsData = await apiFetch('/products');
+            const productsList = Array.isArray(productsData) ? productsData : productsData.data ?? [];
+            const filteredProducts = productsList.filter((p: any) => 
+                p.articleType === 'RAW_MATERIAL' || p.articleType === 'PACKAGING'
+            );
+            setAvailableProducts(filteredProducts);
+        } catch (err) {
+            console.error('Failed to refresh stock:', err);
+            toast.error("Erreur de rafraîchissement des stocks");
+        }
+    };
+
     const loadData = async () => {
         try {
             setLoading(true);
@@ -82,7 +97,10 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
             const warehousesList = Array.isArray(warehousesData) ? warehousesData : warehousesData.data ?? [];
 
             setSuppliers(suppliersList);
-            setAvailableProducts(productsList);
+            const filteredProducts = productsList.filter((p: any) => 
+                p.articleType === 'RAW_MATERIAL' || p.articleType === 'PACKAGING'
+            );
+            setAvailableProducts(filteredProducts);
             setWarehouses(warehousesList);
             
             if (id) {
@@ -274,7 +292,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
                     {activeTab === 'general' && (
-                        <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] overflow-hidden bg-white p-10 space-y-8">
+                        <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl overflow-hidden bg-white p-10 space-y-8">
                             <div className="space-y-4">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">
                                     {t('orders.form.supplier')}
@@ -305,8 +323,8 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                                         <p className="font-bold text-slate-600 text-sm">{s.email || 'N/A'}</p>
                                                     </div>
                                                     <div className="col-span-2 pt-2 border-t border-slate-200/50 flex gap-4">
-                                                        <Badge variant="outline" className="bg-white">{s.nif ? `NIF: ${s.nif}` : 'No NIF'}</Badge>
-                                                        <Badge variant="outline" className="bg-white">{s.rc ? `RC: ${s.rc}` : 'No RC'}</Badge>
+                                                        <Badge variant="draft" className="bg-white">{s.nif ? `NIF: ${s.nif}` : 'No NIF'}</Badge>
+                                                        <Badge variant="draft" className="bg-white">{s.rc ? `RC: ${s.rc}` : 'No RC'}</Badge>
                                                     </div>
                                                 </div>
                                             ) : null;
@@ -353,7 +371,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                 <textarea 
                                     value={formState.notes}
                                     onChange={(e) => setFormState({ ...formState, notes: e.target.value })}
-                                    className="w-full min-h-[150px] p-8 bg-slate-50 border-2 border-transparent rounded-[2.5rem] outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900 shadow-sm resize-none"
+                                    className="w-full min-h-[150px] p-8 bg-slate-50 border-2 border-transparent rounded-4xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900 shadow-sm resize-none"
                                     placeholder="Add any specific instructions or terms..."
                                 />
                             </div>
@@ -361,7 +379,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                     )}
 
                     {activeTab === 'items' && (
-                        <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] overflow-hidden bg-white p-8">
+                        <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl overflow-hidden bg-white p-8">
                             <div className="flex items-center justify-between mb-8 px-4">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter flex items-center gap-3">
                                     <Package className="text-blue-600" />
@@ -381,16 +399,13 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                                             <div className="md:col-span-5 space-y-2">
                                                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Product / SKU</label>
-                                                <Combobox 
-                                                    options={availableProducts.map(p => ({ 
-                                                        label: p.name, 
-                                                        value: p.id,
-                                                        sub: p.sku || 'No SKU'
-                                                    }))}
+                                                <ProductCombobox 
+                                                    products={availableProducts}
                                                     value={line.productId}
                                                     onChange={(val) => updateLine(index, 'productId', val)}
                                                     placeholder={t('orders.form.product_placeholder')}
-                                                    className="h-12 rounded-2xl"
+                                                    priceMode="purchase"
+                                                    onRefresh={refreshStock}
                                                 />
                                             </div>
                                             <div className="md:col-span-2 space-y-2">
@@ -435,7 +450,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                     {activeTab === 'summary' && (
                         <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-white p-10 flex flex-col justify-center items-center text-center space-y-6">
+                                <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-white p-10 flex flex-col justify-center items-center text-center space-y-6">
                                     <div className="w-20 h-20 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
                                         <Receipt size={32} />
                                     </div>
@@ -447,7 +462,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                     </div>
                                 </Card>
 
-                                <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-slate-900 p-10 text-white space-y-8 relative overflow-hidden">
+                                <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-slate-900 p-10 text-white space-y-8 relative overflow-hidden">
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
                                     <div className="relative z-10">
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-8">{t('orders.form.financial_summary')}</h3>
@@ -470,7 +485,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                 </Card>
                             </div>
 
-                            <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-white p-10 space-y-8">
+                            <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-white p-10 space-y-8">
                                 <div className="flex items-start gap-6">
                                     <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                                         <AlertCircle size={28} />
@@ -523,7 +538,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
 
                 {/* Sidebar Info/Status */}
                 <div className="space-y-8">
-                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-white p-8">
+                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-white p-8">
                         <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6">{ct('progress' as any)}</h3>
                         <div className="space-y-6">
                             {[
@@ -546,7 +561,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                         </div>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white">
+                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-linear-to-br from-blue-600 to-indigo-700 p-8 text-white">
                         <div className="flex flex-col items-center text-center space-y-4">
                             <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center">
                                 <TrendingUp size={28} />

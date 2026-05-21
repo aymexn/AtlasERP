@@ -17,8 +17,8 @@ export declare class RbacService {
             permission: {
                 id: string;
                 createdAt: Date;
-                action: string;
                 description: string | null;
+                action: string;
                 module: string;
                 resource: string;
             };
@@ -32,17 +32,17 @@ export declare class RbacService {
     } & {
         id: string;
         createdAt: Date;
+        updatedAt: Date;
         name: string;
         description: string | null;
         displayName: string;
         isSystemRole: boolean;
-        updatedAt: Date;
     })[]>;
     getAllPermissions(): Promise<{
         id: string;
         createdAt: Date;
-        action: string;
         description: string | null;
+        action: string;
         module: string;
         resource: string;
     }[]>;
@@ -59,20 +59,20 @@ export declare class RbacService {
     removePermissionFromRole(roleId: string, permissionId: string, updatedBy: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
     assignRole(userId: string, roleId: string, assignedBy: string, expiresAt?: Date): Promise<{
         id: string;
+        isActive: boolean;
+        userId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
-        isActive: boolean;
-        userId: string;
         roleId: string;
     }>;
     revokeRole(userId: string, roleId: string, revokedBy: string): Promise<{
         id: string;
+        isActive: boolean;
+        userId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
-        isActive: boolean;
-        userId: string;
         roleId: string;
     }>;
     logAccess(data: {

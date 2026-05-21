@@ -32,7 +32,7 @@ export function formatCurrency(amount: number | string | any): string {
     }).format(num);
 
     // Ensure we use a clean non-breaking space for consistency
-    return formatted.replace(/\u202f/g, '\u00a0') + ' DA';
+    return formatted.replace(/\u202f/g, '\u00a0') + '\u00a0DA';
 }
 
 /**
@@ -43,4 +43,26 @@ export function formatNumber(amount: number | string | any): string {
     if (isNaN(value)) return '0';
 
     return new Intl.NumberFormat('fr-FR').format(value);
+}
+
+/**
+ * Formats a date to relative time in French.
+ */
+export function formatRelativeTime(dateInput: Date | string | number): string {
+    const date = new Date(dateInput);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return "À l'instant";
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "Hier";
+    if (diffDays < 7) return `Il y a ${diffDays}j`;
+
+    return date.toLocaleDateString('fr-FR');
 }

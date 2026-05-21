@@ -37,6 +37,7 @@ export function LoginClient() {
 
             if (data.access_token) {
                 localStorage.setItem('atlas_token', data.access_token);
+                document.cookie = `atlas_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
                 router.push('/dashboard');
             } else {
                 throw new Error('No access token received');

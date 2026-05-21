@@ -35,6 +35,9 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
         });
         if (!product)
             throw new common_1.NotFoundException('Product not found');
+        if (product.articleType !== 'FINISHED_PRODUCT') {
+            throw new common_1.BadRequestException("Seuls les produits finis (FINISHED_PRODUCT) avec une nomenclature peuvent être produits.");
+        }
         const formula = await this.prisma.billOfMaterials.findFirst({
             where: { id: createDto.formulaId, companyId, productId: createDto.productId },
             include: {
@@ -405,7 +408,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                     where: {
                         productId: line.componentProductId,
                         reference: `MO-CONS-${order.reference}`,
-                        type: 'MFG_CONSUMPTION',
+                        movementType: 'MFG_CONSUMPTION',
                         companyId
                     },
                 });
@@ -421,7 +424,7 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                     where: {
                         productId: line.componentProductId,
                         reference: `MO-CONS-${order.reference}`,
-                        type: 'MFG_CONSUMPTION',
+                        movementType: 'MFG_CONSUMPTION',
                         companyId
                     },
                 });
@@ -452,8 +455,10 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                             productId: line.componentProductId,
                             warehouseToId: null,
                             warehouseFromId: stock.warehouseId,
-                            type: 'MFG_CONSUMPTION',
+                            movementType: 'MFG_CONSUMPTION',
+                            type: 'OUT',
                             quantity: -deduct,
+                            unit: line.unit,
                             reference: `MO-CONS-${order.reference}`,
                             createdBy: userId,
                             companyId: companyId,
@@ -516,8 +521,10 @@ let ManufacturingOrdersService = class ManufacturingOrdersService {
                     productId: order.productId,
                     warehouseToId: destWarehouseId,
                     warehouseFromId: null,
-                    type: 'MFG_OUTPUT',
+                    movementType: 'MFG_OUTPUT',
+                    type: 'IN',
                     quantity: producedQty,
+                    unit: order.unit,
                     reference: `MO-PROD-${order.reference}`,
                     createdBy: userId,
                     companyId: companyId,

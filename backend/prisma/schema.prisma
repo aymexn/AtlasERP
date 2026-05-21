@@ -438,6 +438,7 @@ model Product {
   description             String?
   isActive                Boolean                  @default(true) @map("is_active")
   minStock                Decimal                  @default(0) @map("min_stock") @db.Decimal(12, 3)
+  reorderPoint            Decimal                  @default(10) @map("reorder_point") @db.Decimal(12, 3)
   purchasePriceHt         Decimal?                 @map("purchase_price_ht") @db.Decimal(10, 2)
   secondaryName           String?                  @map("secondary_name")
   unit                    String                   @default("pcs")

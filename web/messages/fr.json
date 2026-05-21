@@ -647,7 +647,7 @@
             "confirmed": "Confirmé",
             "partially_received": "Réception Partielle",
             "received": "Reçu",
-            "fully_received": "Entièrement Reçu",
+            "FULLY_RECEIVED": "Entièrement Reçu",
             "cancelled": "Annulé"
         },
         "orders": {

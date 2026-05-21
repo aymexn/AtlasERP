@@ -87,12 +87,18 @@ let StockMovementService = class StockMovementService {
                     data: { stockQuantity: { increment: diff } }
                 });
             }
+            const actualEnum = (dto.type === 'MFG_OUTPUT') ? create_movement_dto_1.MovementType.IN :
+                (dto.type === 'MFG_CONSUMPTION') ? create_movement_dto_1.MovementType.OUT :
+                    dto.type;
+            const movementTypeStr = (dto.type === 'MFG_OUTPUT') ? 'MFG_OUTPUT' :
+                (dto.type === 'MFG_CONSUMPTION') ? 'MFG_CONSUMPTION' :
+                    dto.type;
             const movement = await client.stockMovement.create({
                 data: {
                     reference,
                     productId: dto.productId,
-                    movementType: dto.type,
-                    type: dto.type,
+                    movementType: movementTypeStr,
+                    type: actualEnum,
                     quantity: finalQuantity,
                     unit: dto.unit || product.unit,
                     unitCost: unitCost,

@@ -30,6 +30,10 @@ export class ManufacturingOrdersService {
     });
     if (!product) throw new NotFoundException('Product not found');
 
+    if (product.articleType !== 'FINISHED_PRODUCT') {
+      throw new BadRequestException("Seuls les produits finis (FINISHED_PRODUCT) avec une nomenclature peuvent être produits.");
+    }
+
     const formula = await this.prisma.billOfMaterials.findFirst({
       where: { id: createDto.formulaId, companyId, productId: createDto.productId },
       include: {
@@ -470,7 +474,7 @@ export class ManufacturingOrdersService {
           where: {
             productId: line.componentProductId,
             reference: `MO-CONS-${order.reference}`,
-            type: 'MFG_CONSUMPTION' as any,
+            movementType: 'MFG_CONSUMPTION',
             companyId
           },
         });
@@ -491,7 +495,7 @@ export class ManufacturingOrdersService {
           where: {
             productId: line.componentProductId,
             reference: `MO-CONS-${order.reference}`,
-            type: 'MFG_CONSUMPTION' as any,
+            movementType: 'MFG_CONSUMPTION',
             companyId
           },
         });
@@ -526,8 +530,10 @@ export class ManufacturingOrdersService {
               productId: line.componentProductId,
               warehouseToId: null,
               warehouseFromId: stock.warehouseId,
-              type: 'MFG_CONSUMPTION' as any,
+              movementType: 'MFG_CONSUMPTION',
+              type: 'OUT',
               quantity: -deduct,
+              unit: line.unit,
               reference: `MO-CONS-${order.reference}`,
               createdBy: userId,
               companyId: companyId,
@@ -600,8 +606,10 @@ export class ManufacturingOrdersService {
           productId: order.productId,
           warehouseToId: destWarehouseId,
           warehouseFromId: null,
-          type: 'MFG_OUTPUT' as any,
+          movementType: 'MFG_OUTPUT',
+          type: 'IN',
           quantity: producedQty,
+          unit: order.unit,
           reference: `MO-PROD-${order.reference}`,
           createdBy: userId,
           companyId: companyId,

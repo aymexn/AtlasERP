@@ -8,8 +8,8 @@ export declare class PayrollController {
     getPeriods(req: any): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.PayrollStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         periodStart: Date;
         periodEnd: Date;
         paymentDate: Date;
@@ -18,8 +18,8 @@ export declare class PayrollController {
     createPeriod(req: any, data: any): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.PayrollStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         periodStart: Date;
         periodEnd: Date;
         paymentDate: Date;
@@ -29,16 +29,16 @@ export declare class PayrollController {
     getPayrollRuns(id: string): Promise<({
         employee: {
             id: string;
-            email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
-            companyId: string;
-            createdAt: Date;
-            userId: string | null;
-            address: string | null;
-            phone: string | null;
-            updatedAt: Date;
-            taxId: string | null;
             notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            address: string | null;
+            email: string | null;
+            phone: string | null;
+            userId: string | null;
+            taxId: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -75,19 +75,19 @@ export declare class PayrollController {
     streamPayslip(id: string, res: Response): Promise<void>;
     generatePayslip(id: string): Promise<{
         id: string;
-        periodStart: Date;
-        periodEnd: Date;
         employeeId: string;
         filePath: string | null;
+        periodStart: Date;
+        periodEnd: Date;
         payrollRunId: string;
         generatedAt: Date;
     }>;
     getEmployeePayslips(id: string): Promise<{
         id: string;
-        periodStart: Date;
-        periodEnd: Date;
         employeeId: string;
         filePath: string | null;
+        periodStart: Date;
+        periodEnd: Date;
         payrollRunId: string;
         generatedAt: Date;
     }[]>;

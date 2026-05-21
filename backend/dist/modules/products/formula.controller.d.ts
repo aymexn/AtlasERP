@@ -10,29 +10,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -43,19 +43,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }[]>;
     getFormula(id: string, req: any): Promise<{
         components: {
@@ -64,29 +64,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -97,19 +97,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     createFormula(productId: string, dto: CreateFormulaDto, req: any): Promise<{
         components: {
@@ -118,29 +118,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -151,19 +151,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     updateFormula(id: string, dto: UpdateFormulaDto, req: any): Promise<{
         components: {
@@ -172,29 +172,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -205,19 +205,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     activateFormula(id: string, req: any): Promise<{
         components: {
@@ -226,29 +226,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -259,19 +259,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     archiveFormula(id: string, req: any): Promise<{
         components: {
@@ -280,29 +280,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -313,19 +313,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     addLine(id: string, dto: CreateFormulaLineDto, req: any): Promise<{
         components: {
@@ -334,29 +334,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -367,19 +367,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     updateLine(lineId: string, dto: UpdateFormulaLineDto, req: any): Promise<{
         components: {
@@ -388,29 +388,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -421,19 +421,19 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
     removeLine(lineId: string, req: any): Promise<{
         components: {
@@ -442,29 +442,29 @@ export declare class FormulaController {
             costPerUnit: number;
             component: {
                 id: string;
+                unit: string;
                 name: string;
                 sku: string;
+                articleType: import(".prisma/client").$Enums.ArticleType;
+                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 standardCost: import("@prisma/client/runtime/library").Decimal;
                 stockQuantity: import("@prisma/client/runtime/library").Decimal;
-                articleType: import(".prisma/client").$Enums.ArticleType;
-                unit: string;
-                purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
                 family: {
                     name: string;
                 };
             };
             id: string;
+            unit: string;
             createdAt: Date;
             updatedAt: Date;
-            unit: string;
-            componentProductId: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            wastagePercent: import("@prisma/client/runtime/library").Decimal;
-            sortOrder: number;
-            note: string | null;
             variantId: string | null;
-            bomId: string;
+            wastagePercent: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            componentProductId: string;
             uomId: string | null;
+            bomId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            sortOrder: number;
         }[];
         costSummary: {
             theoreticalMaterialCost: number;
@@ -475,18 +475,18 @@ export declare class FormulaController {
         };
         id: string;
         status: import(".prisma/client").$Enums.FormulaStatus;
-        companyId: string;
         createdAt: Date;
-        name: string;
-        isActive: boolean;
-        description: string | null;
         updatedAt: Date;
+        companyId: string;
+        productId: string;
+        variantId: string | null;
+        name: string;
         version: string;
+        isActive: boolean;
         code: string | null;
+        description: string | null;
         outputQuantity: import("@prisma/client/runtime/library").Decimal;
         outputUnit: string;
         scrapPercent: import("@prisma/client/runtime/library").Decimal;
-        productId: string;
-        variantId: string | null;
     }>;
 }

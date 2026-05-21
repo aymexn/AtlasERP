@@ -27,14 +27,14 @@ export declare class DeadStockService {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
         updatedAt: Date;
-        quantity: Decimal;
+        companyId: string;
         productId: string;
+        warehouseId: string | null;
+        quantity: Decimal;
         stockValue: Decimal;
         reason: string | null;
-        warehouseId: string | null;
         category: string;
         actionDate: Date | null;
         lastSaleDate: Date | null;
@@ -48,14 +48,14 @@ export declare class DeadStockService {
     })[]>;
     markAction(itemId: string, action: string, userId: string): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
         updatedAt: Date;
-        quantity: Decimal;
+        companyId: string;
         productId: string;
+        warehouseId: string | null;
+        quantity: Decimal;
         stockValue: Decimal;
         reason: string | null;
-        warehouseId: string | null;
         category: string;
         actionDate: Date | null;
         lastSaleDate: Date | null;

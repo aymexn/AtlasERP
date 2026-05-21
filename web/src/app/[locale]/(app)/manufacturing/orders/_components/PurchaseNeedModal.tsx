@@ -10,6 +10,7 @@ import { formatNumber } from '@/lib/format';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/navigation';
+import { apiFetch } from '@/lib/api';
 
 interface PurchaseSuggestion {
     productId: string;
@@ -56,13 +57,10 @@ export function PurchaseNeedModal({ isOpen, onClose, onSuccess }: PurchaseNeedMo
             setLoading(true);
             const url = '/api/purchases/needs';
             console.log(`FETCH START: calling ${window.location.origin}${url}`);
-            const res = await fetch(url);
-            console.log(`FETCH STATUS: ${res.status} ${res.statusText}`);
-            if (!res.ok) throw new Error(`API Error: ${res.status}`);
-            const data = await res.json();
-            console.log("Suggestions reçues de l'API:", data);
-            setSuggestions(data);
-            setSelectedIds(new Set(data.map((s: any) => s.productId)));
+            const res = await apiFetch(url);
+            console.log("Suggestions reçues de l'API:", res);
+            setSuggestions(res);
+            setSelectedIds(new Set(res.map((s: any) => s.productId)));
         } catch (error) {
             console.error(error);
             toast.error(ct('error'));
@@ -100,15 +98,12 @@ export function PurchaseNeedModal({ isOpen, onClose, onSuccess }: PurchaseNeedMo
 
         try {
             setGenerating(true);
-            const res = await fetch('/api/purchases/needs/generate', {
+            const res = await apiFetch('/api/purchases/needs/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(selectedItems)
             });
 
-            if (!res.ok) throw new Error('Failed to generate POs');
-            const data = await res.json();
-            toast.success(data.message);
+            toast.success(res.message);
             onSuccess();
             onClose();
             router.push('/purchases/orders');

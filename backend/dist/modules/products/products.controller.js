@@ -29,8 +29,8 @@ let ProductsController = class ProductsController {
     create(createProductDto, req) {
         return this.productsService.create(req.user.companyId, createProductDto);
     }
-    findAll(req, search) {
-        return this.productsService.list(req.user.companyId, search);
+    findAll(req, search, productType) {
+        return this.productsService.list(req.user.companyId, search, productType);
     }
     async exportPdf(req, res) {
         try {
@@ -76,8 +76,9 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'List all products for the current tenant' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('search')),
+    __param(2, (0, common_1.Query)('productType')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "findAll", null);
 __decorate([

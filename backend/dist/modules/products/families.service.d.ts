@@ -10,14 +10,14 @@ export declare class FamiliesService {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
-        description: string | null;
-        updatedAt: Date;
-        sortOrder: number;
         code: string | null;
+        description: string | null;
+        sortOrder: number;
         colorBadge: string | null;
         parentId: string | null;
     })[]>;
@@ -28,14 +28,14 @@ export declare class FamiliesService {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
-        description: string | null;
-        updatedAt: Date;
-        sortOrder: number;
         code: string | null;
+        description: string | null;
+        sortOrder: number;
         colorBadge: string | null;
         parentId: string | null;
     }>;
@@ -46,27 +46,27 @@ export declare class FamiliesService {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
-        description: string | null;
-        updatedAt: Date;
-        sortOrder: number;
         code: string | null;
+        description: string | null;
+        sortOrder: number;
         colorBadge: string | null;
         parentId: string | null;
     }>;
     remove(id: string, companyId: string): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         name: string;
         isActive: boolean;
-        description: string | null;
-        updatedAt: Date;
-        sortOrder: number;
         code: string | null;
+        description: string | null;
+        sortOrder: number;
         colorBadge: string | null;
         parentId: string | null;
     }>;

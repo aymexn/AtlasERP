@@ -246,7 +246,7 @@ export default function ReceptionsClient() {
             </div>
 
             {/* Main Area */}
-            <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-[2.5rem] overflow-hidden bg-white">
+            <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-4xl overflow-hidden bg-white">
                 <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 p-8">
                     <CardTitle className="text-xl font-black text-slate-800 flex items-center gap-3">
                         <WarehouseIcon className="w-6 h-6 text-primary" />

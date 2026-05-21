@@ -6,14 +6,14 @@ export declare class EmployeesController {
         contracts: {
             id: string;
             createdAt: Date;
-            isActive: boolean;
             updatedAt: Date;
+            isActive: boolean;
             department: string | null;
             startDate: Date;
-            endDate: Date | null;
             employeeId: string;
             contractType: import(".prisma/client").$Enums.ContractType;
             referenceNumber: string | null;
+            endDate: Date | null;
             trialPeriodEnd: Date | null;
             workingHoursPerWeek: import("@prisma/client/runtime/library").Decimal | null;
             salaryBaseAmount: import("@prisma/client/runtime/library").Decimal;
@@ -25,16 +25,16 @@ export declare class EmployeesController {
         }[];
     } & {
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.EmployeeStatus;
-        companyId: string;
-        createdAt: Date;
-        userId: string | null;
-        address: string | null;
-        phone: string | null;
-        updatedAt: Date;
-        taxId: string | null;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        address: string | null;
+        email: string | null;
+        phone: string | null;
+        userId: string | null;
+        taxId: string | null;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -58,22 +58,22 @@ export declare class EmployeesController {
     findOne(req: any, id: string): Promise<{
         user: {
             id: string;
+            status: import(".prisma/client").$Enums.UserStatus;
             email: string;
             role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
         };
         manager: {
             id: string;
-            email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
-            companyId: string;
-            createdAt: Date;
-            userId: string | null;
-            address: string | null;
-            phone: string | null;
-            updatedAt: Date;
-            taxId: string | null;
             notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            address: string | null;
+            email: string | null;
+            phone: string | null;
+            userId: string | null;
+            taxId: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -96,16 +96,16 @@ export declare class EmployeesController {
         };
         subordinates: {
             id: string;
-            email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
-            companyId: string;
-            createdAt: Date;
-            userId: string | null;
-            address: string | null;
-            phone: string | null;
-            updatedAt: Date;
-            taxId: string | null;
             notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            address: string | null;
+            email: string | null;
+            phone: string | null;
+            userId: string | null;
+            taxId: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -129,14 +129,14 @@ export declare class EmployeesController {
         contracts: {
             id: string;
             createdAt: Date;
-            isActive: boolean;
             updatedAt: Date;
+            isActive: boolean;
             department: string | null;
             startDate: Date;
-            endDate: Date | null;
             employeeId: string;
             contractType: import(".prisma/client").$Enums.ContractType;
             referenceNumber: string | null;
+            endDate: Date | null;
             trialPeriodEnd: Date | null;
             workingHoursPerWeek: import("@prisma/client/runtime/library").Decimal | null;
             salaryBaseAmount: import("@prisma/client/runtime/library").Decimal;
@@ -148,16 +148,16 @@ export declare class EmployeesController {
         }[];
     } & {
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.EmployeeStatus;
-        companyId: string;
-        createdAt: Date;
-        userId: string | null;
-        address: string | null;
-        phone: string | null;
-        updatedAt: Date;
-        taxId: string | null;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        address: string | null;
+        email: string | null;
+        phone: string | null;
+        userId: string | null;
+        taxId: string | null;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -180,16 +180,16 @@ export declare class EmployeesController {
     }>;
     create(req: any, data: any): Promise<{
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.EmployeeStatus;
-        companyId: string;
-        createdAt: Date;
-        userId: string | null;
-        address: string | null;
-        phone: string | null;
-        updatedAt: Date;
-        taxId: string | null;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        address: string | null;
+        email: string | null;
+        phone: string | null;
+        userId: string | null;
+        taxId: string | null;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -212,16 +212,16 @@ export declare class EmployeesController {
     }>;
     update(req: any, id: string, data: any): Promise<{
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.EmployeeStatus;
-        companyId: string;
-        createdAt: Date;
-        userId: string | null;
-        address: string | null;
-        phone: string | null;
-        updatedAt: Date;
-        taxId: string | null;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        address: string | null;
+        email: string | null;
+        phone: string | null;
+        userId: string | null;
+        taxId: string | null;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -245,14 +245,14 @@ export declare class EmployeesController {
     addContract(req: any, id: string, data: any): Promise<{
         id: string;
         createdAt: Date;
-        isActive: boolean;
         updatedAt: Date;
+        isActive: boolean;
         department: string | null;
         startDate: Date;
-        endDate: Date | null;
         employeeId: string;
         contractType: import(".prisma/client").$Enums.ContractType;
         referenceNumber: string | null;
+        endDate: Date | null;
         trialPeriodEnd: Date | null;
         workingHoursPerWeek: import("@prisma/client/runtime/library").Decimal | null;
         salaryBaseAmount: import("@prisma/client/runtime/library").Decimal;
@@ -264,8 +264,8 @@ export declare class EmployeesController {
     }>;
     addDocument(req: any, id: string, data: any): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         entityId: string;
         entityType: string;
         fileName: string | null;
@@ -275,8 +275,8 @@ export declare class EmployeesController {
     }>;
     removeDocument(req: any, documentId: string): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         entityId: string;
         entityType: string;
         fileName: string | null;

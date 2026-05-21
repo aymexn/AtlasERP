@@ -142,7 +142,7 @@ export default function LeavesClient() {
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Toast */}
             {toast && (
-                <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-bold transition-all ${toast.type === 'success' ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-white border-rose-100 text-rose-700'}`}>
+                <div className={`fixed top-6 right-6 z-200 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-bold transition-all ${toast.type === 'success' ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-white border-rose-100 text-rose-700'}`}>
                     {toast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
                     {toast.message}
                 </div>
@@ -219,7 +219,7 @@ export default function LeavesClient() {
                         <div key={r.id} className="p-5 flex flex-wrap items-center gap-4 hover:bg-slate-50/50 transition-colors group">
                             {/* Employee */}
                             <div className="flex items-center gap-3 min-w-[200px] flex-1">
-                                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-slate-600 font-black text-xs flex-shrink-0">
+                                <div className="h-10 w-10 rounded-2xl bg-linear-to-br from-slate-200 to-slate-300 flex items-center justify-center text-slate-600 font-black text-xs shrink-0">
                                     {r.employee?.firstName?.[0]}{r.employee?.lastName?.[0]}
                                 </div>
                                 <div>
@@ -282,7 +282,7 @@ export default function LeavesClient() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {leaveTypes.map(lt => (
                             <div key={lt.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl">
-                                <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: lt.color || '#3b82f6' }} />
+                                <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: lt.color || '#3b82f6' }} />
                                 <div>
                                     <p className="text-xs font-bold text-slate-700">{lt.name}</p>
                                     {lt.accrualRate > 0 && <p className="text-[10px] text-slate-400">{lt.accrualRate} j/mois</p>}
@@ -349,7 +349,7 @@ export default function LeavesClient() {
                             {/* Days indicator */}
                             {form.startDate && form.endDate && (
                                 <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                                    <Info size={16} className="text-blue-600 flex-shrink-0" />
+                                    <Info size={16} className="text-blue-600 shrink-0" />
                                     <p className="text-sm font-bold text-blue-700">
                                         Durée estimée: <span className="font-black">{calcDays()} jour(s) ouvrable(s)</span>
                                     </p>

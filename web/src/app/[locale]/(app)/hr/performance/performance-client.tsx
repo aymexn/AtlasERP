@@ -91,7 +91,7 @@ export default function PerformanceClient() {
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {toast && (
-                <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-bold ${toast.type === 'success' ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-white border-rose-100 text-rose-700'}`}>
+                <div className={`fixed top-6 right-6 z-200 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-bold ${toast.type === 'success' ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-white border-rose-100 text-rose-700'}`}>
                     {toast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
                     {toast.message}
                 </div>
@@ -170,7 +170,7 @@ export default function PerformanceClient() {
 
                             {/* Note moyenne banner */}
                             {reviews.some(r => r.finalRating) && (
-                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 p-5 rounded-3xl flex items-center justify-between">
+                                <div className="bg-linear-to-r from-amber-50 to-orange-50 border border-amber-100 p-5 rounded-3xl flex items-center justify-between">
                                     <div>
                                         <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Note Moyenne du Cycle</p>
                                         <div className="flex items-center gap-2">

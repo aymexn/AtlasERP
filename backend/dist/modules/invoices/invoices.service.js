@@ -15,11 +15,13 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const customer_classification_service_1 = require("../customers/customer-classification.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const event_emitter_1 = require("@nestjs/event-emitter");
 let InvoicesService = class InvoicesService {
-    constructor(prisma, classificationService, notificationService) {
+    constructor(prisma, classificationService, notificationService, eventEmitter) {
         this.prisma = prisma;
         this.classificationService = classificationService;
         this.notificationService = notificationService;
+        this.eventEmitter = eventEmitter;
     }
     async findAll(companyId) {
         return this.prisma.invoice.findMany({
@@ -87,14 +89,14 @@ let InvoicesService = class InvoicesService {
         const count = await this.prisma.invoice.count({ where: { companyId } });
         const reference = `FA-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
         const fiscal = this.calculateFiscalTotals(order.totalAmountHt, order.totalAmountTva, paymentMethod);
-        return await this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const invoice = await tx.invoice.create({
                 data: {
                     companyId,
                     salesOrderId: order.id,
                     customerId: order.customerId,
                     reference,
-                    status: 'DRAFT',
+                    status: 'SENT',
                     totalAmountHt: fiscal.totalHt,
                     totalAmountTva: fiscal.totalTva,
                     totalAmountStamp: fiscal.totalStamp,
@@ -123,9 +125,11 @@ let InvoicesService = class InvoicesService {
             }
             return invoice;
         });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
+        return result;
     }
     async addPayment(companyId, invoiceId, data) {
-        return await this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const invoice = await tx.invoice.findFirst({
                 where: { id: invoiceId, companyId }
             });
@@ -167,16 +171,20 @@ let InvoicesService = class InvoicesService {
             }
             return updatedInvoice;
         });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
+        return result;
     }
     async cancel(companyId, id) {
         const invoice = await this.findOne(companyId, id);
         if (invoice.status === 'PAID') {
             throw new common_1.BadRequestException('Cannot cancel a fully paid invoice');
         }
-        return this.prisma.invoice.update({
+        const result = await this.prisma.invoice.update({
             where: { id, companyId },
             data: { status: 'CANCELLED' }
         });
+        await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
+        return result;
     }
 };
 exports.InvoicesService = InvoicesService;
@@ -184,6 +192,7 @@ exports.InvoicesService = InvoicesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         customer_classification_service_1.CustomerClassificationService,
-        notifications_service_1.NotificationService])
+        notifications_service_1.NotificationService,
+        event_emitter_1.EventEmitter2])
 ], InvoicesService);
 //# sourceMappingURL=invoices.service.js.map

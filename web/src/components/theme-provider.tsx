@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light';
+type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
     theme: Theme;
@@ -12,18 +12,24 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // Grand Bleu Restoration: Lock to Light Mode
-    const [theme] = useState<Theme>('light');
+    const [theme, setTheme] = useState<Theme>('light');
 
     useEffect(() => {
-        // Force light mode on mount
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('atlas-theme', 'light');
+        const savedTheme = localStorage.getItem('atlas-theme') as Theme | null;
+        if (savedTheme) {
+            setTheme(savedTheme);
+            document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setTheme('dark');
+            document.documentElement.classList.add('dark');
+        }
     }, []);
 
     const toggleTheme = () => {
-        // No-op to prevent regression if called
-        console.warn('Grand Bleu Restoration: Theme switching is disabled.');
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        localStorage.setItem('atlas-theme', newTheme);
+        document.documentElement.classList.toggle('dark', newTheme === 'dark');
     };
 
     return (
@@ -40,4 +46,3 @@ export const useTheme = () => {
     }
     return context;
 };
-

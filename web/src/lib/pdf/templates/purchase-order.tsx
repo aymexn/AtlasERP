@@ -22,7 +22,7 @@ export const PurchaseOrderTemplate: React.FC<Props> = ({ order, company }) => {
 
   const statusLabel: Record<string, string> = {
     DRAFT: 'Brouillon', CONFIRMED: 'Confirmé', SENT: 'Envoyé au fournisseur',
-    PARTIALLY_RECEIVED: 'Partiellement reçu', RECEIVED: 'Reçu', CANCELLED: 'Annulé',
+    PARTIALLY_RECEIVED: 'Partiellement reçu', FULLY_RECEIVED: 'Reçu', CANCELLED: 'Annulé',
   };
 
   return (

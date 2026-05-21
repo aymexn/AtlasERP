@@ -11,14 +11,15 @@ const common_1 = require("@nestjs/common");
 const dashboard_controller_1 = require("./dashboard.controller");
 const dashboard_service_1 = require("./dashboard.service");
 const kpi_service_1 = require("./services/kpi.service");
+const dashboard_gateway_1 = require("./gateways/dashboard.gateway");
 let DashboardModule = class DashboardModule {
 };
 exports.DashboardModule = DashboardModule;
 exports.DashboardModule = DashboardModule = __decorate([
     (0, common_1.Module)({
         controllers: [dashboard_controller_1.DashboardController],
-        providers: [dashboard_service_1.DashboardService, kpi_service_1.KpiService],
-        exports: [dashboard_service_1.DashboardService, kpi_service_1.KpiService]
+        providers: [dashboard_service_1.DashboardService, kpi_service_1.KpiService, dashboard_gateway_1.DashboardGateway],
+        exports: [dashboard_service_1.DashboardService, kpi_service_1.KpiService, dashboard_gateway_1.DashboardGateway]
     })
 ], DashboardModule);
 //# sourceMappingURL=dashboard.module.js.map

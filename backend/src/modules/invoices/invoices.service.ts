@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { InvoiceStatus, PaymentMethod, Prisma } from '@prisma/client';
 import { CustomerClassificationService } from '../customers/customer-classification.service';
 import { NotificationService } from '../notifications/notifications.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as PDFDocument from 'pdfkit';
 
 @Injectable()
@@ -10,7 +11,8 @@ export class InvoicesService {
   constructor(
     private prisma: PrismaService,
     private classificationService: CustomerClassificationService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async findAll(companyId: string) {
@@ -101,14 +103,14 @@ export class InvoicesService {
       paymentMethod
     );
 
-    return await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const invoice = await tx.invoice.create({
         data: {
           companyId,
           salesOrderId: order.id,
           customerId: order.customerId,
           reference,
-          status: 'DRAFT',
+          status: 'SENT', // Auto-transition to SENT to match live dashboard counting logic
           totalAmountHt: fiscal.totalHt,
           totalAmountTva: fiscal.totalTva,
           totalAmountStamp: fiscal.totalStamp,
@@ -144,11 +146,14 @@ export class InvoicesService {
 
       return invoice;
     });
+
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
+    return result;
   }
 
 
   async addPayment(companyId: string, invoiceId: string, data: any) {
-    return await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const invoice = await tx.invoice.findFirst({
         where: { id: invoiceId, companyId }
       });
@@ -197,6 +202,9 @@ export class InvoicesService {
 
       return updatedInvoice;
     });
+
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
+    return result;
   }
 
   async cancel(companyId: string, id: string) {
@@ -205,9 +213,12 @@ export class InvoicesService {
         throw new BadRequestException('Cannot cancel a fully paid invoice');
     }
 
-    return this.prisma.invoice.update({
+    const result = await this.prisma.invoice.update({
         where: { id, companyId },
         data: { status: 'CANCELLED' }
     });
+
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
+    return result;
   }
 }

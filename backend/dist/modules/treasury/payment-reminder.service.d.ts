@@ -7,14 +7,14 @@ export declare class PaymentReminderService {
     findOverdueInvoices(companyId: string): Promise<({
         customer: {
             id: string;
-            email: string | null;
-            companyId: string;
             createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             name: string;
             isActive: boolean;
             address: string | null;
+            email: string | null;
             phone: string | null;
-            updatedAt: Date;
             taxId: string | null;
             contact: string | null;
             creditLimit: import("@prisma/client/runtime/library").Decimal;
@@ -27,22 +27,22 @@ export declare class PaymentReminderService {
         };
     } & {
         id: string;
+        reference: string;
         status: import(".prisma/client").$Enums.InvoiceStatus;
-        companyId: string;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        reference: string;
+        companyId: string;
         date: Date;
         salesOrderId: string | null;
-        notes: string | null;
         customerId: string;
-        totalAmountHt: import("@prisma/client/runtime/library").Decimal;
-        totalAmountTva: import("@prisma/client/runtime/library").Decimal;
-        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         dueDate: Date | null;
         lastReminderSent: Date | null;
         reminderCount: number;
+        totalAmountHt: import("@prisma/client/runtime/library").Decimal;
+        totalAmountTva: import("@prisma/client/runtime/library").Decimal;
         totalAmountStamp: import("@prisma/client/runtime/library").Decimal;
+        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         amountPaid: import("@prisma/client/runtime/library").Decimal;
         amountRemaining: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;

@@ -284,7 +284,7 @@ export default function ReceptionDetailClient({ id }: ReceptionDetailClientProps
                     </Card>
 
                     {reception.notes && (
-                        <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-amber-50/30 p-10">
+                        <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-amber-50/30 p-10">
                             <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-2 mb-4">
                                 <Info size={14} /> {t('receptions.details.note')}
                             </h3>
@@ -297,7 +297,7 @@ export default function ReceptionDetailClient({ id }: ReceptionDetailClientProps
 
                 {/* Sidebar Details */}
                 <div className="space-y-8">
-                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-[2.5rem] bg-white p-8 space-y-8">
+                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-white p-8 space-y-8">
                         <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-4">
                             {t('receptions.details.logistic_info')}
                         </h3>
@@ -348,7 +348,7 @@ export default function ReceptionDetailClient({ id }: ReceptionDetailClientProps
                     </Card>
 
                     {isDraft && (
-                        <Card className="border-none shadow-2xl shadow-emerald-100 rounded-[2.5rem] bg-emerald-50 p-8 space-y-6">
+                        <Card className="border-none shadow-2xl shadow-emerald-100 rounded-4xl bg-emerald-50 p-8 space-y-6">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-200">
                                     <AlertCircle size={24} />

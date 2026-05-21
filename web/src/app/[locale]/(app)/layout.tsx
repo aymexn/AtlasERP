@@ -19,7 +19,7 @@ export default async function AppLayout({
             <AuthWrapper>
                 <PermissionProvider>
                     <ShortcutProvider>
-                        <div className="flex min-h-screen bg-gray-50/50 flex-row" dir={isRtl ? 'rtl' : 'ltr'}>
+                        <div className="flex min-h-screen bg-gray-50/50 flex-row" dir={isRtl ? 'rtl' : 'ltr'} suppressHydrationWarning>
                             {/* Fixed Sidebar */}
                             <Sidebar />
 

@@ -200,7 +200,7 @@ export default function InventoryRootPage() {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                                <div className="h-24 w-24 bg-primary/5 text-primary rounded-[2.5rem] flex items-center justify-center">
+                                <div className="h-24 w-24 bg-primary/5 text-primary rounded-4xl flex items-center justify-center">
                                     <CheckCircle2 size={48} strokeWidth={2.5} />
                                 </div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{t('all_clear')}</p>

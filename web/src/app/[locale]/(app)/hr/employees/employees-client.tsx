@@ -127,7 +127,7 @@ export default function EmployeesClient() {
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Toast */}
             {toast && (
-                <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-bold transition-all ${toast.type === 'success' ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-white border-rose-100 text-rose-700'}`}>
+                <div className={`fixed top-6 right-6 z-200 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-bold transition-all ${toast.type === 'success' ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-white border-rose-100 text-rose-700'}`}>
                     {toast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
                     {toast.message}
                 </div>
@@ -222,7 +222,7 @@ export default function EmployeesClient() {
                                 <tr key={e.id} className="group hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
+                                            <div className="h-10 w-10 rounded-full bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-xs shrink-0">
                                                 {e.firstName[0]}{e.lastName[0]}
                                             </div>
                                             <div>

@@ -60,6 +60,48 @@ export class SalesOrdersService {
     return order;
   }
 
+  private async calculateProductUnitCost(productId: string, companyId: string, tx?: any): Promise<number> {
+    const prisma = tx || this.prisma;
+    
+    const product = await prisma.product.findUnique({
+      where: { id: productId }
+    });
+    if (!product) return 0;
+    
+    if (product.articleType === 'FINISHED_PRODUCT') {
+      const formula = await prisma.billOfMaterials.findFirst({
+        where: { productId, companyId, isActive: true },
+        include: {
+          components: {
+            include: {
+              component: {
+                select: {
+                  standardCost: true,
+                  purchasePriceHt: true
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      if (formula && formula.components && formula.components.length > 0) {
+        let totalCost = 0;
+        for (const line of formula.components) {
+          const costPerUnit = Number(line.component?.standardCost) || Number(line.component?.purchasePriceHt) || 0;
+          const quantity = Number(line.quantity) || 0;
+          const wastagePercent = Number(line.wastagePercent) || 0;
+          const quantityWithWastage = quantity * (1 + (wastagePercent / 100));
+          totalCost += quantityWithWastage * costPerUnit;
+        }
+        const outputQuantity = Number(formula.outputQuantity) || 1;
+        return outputQuantity > 0 ? totalCost / outputQuantity : 0;
+      }
+    }
+    
+    return Number(product.standardCost) || Number(product.purchasePriceHt) || 0;
+  }
+
   async create(companyId: string, data: any) {
     const { customerId, lines, notes } = data;
     
@@ -67,7 +109,8 @@ export class SalesOrdersService {
     let totalAmountHt = new Prisma.Decimal(0);
     let totalAmountTva = new Prisma.Decimal(0);
 
-    const formattedLines = lines.map((l: any) => {
+    const formattedLines = [];
+    for (const l of lines) {
       const qty = new Prisma.Decimal(l.quantity || 0);
       const price = new Prisma.Decimal(l.unitPriceHt || 0);
       const taxRate = new Prisma.Decimal(l.taxRate || 0.19);
@@ -78,17 +121,19 @@ export class SalesOrdersService {
       totalAmountHt = totalAmountHt.add(lineHt);
       totalAmountTva = totalAmountTva.add(lineTva);
 
-      return {
+      const unitCost = await this.calculateProductUnitCost(l.productId, companyId);
+
+      formattedLines.push({
         productId: l.productId,
         quantity: qty,
         unit: l.unit || 'pcs',
         unitPriceHt: price,
-        unitCostSnapshot: 0, // Initial cost is 0, updated on shipment
+        unitCostSnapshot: new Prisma.Decimal(unitCost),
         taxRate: taxRate,
         lineTotalHt: lineHt,
         lineTotalTtc: lineHt.add(lineTva),
-      };
-    });
+      });
+    }
 
     const totalAmountTtc = totalAmountHt.add(totalAmountTva);
 
@@ -117,7 +162,7 @@ export class SalesOrdersService {
       }
     });
 
-    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
     return order;
   }
 
@@ -159,7 +204,7 @@ export class SalesOrdersService {
           where: { id: line.id },
           data: { 
             shippedQuantity: line.quantity,
-            unitCostSnapshot: line.product.standardCost || 0 
+            unitCostSnapshot: line.unitCostSnapshot && Number(line.unitCostSnapshot) > 0 ? line.unitCostSnapshot : (line.product.standardCost || 0)
           }
         });
       }
@@ -174,7 +219,7 @@ export class SalesOrdersService {
       return tx.salesOrder.findUnique({ where: { id } });
     });
 
-    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
     return result;
   }
 
@@ -190,7 +235,7 @@ export class SalesOrdersService {
       data: { status: SalesOrderStatus.VALIDATED }
     });
 
-    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
     return result;
   }
 
@@ -208,7 +253,7 @@ export class SalesOrdersService {
       data: { status: SalesOrderStatus.CANCELLED }
     });
 
-    this.eventEmitter.emit('dashboard.refresh', { companyId });
+    await this.eventEmitter.emitAsync('dashboard.refresh', { companyId });
     return result;
   }
 
@@ -222,6 +267,7 @@ export class SalesOrdersService {
       const marginPercent = revenue.isZero() ? 0 : margin.div(revenue).mul(100).toNumber();
 
       return {
+        productId: line.productId,
         product: line.product.name,
         quantity: line.quantity,
         revenue: revenue.toNumber(),

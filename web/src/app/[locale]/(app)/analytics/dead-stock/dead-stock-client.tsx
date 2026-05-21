@@ -267,7 +267,7 @@ export default function DeadStockClient() {
 
         {/* Items List */}
         <div className="lg:col-span-9 space-y-6">
-          <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] shadow-sm overflow-hidden">
+          <div className="bg-white border-2 border-slate-100 rounded-4xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-slate-100 bg-white flex items-center justify-between">
               <div className="relative w-full max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />

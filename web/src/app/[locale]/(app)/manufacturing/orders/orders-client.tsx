@@ -652,7 +652,7 @@ export default function OrdersClient() {
                                                                     onChange={(e) => handleProductSelect(e.target.value)}
                                                                 >
                                                                     <option value="">{t('select_product')}</option>
-                                                                    {products.map(p => (
+                                                                    {products.filter(p => p.articleType === 'FINISHED_PRODUCT').map(p => (
                                                                         <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
                                                                     ))}
                                                                 </select>

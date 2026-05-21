@@ -99,13 +99,21 @@ export class StockMovementService {
         });
       }
 
+      const actualEnum = (dto.type === ('MFG_OUTPUT' as any)) ? MovementType.IN : 
+                         (dto.type === ('MFG_CONSUMPTION' as any)) ? MovementType.OUT : 
+                         dto.type;
+
+      const movementTypeStr = (dto.type === ('MFG_OUTPUT' as any)) ? 'MFG_OUTPUT' : 
+                              (dto.type === ('MFG_CONSUMPTION' as any)) ? 'MFG_CONSUMPTION' : 
+                              dto.type as string;
+
       // 3. Create the movement record
       const movement = await client.stockMovement.create({
         data: {
           reference,
           productId: dto.productId,
-          movementType: dto.type as string,
-          type: dto.type as any,
+          movementType: movementTypeStr,
+          type: actualEnum,
           quantity: finalQuantity,
           unit: dto.unit || product.unit,
           unitCost: unitCost,

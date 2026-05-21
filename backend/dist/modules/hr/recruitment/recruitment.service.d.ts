@@ -12,12 +12,12 @@ export declare class RecruitmentService {
     } & {
         id: string;
         status: import(".prisma/client").$Enums.JobStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         description: string | null;
-        title: string;
         location: string | null;
         department: string | null;
+        title: string;
         requirements: string | null;
         employmentType: string | null;
         postedBy: string | null;
@@ -26,12 +26,12 @@ export declare class RecruitmentService {
     createJobPosting(companyId: string, data: any, userId: string): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.JobStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         description: string | null;
-        title: string;
         location: string | null;
         department: string | null;
+        title: string;
         requirements: string | null;
         employmentType: string | null;
         postedBy: string | null;
@@ -42,12 +42,12 @@ export declare class RecruitmentService {
             jobPosting: {
                 id: string;
                 status: import(".prisma/client").$Enums.JobStatus;
-                companyId: string;
                 createdAt: Date;
+                companyId: string;
                 description: string | null;
-                title: string;
                 location: string | null;
                 department: string | null;
+                title: string;
                 requirements: string | null;
                 employmentType: string | null;
                 postedBy: string | null;
@@ -56,17 +56,17 @@ export declare class RecruitmentService {
         } & {
             id: string;
             notes: string | null;
-            applicationDate: Date;
-            stage: import(".prisma/client").$Enums.ApplicationStage;
             jobPostingId: string;
             candidateId: string;
+            applicationDate: Date;
+            stage: import(".prisma/client").$Enums.ApplicationStage;
         })[];
     } & {
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.CandidateStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
+        email: string | null;
         phone: string | null;
         firstName: string | null;
         lastName: string | null;
@@ -76,10 +76,10 @@ export declare class RecruitmentService {
     })[]>;
     createCandidate(companyId: string, data: any): Promise<{
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.CandidateStatus;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
+        email: string | null;
         phone: string | null;
         firstName: string | null;
         lastName: string | null;
@@ -90,21 +90,21 @@ export declare class RecruitmentService {
     applyToJob(jobPostingId: string, candidateId: string, notes?: string): Promise<{
         id: string;
         notes: string | null;
-        applicationDate: Date;
-        stage: import(".prisma/client").$Enums.ApplicationStage;
         jobPostingId: string;
         candidateId: string;
+        applicationDate: Date;
+        stage: import(".prisma/client").$Enums.ApplicationStage;
     }>;
     getApplications(companyId: string, jobPostingId?: string): Promise<({
         jobPosting: {
             id: string;
             status: import(".prisma/client").$Enums.JobStatus;
-            companyId: string;
             createdAt: Date;
+            companyId: string;
             description: string | null;
-            title: string;
             location: string | null;
             department: string | null;
+            title: string;
             requirements: string | null;
             employmentType: string | null;
             postedBy: string | null;
@@ -112,10 +112,10 @@ export declare class RecruitmentService {
         };
         candidate: {
             id: string;
-            email: string | null;
             status: import(".prisma/client").$Enums.CandidateStatus;
-            companyId: string;
             createdAt: Date;
+            companyId: string;
+            email: string | null;
             phone: string | null;
             firstName: string | null;
             lastName: string | null;
@@ -137,10 +137,10 @@ export declare class RecruitmentService {
             applicationId: string;
         }[];
         offers: {
-            message: string | null;
             id: string;
             status: import(".prisma/client").$Enums.OfferStatus;
             createdAt: Date;
+            message: string | null;
             startDate: Date | null;
             applicationId: string;
             salaryOffered: import("@prisma/client/runtime/library").Decimal | null;
@@ -148,18 +148,18 @@ export declare class RecruitmentService {
     } & {
         id: string;
         notes: string | null;
-        applicationDate: Date;
-        stage: import(".prisma/client").$Enums.ApplicationStage;
         jobPostingId: string;
         candidateId: string;
+        applicationDate: Date;
+        stage: import(".prisma/client").$Enums.ApplicationStage;
     })[]>;
     updateApplicationStage(applicationId: string, stage: ApplicationStage): Promise<{
         id: string;
         notes: string | null;
-        applicationDate: Date;
-        stage: import(".prisma/client").$Enums.ApplicationStage;
         jobPostingId: string;
         candidateId: string;
+        applicationDate: Date;
+        stage: import(".prisma/client").$Enums.ApplicationStage;
     }>;
     scheduleInterview(applicationId: string, data: any): Promise<{
         id: string;
@@ -176,16 +176,16 @@ export declare class RecruitmentService {
     }>;
     hireCandidate(companyId: string, applicationId: string): Promise<{
         id: string;
-        email: string | null;
         status: import(".prisma/client").$Enums.EmployeeStatus;
-        companyId: string;
-        createdAt: Date;
-        userId: string | null;
-        address: string | null;
-        phone: string | null;
-        updatedAt: Date;
-        taxId: string | null;
         notes: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        address: string | null;
+        email: string | null;
+        phone: string | null;
+        userId: string | null;
+        taxId: string | null;
         employeeCode: string | null;
         firstName: string;
         lastName: string;

@@ -136,7 +136,21 @@ export class ApiError extends Error {
 // ─── Main apiFetch ────────────────────────────────────────────────────────────
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const isClient = typeof window !== 'undefined';
-    const token = isClient ? localStorage.getItem('atlas_token') : null;
+    let token = isClient ? localStorage.getItem('atlas_token') : null;
+    
+    if (!token && isClient) {
+        const match = document.cookie.match(/(?:^|;)\s*atlas_token=([^;]+)/);
+        if (match) token = match[1];
+    }
+    if (!token && !isClient) {
+        try {
+            const { cookies } = await import('next/headers');
+            const cookieStore = await cookies();
+            token = cookieStore.get('atlas_token')?.value || null;
+        } catch {
+            // Not in server component context
+        }
+    }
 
     const publicEndpoints = ['/auth/login', '/auth/register', '/health'];
     const isPublic = publicEndpoints.some((p) => endpoint.includes(p));
@@ -177,6 +191,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         if (response.status === 401 && isClient) {
             recoveryLog('warn', '401 Unauthorized — clearing session');
             localStorage.removeItem('atlas_token');
+            document.cookie = 'atlas_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             const localeMatch = window.location.pathname.match(/^\/(fr|ar|en)/);
             const currentLocale = localeMatch ? localeMatch[1] : 'fr';
             window.location.href = `/${currentLocale}/login`;
