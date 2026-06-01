@@ -29,7 +29,8 @@ export const SupplierCatalog: React.FC<SupplierCatalogProps> = ({ supplierId }) 
         apiFetch('/products'),
         productsService.getSupplierCatalog(supplierId)
       ]);
-      setAllProducts(allP);
+      const prods = Array.isArray(allP) ? allP : allP.data ?? [];
+      setAllProducts(prods.filter((p: any) => p.type === 'FINISHED_GOOD' || p.articleType === 'FINISHED_PRODUCT'));
       setCatalog(supplierCatalog || []);
     } catch (err) {
       toast.error("Erreur lors du chargement du catalogue");

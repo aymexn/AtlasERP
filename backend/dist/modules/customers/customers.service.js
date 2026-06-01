@@ -35,16 +35,20 @@ let CustomersService = class CustomersService {
             include: {
                 invoices: {
                     where: { status: { not: 'CANCELLED' } },
-                    select: { totalAmountHt: true },
+                    select: { totalAmountHt: true, amountRemaining: true },
                 },
             },
         });
         return customers
             .map((c) => {
             const dynamicRevenue = c.invoices.reduce((acc, inv) => acc + Number(inv.totalAmountHt || 0), 0);
+            const dynamicEncours = c.invoices.reduce((acc, inv) => acc + Number(inv.amountRemaining || 0), 0);
             return {
                 ...c,
                 totalRevenue: dynamicRevenue,
+                caTotal: dynamicRevenue,
+                encours: dynamicEncours,
+                dso: c.avgPaymentDelay || 0,
                 invoices: undefined,
             };
         })
@@ -83,6 +87,7 @@ let CustomersService = class CustomersService {
     async getPerformanceData(companyId, customerId) {
         const customer = await this.prisma.customer.findFirst({
             where: { id: customerId, companyId },
+            include: { contacts: true },
         });
         if (!customer)
             throw new common_1.NotFoundException('Customer not found');

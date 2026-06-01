@@ -274,14 +274,7 @@ export default function OrdersClient() {
         return matchesSearch && matchesStatus;
     });
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (!submitting && !isModalOpen) {
-                loadData();
-            }
-        }, 30000); // 30s
-        return () => clearInterval(interval);
-    }, [submitting, isModalOpen]);
+    // Polling interval removed to prevent automatic background requests
 
     const getStatusColor = (status: string) => {
         switch(status) {

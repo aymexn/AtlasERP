@@ -24,6 +24,7 @@ export const productFormSchema = z.object({
   // INVENTAIRE TAB
   unit: z.string().default('PCS'),
   minStock: z.number().min(0).default(5),
+  stockQuantity: z.number().min(0).default(0),
   trackStock: z.boolean().default(true),
   description: z.string().optional().nullable(),
   
@@ -34,7 +35,8 @@ export const productFormSchema = z.object({
   formulaLines: z.array(z.object({
     componentId: z.string(),
     quantity: z.number().min(0.0001, "Quantité invalide"),
-    unit: z.string().default('KG')
+    unit: z.string().default('KG'),
+    unitCost: z.number().min(0).optional().nullable()
   })).default([])
   
 }).superRefine((data, ctx) => {

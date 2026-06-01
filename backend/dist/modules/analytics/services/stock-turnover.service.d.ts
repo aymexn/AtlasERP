@@ -8,10 +8,10 @@ export declare class StockTurnoverService {
         id: string;
         createdAt: Date;
         companyId: string;
-        productId: string;
-        warehouseId: string | null;
         periodStart: Date;
         periodEnd: Date;
+        productId: string;
+        warehouseId: string | null;
         beginningInventory: Decimal;
         endingInventory: Decimal;
         averageInventory: Decimal;
@@ -33,10 +33,10 @@ export declare class StockTurnoverService {
         id: string;
         createdAt: Date;
         companyId: string;
-        productId: string;
-        warehouseId: string | null;
         periodStart: Date;
         periodEnd: Date;
+        productId: string;
+        warehouseId: string | null;
         beginningInventory: Decimal;
         endingInventory: Decimal;
         averageInventory: Decimal;

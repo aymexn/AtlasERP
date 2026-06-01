@@ -7,7 +7,9 @@ export const tenantContext = new AsyncLocalStorage<{ tenantId: string }>();
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
     constructor() {
-        super();
+        super({
+            log: process.env.NODE_ENV === 'production' ? ['error'] : ['error', 'warn'],
+        });
         this.$use(this.tenancyMiddleware());
     }
 

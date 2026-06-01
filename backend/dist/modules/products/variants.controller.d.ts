@@ -5,9 +5,9 @@ export declare class VariantsController {
     findAll(productId: string): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
@@ -15,9 +15,9 @@ export declare class VariantsController {
     create(productId: string, data: any): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
@@ -26,9 +26,9 @@ export declare class VariantsController {
     update(id: string, data: any): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
@@ -36,9 +36,9 @@ export declare class VariantsController {
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;

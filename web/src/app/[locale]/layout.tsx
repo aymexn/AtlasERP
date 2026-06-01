@@ -28,11 +28,10 @@ export default async function LocaleLayout({
 
   // Use manual map to ensure correct messages are provided
   const messages = messageMap[locale] || messageMap.fr;
-  const direction = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-        <main dir={direction} className="min-h-screen text-foreground selection:bg-primary/20 bg-gray-50/50" suppressHydrationWarning>
+        <main className="min-h-screen text-foreground selection:bg-primary/20 bg-gray-50/50" suppressHydrationWarning>
           {children}
         </main>
     </NextIntlClientProvider>

@@ -1,25 +1,22 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { 
-    Plus, Search, User, Users, Mail, Phone, MapPin, CheckCircle2, 
-    Loader2, X, Building2, Shield, TrendingUp, Fingerprint, Info, 
-    ChevronRight, Briefcase, Tag, History, CreditCard, MoreVertical, 
-    FileSearch, LayoutGrid, Settings, DollarSign, Edit2, Trash2, 
-    ArrowRight, Filter, FileText, Download, UserPlus, Printer, BarChart2,
-    Clock
+    Plus, Search, Users, TrendingUp, Clock, AlertCircle, 
+    X, Building2, Fingerprint, Info, Briefcase, BarChart2,
+    Edit2, Trash2, Printer, Filter, Loader2, Ban, CheckCircle2
 } from 'lucide-react';
-import { downloadPdf } from '@/lib/download-pdf';
 import { toast } from 'sonner';
-import { customersService, Customer, CustomerSegment, CustomerType, PaymentBehavior, RiskLevel } from '@/services/customers';
+import { customersService, Customer, CustomerType } from '@/services/customers';
 import { formatCurrency } from '@/lib/format';
 import { useRouter } from '@/navigation';
 import { PageHeader } from '@/components/ui/page-header';
-import { KpiCard } from '@/components/ui/kpi-card';
 import { DataTable } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { downloadPdf } from '@/lib/download-pdf';
+import { CustomerKPICards } from '@/components/customers/CustomerKPICards';
 
 export default function CustomersClient() {
     const t = useTranslations('sales');
@@ -33,8 +30,6 @@ export default function CustomersClient() {
     // Filters
     const [filters, setFilters] = useState({
         segment: '' as any,
-        customerType: '' as any,
-        paymentBehavior: '' as any,
         riskLevel: '' as any
     });
 
@@ -98,6 +93,18 @@ export default function CustomersClient() {
         }
     };
 
+    const handleToggleBlock = async (e: React.MouseEvent, id: string, currentStatus: boolean) => {
+        e.stopPropagation();
+        if (!confirm(currentStatus ? 'Débloquer ce client ?' : 'Bloquer ce client ?')) return;
+        try {
+            await customersService.toggleBlock(id);
+            toast.success('Statut du client mis à jour');
+            loadCustomers();
+        } catch (err) {
+            toast.error(ct('toast.error'));
+        }
+    };
+
     const filteredCustomers = useMemo(() => {
         return (customers || []).filter(c => 
             c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -106,13 +113,25 @@ export default function CustomersClient() {
         );
     }, [customers, searchTerm]);
 
-    const stats = useMemo(() => ({
-        total: customers.length,
-        totalRevenue: customers.reduce((acc, c) => acc + Number(c.totalRevenue || 0), 0),
-        avgDelay: customers.length > 0 
-            ? Math.round(customers.reduce((acc, c) => acc + (c.avgPaymentDelay || 0), 0) / customers.length) 
-            : 0
-    }), [customers]);
+    const stats = useMemo(() => {
+        const total = customers.length;
+        let totalRevenue = 0;
+        let totalEncours = 0;
+        let totalDso = 0;
+
+        customers.forEach(c => {
+            totalRevenue += (c.caTotal || 0);
+            totalEncours += (c.encours || 0);
+            totalDso += (c.dso || 0);
+        });
+
+        return {
+            total,
+            totalRevenue,
+            totalEncours,
+            avgDso: total > 0 ? Math.round(totalDso / total) : 0
+        };
+    }, [customers]);
 
     const getSegmentBadge = (segment?: string) => {
         switch (segment) {
@@ -123,12 +142,12 @@ export default function CustomersClient() {
         }
     };
 
-    const getRiskColor = (risk?: string) => {
+    const getRiskBadge = (risk?: string) => {
         switch (risk) {
-            case 'HIGH': return 'text-red-600 bg-red-50';
-            case 'MEDIUM': return 'text-amber-600 bg-amber-50';
-            case 'LOW': return 'text-green-600 bg-green-50';
-            default: return 'text-slate-400 bg-slate-50';
+            case 'HIGH': return <Badge variant="danger" className="bg-red-500 text-white border-red-600">HIGH RISK</Badge>;
+            case 'MEDIUM': return <Badge variant="warning" className="bg-amber-500 text-white border-amber-600">MEDIUM RISK</Badge>;
+            case 'LOW': return <Badge variant="active" className="bg-emerald-500 text-white border-emerald-600">LOW RISK</Badge>;
+            default: return <Badge variant="default">UNKNOWN</Badge>;
         }
     };
 
@@ -159,30 +178,12 @@ export default function CustomersClient() {
             />
 
             {/* KPI Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <KpiCard 
-                    title={t('customers.stats.total')}
-                    value={stats.total}
-                    icon={User}
-                    variant="primary"
-                    type="count"
-                />
-                <KpiCard 
-                    title={t('customers.stats.revenue')}
-                    value={stats.totalRevenue}
-                    icon={TrendingUp}
-                    variant="success"
-                    type="currency"
-                />
-                <KpiCard 
-                    title={t('customers.stats.delay')}
-                    value={stats.avgDelay}
-                    icon={Clock}
-                    variant="warning"
-                    type="count"
-                    subtitle="jours en moyenne"
-                />
-            </div>
+            <CustomerKPICards 
+                totalCustomers={stats.total}
+                totalRevenue={stats.totalRevenue}
+                totalEncours={stats.totalEncours}
+                avgDso={stats.avgDso}
+            />
 
             {/* Main Area */}
             <Card className="border-none shadow-xl shadow-gray-200/40">
@@ -215,36 +216,23 @@ export default function CustomersClient() {
                             value={filters.segment}
                             onChange={(e) => setFilters({...filters, segment: e.target.value})}
                         >
-                            <option value="">All Segments</option>
+                            <option value="">Tous les Segments</option>
                             <option value="A">Segment A (Gold)</option>
                             <option value="B">Segment B (Silver)</option>
                             <option value="C">Segment C (Standard)</option>
                         </select>
                         <select 
                             className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 outline-none focus:border-primary transition-all"
-                            value={filters.customerType}
-                            onChange={(e) => setFilters({...filters, customerType: e.target.value})}
+                            value={filters.riskLevel}
+                            onChange={(e) => setFilters({...filters, riskLevel: e.target.value})}
                         >
-                            <option value="">All Types</option>
-                            <option value="PROMOTER">Promoter</option>
-                            <option value="WHOLESALER">Wholesaler</option>
-                            <option value="RETAILER">Retailer</option>
-                            <option value="GOVERNMENT">Government</option>
-                            <option value="INDIVIDUAL">Individual</option>
-                        </select>
-                        <select 
-                            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 outline-none focus:border-primary transition-all"
-                            value={filters.paymentBehavior}
-                            onChange={(e) => setFilters({...filters, paymentBehavior: e.target.value})}
-                        >
-                            <option value="">All Behaviors</option>
-                            <option value="EXCELLENT">Excellent</option>
-                            <option value="GOOD">Good</option>
-                            <option value="AVERAGE">Average</option>
-                            <option value="POOR">Poor</option>
+                            <option value="">Tous les Risques</option>
+                            <option value="LOW">Low Risk</option>
+                            <option value="MEDIUM">Medium Risk</option>
+                            <option value="HIGH">High Risk</option>
                         </select>
                         <button 
-                            onClick={() => setFilters({segment: '', customerType: '', paymentBehavior: '', riskLevel: ''})}
+                            onClick={() => setFilters({segment: '', riskLevel: ''})}
                             className="text-[10px] font-black text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
                         >
                             Reset
@@ -261,45 +249,50 @@ export default function CustomersClient() {
                                 header: t('customers.fields.name'),
                                 accessor: (c) => (
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 bg-blue-50/50 text-primary rounded-xl flex items-center justify-center font-black text-sm border border-blue-100/50 shadow-sm">
+                                        <div className="h-10 w-10 bg-blue-50/50 text-primary rounded-xl flex items-center justify-center font-black text-sm border border-blue-100/50 shadow-sm relative">
                                             {c.name.charAt(0)}
+                                            {c.isBlocked && (
+                                                <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm">
+                                                    <Ban size={10} />
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-gray-900 font-bold">{c.name}</span>
+                                                <span className={`text-gray-900 font-bold ${c.isBlocked ? 'line-through text-slate-400' : ''}`}>{c.name}</span>
                                                 {getSegmentBadge(c.segment)}
                                             </div>
-                                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{c.customerType || 'RETAILER'} • {c.contact || t('customers.fields.no_contact')}</span>
+                                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{c.customerType || 'RETAILER'} • {c.email || t('customers.fields.no_contact')}</span>
                                         </div>
                                     </div>
                                 )
                             },
                             {
-                                header: 'Performance',
+                                header: 'Finances',
                                 accessor: (c) => (
                                     <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-black text-slate-700">{formatCurrency(c.totalRevenue || 0)}</span>
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('customers.fields.revenue')}</span>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest w-16">CA</span>
+                                            <span className="text-xs font-black text-slate-700">{formatCurrency(c.caTotal || 0)}</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${getRiskColor(c.riskLevel)}`}>
-                                                {c.riskLevel || 'LOW'} RISK
+                                        <div className="flex items-center justify-between gap-4">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest w-16">Encours</span>
+                                            <span className={`text-xs font-black ${Number(c.encours) > 0 ? 'text-orange-600' : 'text-slate-700'}`}>
+                                                {formatCurrency(c.encours || 0)}
                                             </span>
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.avgPaymentDelay || 0}d {t('customers.fields.delay').split(' ')[0]}</span>
                                         </div>
                                     </div>
                                 )
                             },
                             {
-                                header: t('customers.fields.creditLimit'),
-                                align: 'right',
+                                header: 'Risque',
                                 accessor: (c) => (
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-sm font-black text-gray-900">{formatCurrency(c.creditLimit || 0)}</span>
-                                        <Badge variant={Number(c.creditLimit) > 0 ? "active" : "default"}>
-                                            {Number(c.creditLimit) > 0 ? t('customers.status.active') : t('customers.status.standard')}
-                                        </Badge>
+                                    <div className="flex flex-col gap-1.5 items-start">
+                                        {getRiskBadge(c.riskLevel)}
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded text-[10px] font-bold text-slate-500">
+                                            <Clock size={10} />
+                                            DSO: {c.dso || 0}j
+                                        </div>
                                     </div>
                                 )
                             },
@@ -309,11 +302,11 @@ export default function CustomersClient() {
                                 accessor: (c) => (
                                     <div className="flex items-center justify-end gap-2">
                                         <button 
-                                            onClick={(e) => { e.stopPropagation(); router.push({ pathname: '/sales/customers/[id]', params: { id: c.id } }); }}
-                                            className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-all"
-                                            title="View Dashboard"
+                                            onClick={(e) => handleToggleBlock(e, c.id, c.isBlocked)}
+                                            className={`p-2 rounded-lg transition-all ${c.isBlocked ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-red-400 hover:text-red-600 hover:bg-red-50'}`}
+                                            title={c.isBlocked ? 'Débloquer' : 'Bloquer'}
                                         >
-                                            <BarChart2 size={16} />
+                                            {c.isBlocked ? <CheckCircle2 size={16} /> : <Ban size={16} />}
                                         </button>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setEditingCustomer(c); setIsModalOpen(true); }}
@@ -398,7 +391,7 @@ export default function CustomersClient() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer Type</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Type de Client</label>
                                             <select 
                                                 className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900"
                                                 value={editingCustomer?.customerType || 'RETAILER'}
@@ -412,7 +405,7 @@ export default function CustomersClient() {
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('customers.fields.taxId')}</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{t('customers.fields.taxId')} (NIF)</label>
                                             <input 
                                                 className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-mono font-black text-slate-700"
                                                 value={editingCustomer?.taxId || ''}
@@ -471,7 +464,7 @@ export default function CustomersClient() {
                                         <div className="flex items-start gap-3">
                                             <Info size={16} className="text-blue-600 mt-0.5" />
                                             <p className="text-[10px] font-bold text-blue-700/70 leading-relaxed uppercase">
-                                                {t('customers.hints.credit')}
+                                                L'encours autorisé définit la limite de crédit pour ce client. Si l'encours dépasse cette limite, les commandes peuvent être bloquées.
                                             </p>
                                         </div>
                                     </div>
@@ -501,4 +494,3 @@ export default function CustomersClient() {
         </div>
     );
 }
-

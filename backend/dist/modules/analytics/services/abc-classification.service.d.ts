@@ -31,11 +31,11 @@ export declare class AbcClassificationService {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
-        productId: string;
+        updatedAt: Date;
         periodStart: Date;
         periodEnd: Date;
+        productId: string;
         classification: string;
         annualRevenue: Decimal;
         annualUnitsSold: number;

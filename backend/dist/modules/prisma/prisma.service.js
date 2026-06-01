@@ -16,7 +16,9 @@ const async_hooks_1 = require("async_hooks");
 exports.tenantContext = new async_hooks_1.AsyncLocalStorage();
 let PrismaService = class PrismaService extends client_1.PrismaClient {
     constructor() {
-        super();
+        super({
+            log: process.env.NODE_ENV === 'production' ? ['error'] : ['error', 'warn'],
+        });
         this.$use(this.tenancyMiddleware());
     }
     async onModuleInit() {

@@ -6,9 +6,16 @@ import en from '../../messages/en.json';
 
 const messageMap: Record<string, any> = { fr, ar, en };
 
-export default getRequestConfig(async ({ locale }) => {
-    // In next-intl v4, locale might be a string or a promise
-    let activeLocale = await locale;
+export default getRequestConfig(async ({ requestLocale }) => {
+    // In next-intl v4, the locale is available via requestLocale
+    let activeLocale = await requestLocale;
+
+    // Fallback to cookie if locale is not provided (e.g., API routes)
+    if (!activeLocale) {
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        activeLocale = cookieStore.get('NEXT_LOCALE')?.value;
+    }
 
     console.log(`[getRequestConfig] RECEIVED LOCALE: "${activeLocale}"`);
 

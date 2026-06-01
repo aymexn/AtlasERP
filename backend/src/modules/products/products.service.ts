@@ -100,7 +100,7 @@ export class ProductsService {
                     taxRate: taxRate || 0.20,
                     trackStock: trackStock ?? true,
                     companyId,
-                },
+                } as any,
                 include: { family: true },
             });
 
@@ -158,7 +158,7 @@ export class ProductsService {
                     ...(stockQuantity !== undefined && { stockQuantity }),
                     ...(taxRate !== undefined && { taxRate }),
                     ...(trackStock !== undefined && { trackStock }),
-                },
+                } as any,
                 include: { family: true },
             });
 

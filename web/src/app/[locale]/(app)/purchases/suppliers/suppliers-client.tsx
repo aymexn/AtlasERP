@@ -20,7 +20,7 @@ import { apiFetch } from '@/lib/api';
 
 export default function SuppliersClient() {
     const t = useTranslations('purchases');
-    const st = useTranslations('suppliers');
+    const st = useTranslations('purchases.suppliers');
     const ct = useTranslations('common');
     const [isMounted, setIsMounted] = useState(false);
 
@@ -144,7 +144,7 @@ export default function SuppliersClient() {
     if (!isMounted || loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <Loader2 className="animate-spin text-primary" size={40} />
+                <Loader2 className="animate-spin text-orange-600" size={40} />
                 <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{ct('loading')}</div>
             </div>
         );
@@ -152,28 +152,37 @@ export default function SuppliersClient() {
 
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in duration-700">
-            <PageHeader
-                title={t('suppliers.title')}
-                subtitle={st('subtitle') || t('subtitle')}
-                icon={Building2}
-                action={{
-                    label: t('new_supplier'),
-                    onClick: handleAdd,
-                    icon: Plus
-                }}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <KpiCard title={t('total_suppliers')} value={stats.total} icon={Users} variant="primary" type="count" loading={loading} />
-                <KpiCard title={t('active_suppliers')} value={stats.active} icon={ShieldCheck} variant="success" type="count" loading={loading} />
-                <KpiCard title={t('pending_orders')} value={stats.withOrders} icon={Building2} variant="warning" type="count" loading={loading} />
-                <KpiCard title={ct('amount')} value={stats.totalPurchased} icon={CreditCard} variant="info" type="currency" loading={loading} />
+            {/* Themed Page Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                            <Building2 size={24} />
+                        </div>
+                        {t('suppliers.title')}
+                    </h1>
+                    <p className="text-slate-500 font-medium mt-1">{st('subtitle') || t('subtitle')}</p>
+                </div>
+                <button
+                    onClick={handleAdd}
+                    className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-orange-600/20 transition-all active:scale-95"
+                >
+                    <Plus size={20} />
+                    {st('new_supplier')}
+                </button>
             </div>
 
-            <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-4xl overflow-hidden bg-white">
-                <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <KpiCard title={st('total_suppliers')} value={stats.total} icon={Users} variant="warning" type="count" loading={loading} />
+                <KpiCard title={st('active_suppliers')} value={stats.active} icon={ShieldCheck} variant="success" type="count" loading={loading} />
+                <KpiCard title={st('inactive_suppliers') || 'Inactifs'} value={stats.total - stats.active} icon={Building2} variant="slate" type="count" loading={loading} />
+                <KpiCard title={st('total_purchased')} value={stats.totalPurchased} icon={CreditCard} variant="primary" type="currency" loading={loading} />
+            </div>
+
+            <Card className="border border-orange-100 shadow-2xl shadow-orange-900/5 rounded-4xl overflow-hidden bg-white">
+                <CardHeader className="flex flex-row items-center justify-between border-b border-orange-50 p-8">
                     <CardTitle className="text-xl font-black text-slate-800 flex items-center gap-3">
-                        <Store className="w-6 h-6 text-primary" />
+                        <Store className="w-6 h-6 text-orange-600" />
                         {t('suppliers.title')}
                     </CardTitle>
                     <div className="relative w-full max-w-sm">
@@ -183,7 +192,7 @@ export default function SuppliersClient() {
                             placeholder={ct('search')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all text-sm font-bold h-[52px]"
+                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-orange-500 focus:bg-white transition-all text-sm font-bold h-[52px]"
                         />
                     </div>
                 </CardHeader>
@@ -224,7 +233,7 @@ export default function SuppliersClient() {
                             {
                                 header: t('orders.title'),
                                 accessor: (s: any) => (
-                                    <Badge variant="confirmed">
+                                    <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200">
                                         {s._count?.purchaseOrders || 0} BC
                                     </Badge>
                                 )
@@ -246,9 +255,9 @@ export default function SuppliersClient() {
                                     <div className="flex items-center justify-end gap-2 pr-4">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleEdit(s); }}
-                                            className="p-2.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-all"
+                                            className="p-2.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
                                         >
-                                            <Edit2 size={18} />
+                                            <Edit2 size={16} />
                                         </button>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); downloadPdf(`/api/pdf/supplier-card/${s.id}`, `Fiche_${s.name.replace(/\s+/g, '_')}.pdf`); }}

@@ -1,42 +1,35 @@
 'use client';
 
-import { usePathname, useRouter } from '@/navigation';
+import { usePathname } from '@/navigation';
 import { useLocale } from 'next-intl';
 
 const LanguageSwitcher = () => {
     const locale = useLocale();
-    const router = useRouter();
     const pathname = usePathname();
 
-    const switchLanguage = (newLocale: string) => {
-        // router.replace in next-intl handles the locale prefix automatically
-        // when using the localized router from '@/navigation'
-        router.replace(pathname as any, { locale: newLocale });
+    const switchLocale = (newLocale: string) => {
+        // Set cookie for next-intl detection
+        document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+        // Navigate to localized route
+        window.location.href = `/${newLocale}${pathname === '/' ? '' : pathname}`;
     };
 
-    const languages = [
-        { code: 'fr', name: 'FR', flag: '🇫🇷' },
-        { code: 'ar', name: 'AR', flag: '🇸🇦' },
-        { code: 'en', name: 'EN', flag: '🇺🇸' },
-    ];
-
     return (
-        <div className="flex bg-gray-100 p-1 rounded-xl shadow-inner border border-gray-200" suppressHydrationWarning>
-            {languages.map((lang) => (
-                <button
-                    key={lang.code}
-                    onClick={() => switchLanguage(lang.code)}
-                    className={`
-                        flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all
-                        ${locale === lang.code
-                            ? 'bg-white text-primary shadow-sm transform scale-105'
-                            : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'}
-                    `}
-                >
-                    <span className="text-sm">{lang.flag}</span>
-                    <span className="hidden sm:inline">{lang.name}</span>
-                </button>
-            ))}
+        <div className="relative group w-full">
+            <select
+                value={locale}
+                onChange={(e) => switchLocale(e.target.value)}
+                className="w-full ps-6 pe-12 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] outline-none focus:bg-white focus:border-blue-600 transition-all font-bold text-gray-900 shadow-inner appearance-none cursor-pointer"
+            >
+                <option value="fr">Français 🇫🇷</option>
+                <option value="en">English 🇺🇸</option>
+                <option value="ar">العربية 🇩🇿</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 end-4 flex items-center text-gray-400">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+            </div>
         </div>
     );
 };

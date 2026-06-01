@@ -9,13 +9,13 @@ export declare class RecruitmentController {
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.JobStatus;
+        title: string;
         createdAt: Date;
+        status: import(".prisma/client").$Enums.JobStatus;
         companyId: string;
         description: string | null;
-        location: string | null;
         department: string | null;
-        title: string;
+        location: string | null;
         requirements: string | null;
         employmentType: string | null;
         postedBy: string | null;
@@ -23,13 +23,13 @@ export declare class RecruitmentController {
     })[]>;
     createJobPosting(req: any, data: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.JobStatus;
+        title: string;
         createdAt: Date;
+        status: import(".prisma/client").$Enums.JobStatus;
         companyId: string;
         description: string | null;
-        location: string | null;
         department: string | null;
-        title: string;
+        location: string | null;
         requirements: string | null;
         employmentType: string | null;
         postedBy: string | null;
@@ -39,13 +39,13 @@ export declare class RecruitmentController {
         applications: ({
             jobPosting: {
                 id: string;
-                status: import(".prisma/client").$Enums.JobStatus;
+                title: string;
                 createdAt: Date;
+                status: import(".prisma/client").$Enums.JobStatus;
                 companyId: string;
                 description: string | null;
-                location: string | null;
                 department: string | null;
-                title: string;
+                location: string | null;
                 requirements: string | null;
                 employmentType: string | null;
                 postedBy: string | null;
@@ -61,62 +61,36 @@ export declare class RecruitmentController {
         })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.CandidateStatus;
         createdAt: Date;
-        companyId: string;
         email: string | null;
-        phone: string | null;
+        status: import(".prisma/client").$Enums.CandidateStatus;
+        companyId: string;
         firstName: string | null;
         lastName: string | null;
+        phone: string | null;
         cvPath: string | null;
         coverLetterPath: string | null;
         source: string | null;
     })[]>;
     createCandidate(req: any, data: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.CandidateStatus;
         createdAt: Date;
-        companyId: string;
         email: string | null;
-        phone: string | null;
+        status: import(".prisma/client").$Enums.CandidateStatus;
+        companyId: string;
         firstName: string | null;
         lastName: string | null;
+        phone: string | null;
         cvPath: string | null;
         coverLetterPath: string | null;
         source: string | null;
     }>;
     getApplications(req: any, jobId?: string): Promise<({
-        jobPosting: {
-            id: string;
-            status: import(".prisma/client").$Enums.JobStatus;
-            createdAt: Date;
-            companyId: string;
-            description: string | null;
-            location: string | null;
-            department: string | null;
-            title: string;
-            requirements: string | null;
-            employmentType: string | null;
-            postedBy: string | null;
-            closedAt: Date | null;
-        };
-        candidate: {
-            id: string;
-            status: import(".prisma/client").$Enums.CandidateStatus;
-            createdAt: Date;
-            companyId: string;
-            email: string | null;
-            phone: string | null;
-            firstName: string | null;
-            lastName: string | null;
-            cvPath: string | null;
-            coverLetterPath: string | null;
-            source: string | null;
-        };
         interviews: {
             id: string;
             createdAt: Date;
             result: import(".prisma/client").$Enums.InterviewResult;
+            applicationId: string;
             scheduledAt: Date | null;
             durationMinutes: number | null;
             interviewType: import(".prisma/client").$Enums.InterviewType | null;
@@ -124,13 +98,39 @@ export declare class RecruitmentController {
             interviewerIds: string[];
             feedback: string | null;
             rating: number | null;
-            applicationId: string;
         }[];
+        jobPosting: {
+            id: string;
+            title: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.JobStatus;
+            companyId: string;
+            description: string | null;
+            department: string | null;
+            location: string | null;
+            requirements: string | null;
+            employmentType: string | null;
+            postedBy: string | null;
+            closedAt: Date | null;
+        };
+        candidate: {
+            id: string;
+            createdAt: Date;
+            email: string | null;
+            status: import(".prisma/client").$Enums.CandidateStatus;
+            companyId: string;
+            firstName: string | null;
+            lastName: string | null;
+            phone: string | null;
+            cvPath: string | null;
+            coverLetterPath: string | null;
+            source: string | null;
+        };
         offers: {
             id: string;
-            status: import(".prisma/client").$Enums.OfferStatus;
-            createdAt: Date;
             message: string | null;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.OfferStatus;
             startDate: Date | null;
             applicationId: string;
             salaryOffered: import("@prisma/client/runtime/library").Decimal | null;
@@ -153,16 +153,11 @@ export declare class RecruitmentController {
     }>;
     hireCandidate(req: any, id: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.EmployeeStatus;
-        notes: string | null;
         createdAt: Date;
-        updatedAt: Date;
-        companyId: string;
-        address: string | null;
-        email: string | null;
-        phone: string | null;
         userId: string | null;
-        taxId: string | null;
+        email: string | null;
+        status: import(".prisma/client").$Enums.EmployeeStatus;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -171,7 +166,10 @@ export declare class RecruitmentController {
         nationality: string | null;
         gender: string | null;
         maritalStatus: string | null;
+        address: string | null;
+        phone: string | null;
         socialSecurityNumber: string | null;
+        taxId: string | null;
         emergencyContactName: string | null;
         emergencyContactPhone: string | null;
         emergencyContactRelationship: string | null;
@@ -182,6 +180,8 @@ export declare class RecruitmentController {
         department: string | null;
         position: string | null;
         managerId: string | null;
+        notes: string | null;
+        updatedAt: Date;
     }>;
     applyToJob(data: any): Promise<{
         id: string;
@@ -195,6 +195,7 @@ export declare class RecruitmentController {
         id: string;
         createdAt: Date;
         result: import(".prisma/client").$Enums.InterviewResult;
+        applicationId: string;
         scheduledAt: Date | null;
         durationMinutes: number | null;
         interviewType: import(".prisma/client").$Enums.InterviewType | null;
@@ -202,6 +203,5 @@ export declare class RecruitmentController {
         interviewerIds: string[];
         feedback: string | null;
         rating: number | null;
-        applicationId: string;
     }>;
 }

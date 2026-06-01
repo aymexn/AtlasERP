@@ -44,7 +44,7 @@ export default function SettingsPage() {
     const loadSettings = async () => {
         try {
             setLoading(true);
-            const data = await apiFetch('/tenants/me');
+            const data = await apiFetch('/api/tenants/me');
             if (data) {
                 setFormData({
                     name: data.name || '',
@@ -70,7 +70,7 @@ export default function SettingsPage() {
         e.preventDefault();
         setSaving(true);
         try {
-            await apiFetch('/tenants/me', {
+            await apiFetch('/api/tenants/me', {
                 method: 'POST',
                 body: JSON.stringify(formData)
             });

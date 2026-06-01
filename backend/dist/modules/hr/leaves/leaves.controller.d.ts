@@ -7,7 +7,7 @@ export declare class LeavesController {
         createdAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
+        color: string | null;
         code: string | null;
         isPaid: boolean;
         accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -15,14 +15,14 @@ export declare class LeavesController {
         requiresDocument: boolean;
         minNoticeDays: number;
         maxConsecutiveDays: number | null;
-        color: string | null;
+        isActive: boolean;
     }[]>;
     createLeaveType(req: any, data: any): Promise<{
         id: string;
         createdAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
+        color: string | null;
         code: string | null;
         isPaid: boolean;
         accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -30,7 +30,7 @@ export declare class LeavesController {
         requiresDocument: boolean;
         minNoticeDays: number;
         maxConsecutiveDays: number | null;
-        color: string | null;
+        isActive: boolean;
     }>;
     getBalances(employeeId: string, year?: string): Promise<({
         leaveType: {
@@ -38,7 +38,7 @@ export declare class LeavesController {
             createdAt: Date;
             companyId: string;
             name: string;
-            isActive: boolean;
+            color: string | null;
             code: string | null;
             isPaid: boolean;
             accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -46,7 +46,7 @@ export declare class LeavesController {
             requiresDocument: boolean;
             minNoticeDays: number;
             maxConsecutiveDays: number | null;
-            color: string | null;
+            isActive: boolean;
         };
     } & {
         id: string;
@@ -61,16 +61,11 @@ export declare class LeavesController {
     requestLeave(req: any, data: any): Promise<{
         employee: {
             id: string;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            notes: string | null;
             createdAt: Date;
-            updatedAt: Date;
-            companyId: string;
-            address: string | null;
-            email: string | null;
-            phone: string | null;
             userId: string | null;
-            taxId: string | null;
+            email: string | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -79,7 +74,10 @@ export declare class LeavesController {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
+            address: string | null;
+            phone: string | null;
             socialSecurityNumber: string | null;
+            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -90,13 +88,15 @@ export declare class LeavesController {
             department: string | null;
             position: string | null;
             managerId: string | null;
+            notes: string | null;
+            updatedAt: Date;
         };
         leaveType: {
             id: string;
             createdAt: Date;
             companyId: string;
             name: string;
-            isActive: boolean;
+            color: string | null;
             code: string | null;
             isPaid: boolean;
             accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -104,38 +104,33 @@ export declare class LeavesController {
             requiresDocument: boolean;
             minNoticeDays: number;
             maxConsecutiveDays: number | null;
-            color: string | null;
+            isActive: boolean;
         };
     } & {
         id: string;
         status: import(".prisma/client").$Enums.LeaveStatus;
         updatedAt: Date;
-        reason: string | null;
         startDate: Date;
-        employeeId: string;
         endDate: Date;
-        documentId: string | null;
+        employeeId: string;
+        managerComment: string | null;
         leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
-        managerComment: string | null;
+        reason: string | null;
         hrComment: string | null;
         appliedAt: Date;
+        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
     findAll(req: any, filters: any): Promise<({
         employee: {
             id: string;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            notes: string | null;
             createdAt: Date;
-            updatedAt: Date;
-            companyId: string;
-            address: string | null;
-            email: string | null;
-            phone: string | null;
             userId: string | null;
-            taxId: string | null;
+            email: string | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -144,7 +139,10 @@ export declare class LeavesController {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
+            address: string | null;
+            phone: string | null;
             socialSecurityNumber: string | null;
+            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -155,13 +153,15 @@ export declare class LeavesController {
             department: string | null;
             position: string | null;
             managerId: string | null;
+            notes: string | null;
+            updatedAt: Date;
         };
         leaveType: {
             id: string;
             createdAt: Date;
             companyId: string;
             name: string;
-            isActive: boolean;
+            color: string | null;
             code: string | null;
             isPaid: boolean;
             accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -169,22 +169,22 @@ export declare class LeavesController {
             requiresDocument: boolean;
             minNoticeDays: number;
             maxConsecutiveDays: number | null;
-            color: string | null;
+            isActive: boolean;
         };
     } & {
         id: string;
         status: import(".prisma/client").$Enums.LeaveStatus;
         updatedAt: Date;
-        reason: string | null;
         startDate: Date;
-        employeeId: string;
         endDate: Date;
-        documentId: string | null;
+        employeeId: string;
+        managerComment: string | null;
         leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
-        managerComment: string | null;
+        reason: string | null;
         hrComment: string | null;
         appliedAt: Date;
+        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     })[]>;
@@ -192,32 +192,27 @@ export declare class LeavesController {
         id: string;
         status: import(".prisma/client").$Enums.LeaveStatus;
         updatedAt: Date;
-        reason: string | null;
         startDate: Date;
-        employeeId: string;
         endDate: Date;
-        documentId: string | null;
+        employeeId: string;
+        managerComment: string | null;
         leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
-        managerComment: string | null;
+        reason: string | null;
         hrComment: string | null;
         appliedAt: Date;
+        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
     approveByHr(req: any, id: string, comment?: string): Promise<{
         employee: {
             id: string;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            notes: string | null;
             createdAt: Date;
-            updatedAt: Date;
-            companyId: string;
-            address: string | null;
-            email: string | null;
-            phone: string | null;
             userId: string | null;
-            taxId: string | null;
+            email: string | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -226,7 +221,10 @@ export declare class LeavesController {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
+            address: string | null;
+            phone: string | null;
             socialSecurityNumber: string | null;
+            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -237,21 +235,23 @@ export declare class LeavesController {
             department: string | null;
             position: string | null;
             managerId: string | null;
+            notes: string | null;
+            updatedAt: Date;
         };
     } & {
         id: string;
         status: import(".prisma/client").$Enums.LeaveStatus;
         updatedAt: Date;
-        reason: string | null;
         startDate: Date;
-        employeeId: string;
         endDate: Date;
-        documentId: string | null;
+        employeeId: string;
+        managerComment: string | null;
         leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
-        managerComment: string | null;
+        reason: string | null;
         hrComment: string | null;
         appliedAt: Date;
+        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
@@ -259,16 +259,16 @@ export declare class LeavesController {
         id: string;
         status: import(".prisma/client").$Enums.LeaveStatus;
         updatedAt: Date;
-        reason: string | null;
         startDate: Date;
-        employeeId: string;
         endDate: Date;
-        documentId: string | null;
+        employeeId: string;
+        managerComment: string | null;
         leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
-        managerComment: string | null;
+        reason: string | null;
         hrComment: string | null;
         appliedAt: Date;
+        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
@@ -285,16 +285,16 @@ export declare class LeavesController {
         id: string;
         status: import(".prisma/client").$Enums.LeaveStatus;
         updatedAt: Date;
-        reason: string | null;
         startDate: Date;
-        employeeId: string;
         endDate: Date;
-        documentId: string | null;
+        employeeId: string;
+        managerComment: string | null;
         leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
-        managerComment: string | null;
+        reason: string | null;
         hrComment: string | null;
         appliedAt: Date;
+        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     })[]>;

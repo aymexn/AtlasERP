@@ -69,9 +69,13 @@ export default function ProductsClient() {
     const [isFormulaListView, setIsFormulaListView] = useState(true);
     const [loadingFormula, setLoadingFormula] = useState(false);
 
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [totalProducts, setTotalProducts] = useState(0);
+
     useEffect(() => {
         loadProducts();
-    }, []);
+    }, [page, limit, searchTerm, selectedFamilyId, stockFilter]);
 
     useEffect(() => {
         if (activeTab === 'formula' && currentProduct?.id) {
@@ -81,11 +85,21 @@ export default function ProductsClient() {
 
     const loadProducts = async () => {
         try {
-            const [productsData, familiesData] = await Promise.all([
-                productsService.list(),
+            setLoading(true);
+            const [productsRes, familiesData] = await Promise.all([
+                productsService.listPaginated({
+                    page,
+                    limit,
+                    search: searchTerm,
+                    type: selectedFamilyId !== 'all' ? selectedFamilyId : undefined // This maps family selection to type filter per user's request (although usually type is RAW_MATERIAL etc)
+                }),
                 familiesService.list()
             ]);
-            setProducts(productsData || []);
+            
+            // Extract paginated data
+            setProducts(productsRes.data || []);
+            setTotalProducts(productsRes.meta?.total || 0);
+            
             setFamilies(familiesData || []);
         } catch (err) {
             console.error('Failed to load products', err);
@@ -228,16 +242,7 @@ export default function ProductsClient() {
         return 'READY';
     };
 
-    const filteredProducts = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.family?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFamily = selectedFamilyId === 'all' || p.familyId === selectedFamilyId;
-        const matchesStock = stockFilter === 'all' || (p.stockQuantity < (p.minStock || 0) && p.stockQuantity > 0);
-        return matchesSearch && matchesFamily && matchesStock;
-    });
-
-    if (loading) {
+    if (loading && products.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <Loader2 className="animate-spin text-blue-600" size={40} />
@@ -291,7 +296,7 @@ export default function ProductsClient() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
-                    { label: t('stats.total'), value: products.length, variant: 'primary', icon: Package },
+                    { label: t('stats.total'), value: totalProducts, variant: 'primary', icon: Package },
                     { label: t('stats.finished'), value: products.filter(p => p.articleType === 'FINISHED_PRODUCT').length, variant: 'success', icon: CheckCircle2 },
                     { label: t('stats.raw'), value: products.filter(p => p.articleType === 'RAW_MATERIAL').length, variant: 'secondary', icon: Layers },
                     { label: t('stats.low_stock'), value: products.filter(p => p.stockQuantity < (p.minStock || 0) && p.stockQuantity > 0).length, variant: 'warning', icon: AlertCircle }
@@ -351,89 +356,76 @@ export default function ProductsClient() {
 
                 <div className="p-1">
                     <DataTable
-                        data={filteredProducts}
+                        data={products}
                         enableSelection
                         selectedIds={selectedIds}
                         onSelectionChange={setSelectedIds}
                         onRowClick={(p) => { setCurrentProduct(p); setIsModalOpen(true); setActiveTab('general'); }}
                         columns={[
                             {
-                                header: t('fields.type'),
-                                accessor: (p) => (
-                                    <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${
-                                        p.articleType === 'FINISHED_PRODUCT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                                        p.articleType === 'RAW_MATERIAL' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                                        p.articleType === 'SERVICE' ? 'bg-slate-50 text-slate-700 border border-slate-100' : 'bg-gray-50 text-gray-700 border border-gray-100'
-                                    }`}>
-                                        {t(`article_types.${p.articleType}`)}
-                                    </span>
+                                header: 'Image',
+                                accessor: () => (
+                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                                        <Package size={20} />
+                                    </div>
                                 )
                             },
                             {
                                 header: t('fields.name'),
                                 accessor: (p) => (
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-foreground">{p.name}</span>
-                                        {p.secondaryName && <span className="text-[10px] text-muted-foreground font-medium">{p.secondaryName}</span>}
+                                        <span className="font-bold text-slate-900">{p.name}</span>
+                                        {p.secondaryName && <span className="text-[10px] text-slate-500 font-medium">{p.secondaryName}</span>}
                                     </div>
                                 )
                             },
                             {
                                 header: t('fields.code'),
                                 accessor: 'sku',
-                                className: 'font-mono text-xs font-black text-gray-400'
+                                className: 'font-mono text-xs font-black text-slate-400'
                             },
                             {
-                                header: t('fields.family'),
-                                accessor: (p) => p.family ? <span className="text-blue-700 font-bold text-xs">{p.family.name}</span> : <span className="text-gray-300">—</span>
-                            },
-                            {
-                                header: t('fields.readiness.label'),
+                                header: t('fields.type'),
                                 accessor: (p) => (
-                                    p.articleType === 'FINISHED_PRODUCT' || p.articleType === 'SEMI_FINISHED' ? (
-                                        <div className="flex items-center gap-1.5">
-                                            <div className={`h-2 w-2 rounded-full ${isProductionReady(p) === 'READY' ? 'bg-blue-600 animate-pulse' :
-                                                isProductionReady(p) === 'MISSING_COST' ? 'bg-amber-500' : 'bg-gray-300'
-                                                }`} />
-                                            <span className={`text-[10px] font-black uppercase tracking-tight ${isProductionReady(p) === 'READY' ? 'text-blue-700' :
-                                                isProductionReady(p) === 'MISSING_COST' ? 'text-amber-700' : 'text-gray-400'
-                                                }`}>
-                                                {isProductionReady(p) === 'READY' ? t('fields.readiness.ready') :
-                                                    isProductionReady(p) === 'MISSING_COST' ? t('fields.readiness.missing_cost') :
-                                                        t('fields.readiness.missing_formula')}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">{t('fields.readiness.not_manufacturable')}</span>
-                                    )
+                                    <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${
+                                        p.articleType === 'FINISHED_PRODUCT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                        p.articleType === 'RAW_MATERIAL' ? 'bg-slate-100 text-slate-600 border border-slate-200' :
+                                        p.articleType === 'SEMI_FINISHED' ? 'bg-orange-50 text-orange-600 border border-orange-200' : 
+                                        'bg-gray-50 text-gray-700 border border-gray-100'
+                                    }`}>
+                                        {t(`article_types.${p.articleType}`)}
+                                    </span>
                                 )
                             },
                             {
-                                header: t('fields.price_ttc'),
+                                header: 'Prix HT',
                                 accessor: (p) => (
-                                    p.articleType === 'RAW_MATERIAL' || p.articleType === 'PACKAGING' || p.articleType === 'CONSUMABLE' ? (
-                                        <span className="text-gray-300">---</span>
-                                    ) : (
-                                        <span className="font-black text-blue-600">
-                                            {formatCurrency(Number(p.salePriceHt) * (1 + Number(p.taxRate)), locale)}
-                                        </span>
-                                    )
+                                    <span className="font-black text-slate-900">
+                                        {formatCurrency(Number(p.salePriceHt || 0), locale)}
+                                    </span>
                                 )
                             },
                             {
                                 header: t('fields.stock'),
-                                accessor: (p) => (
-                                    <div className="flex flex-col gap-1">
-                                        <span className={`font-black ${p.stockQuantity <= 0 ? 'text-rose-600' : p.stockQuantity < (p.minStock || 0) ? 'text-orange-500' : 'text-blue-600'}`}>
-                                            {p.stockQuantity} <span className="text-[10px] font-medium text-gray-400 uppercase">{p.unit}</span>
-                                        </span>
-                                        {p.stockQuantity <= 0 ? (
-                                            <span className="w-fit bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest whitespace-nowrap animate-pulse shadow-sm">Out of Stock</span>
-                                        ) : p.stockQuantity < (p.minStock || 0) ? (
-                                            <span className="w-fit bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">Low Stock</span>
-                                        ) : null}
-                                    </div>
-                                )
+                                accessor: (p) => {
+                                    const available = Number(p.stockQuantity) - Number(p.stockReserved || 0);
+                                    return (
+                                        <div className="flex flex-col gap-1">
+                                            <span className={`font-black ${available <= 0 ? 'text-rose-600' : available < (p.minStock || 0) ? 'text-orange-500' : 'text-emerald-600'}`}>
+                                                {available}
+                                            </span>
+                                            {available <= 0 ? (
+                                                <span className="w-fit bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">Rupture</span>
+                                            ) : available < (p.minStock || 0) ? (
+                                                <span className="w-fit bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">Stock Bas</span>
+                                            ) : null}
+                                        </div>
+                                    );
+                                }
+                            },
+                            {
+                                header: 'Unité',
+                                accessor: (p) => <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{p.unit || 'PCS'}</span>
                             },
                             {
                                 header: ct('actions'),
@@ -460,6 +452,32 @@ export default function ProductsClient() {
                             }
                         ]}
                     />
+                    
+                    {/* Pagination Footer */}
+                    <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+                        <div className="text-sm font-bold text-slate-500">
+                            Affichage de {((page - 1) * limit) + 1} à {Math.min(page * limit, totalProducts)} sur {totalProducts} produits
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-4 py-2 text-sm font-black text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                            >
+                                Précédent
+                            </button>
+                            <span className="px-4 py-2 text-sm font-bold text-slate-900 bg-white border border-slate-200 rounded-lg shadow-sm">
+                                Page {page} / {Math.max(1, Math.ceil(totalProducts / limit))}
+                            </span>
+                            <button 
+                                onClick={() => setPage(p => Math.min(Math.ceil(totalProducts / limit), p + 1))}
+                                disabled={page >= Math.ceil(totalProducts / limit)}
+                                className="px-4 py-2 text-sm font-black text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                            >
+                                Suivant
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

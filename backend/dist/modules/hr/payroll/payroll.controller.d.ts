@@ -7,8 +7,8 @@ export declare class PayrollController {
     constructor(payrollService: PayrollService, pdfService: PdfService);
     getPeriods(req: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.PayrollStatus;
         createdAt: Date;
+        status: import(".prisma/client").$Enums.PayrollStatus;
         companyId: string;
         periodStart: Date;
         periodEnd: Date;
@@ -17,8 +17,8 @@ export declare class PayrollController {
     }[]>;
     createPeriod(req: any, data: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.PayrollStatus;
         createdAt: Date;
+        status: import(".prisma/client").$Enums.PayrollStatus;
         companyId: string;
         periodStart: Date;
         periodEnd: Date;
@@ -29,16 +29,11 @@ export declare class PayrollController {
     getPayrollRuns(id: string): Promise<({
         employee: {
             id: string;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            notes: string | null;
             createdAt: Date;
-            updatedAt: Date;
-            companyId: string;
-            address: string | null;
-            email: string | null;
-            phone: string | null;
             userId: string | null;
-            taxId: string | null;
+            email: string | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -47,7 +42,10 @@ export declare class PayrollController {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
+            address: string | null;
+            phone: string | null;
             socialSecurityNumber: string | null;
+            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -58,11 +56,13 @@ export declare class PayrollController {
             department: string | null;
             position: string | null;
             managerId: string | null;
+            notes: string | null;
+            updatedAt: Date;
         };
     } & {
         id: string;
-        status: string | null;
         createdAt: Date;
+        status: string | null;
         employeeId: string;
         payrollPeriodId: string;
         grossSalary: import("@prisma/client/runtime/library").Decimal | null;
@@ -76,19 +76,19 @@ export declare class PayrollController {
     generatePayslip(id: string): Promise<{
         id: string;
         employeeId: string;
-        filePath: string | null;
         periodStart: Date;
         periodEnd: Date;
         payrollRunId: string;
+        filePath: string | null;
         generatedAt: Date;
     }>;
     getEmployeePayslips(id: string): Promise<{
         id: string;
         employeeId: string;
-        filePath: string | null;
         periodStart: Date;
         periodEnd: Date;
         payrollRunId: string;
+        filePath: string | null;
         generatedAt: Date;
     }[]>;
 }

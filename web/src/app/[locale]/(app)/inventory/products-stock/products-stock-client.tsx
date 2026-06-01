@@ -155,7 +155,7 @@ export default function ProductsStockClient() {
                         className="flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
                     >
                         <FileText size={16} />
-                        Exporter l'Inventaire (PDF)
+                        {t('stock.export_pdf')}
                     </button>
                 </CardHeader>
 
@@ -201,7 +201,7 @@ export default function ProductsStockClient() {
                                                         {cost === 0 ? (
                                                             <span className="text-[9px] font-black text-red-500 uppercase mt-1 px-2 py-0.5 bg-red-50 rounded-lg border border-red-100 flex items-center gap-1">
                                                                 <AlertCircle size={10} />
-                                                                Coût non défini
+                                                                {t('stock.cost_undefined')}
                                                             </span>
                                                         ) : (
                                                             <span className="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-wider opacity-60">

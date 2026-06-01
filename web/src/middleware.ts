@@ -1,0 +1,66 @@
+import createMiddleware from 'next-intl/middleware';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { routing } from './navigation';
+
+const intlMiddleware = createMiddleware(routing);
+
+export default async function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // 1. Detect double locale segments: /(fr|ar|en)/(fr|ar|en)/...
+    const locales = routing.locales;
+    const segments = pathname.split('/').filter(Boolean);
+
+    if (segments.length >= 2) {
+        const first = segments[0];
+        const second = segments[1];
+
+        if (locales.includes(first as any) && locales.includes(second as any)) {
+            const newPathname = '/' + [first, ...segments.slice(2)].join('/');
+            const url = request.nextUrl.clone();
+            url.pathname = newPathname;
+            return NextResponse.redirect(url);
+        }
+    }
+
+    // 2. Auth & Tenant Isolation Check
+    const isApiRoute = pathname.startsWith('/api');
+    const isAuthRoute = pathname.startsWith('/api/auth') || pathname.includes('/login') || pathname.includes('/accept-invitation') || pathname.includes('/register');
+    const isProtected = pathname.includes('/dashboard') || 
+                        pathname.includes('/admin') ||
+                        pathname.includes('/purchases') ||
+                        pathname.includes('/sales') ||
+                        pathname.includes('/settings') ||
+                        pathname.includes('/products') ||
+                        pathname.includes('/catalogue') ||
+                        pathname.includes('/inventory') ||
+                        pathname.includes('/manufacturing');
+  
+    if ((isApiRoute && !isAuthRoute) || (isProtected && !isAuthRoute)) {
+        // Check for the custom atlas_token cookie (the app uses its own JWT, not NextAuth session)
+        const atlasToken = request.cookies.get('atlas_token')?.value;
+        
+        if (!atlasToken) {
+            if (isApiRoute) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            } else {
+                const locale = locales.includes(segments[0] as any) ? segments[0] : 'fr';
+                const loginUrl = new URL(`/${locale}/login`, request.url);
+                return NextResponse.redirect(loginUrl);
+            }
+        }
+    }
+
+    // Bypass next-intl for API routes
+    if (isApiRoute) {
+        return NextResponse.next();
+    }
+
+    return intlMiddleware(request);
+}
+
+export const config = {
+    // Match all pathnames except for static files
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)']
+};

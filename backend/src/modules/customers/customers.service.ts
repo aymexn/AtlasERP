@@ -30,21 +30,28 @@ export class CustomersService {
       include: {
         invoices: {
           where: { status: { not: 'CANCELLED' } },
-          select: { totalAmountHt: true },
+          select: { totalAmountHt: true, amountRemaining: true },
         },
       },
     });
 
-    // Dynamically calculate totalRevenue and sort
+    // Dynamically calculate KPIs and sort
     return customers
       .map((c) => {
         const dynamicRevenue = c.invoices.reduce(
           (acc, inv) => acc + Number(inv.totalAmountHt || 0),
           0,
         );
+        const dynamicEncours = c.invoices.reduce(
+          (acc, inv) => acc + Number(inv.amountRemaining || 0),
+          0,
+        );
         return {
           ...c,
           totalRevenue: dynamicRevenue,
+          caTotal: dynamicRevenue,
+          encours: dynamicEncours,
+          dso: c.avgPaymentDelay || 0,
           invoices: undefined,
         };
       })
@@ -91,6 +98,7 @@ export class CustomersService {
   async getPerformanceData(companyId: string, customerId: string) {
     const customer = await this.prisma.customer.findFirst({
       where: { id: customerId, companyId },
+      include: { contacts: true },
     });
     if (!customer) throw new NotFoundException('Customer not found');
 

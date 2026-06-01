@@ -1,13 +1,66 @@
 {
+    "page_titles": {
+        "dashboard": "لوحة القيادة",
+        "customers": "إدارة العملاء",
+        "sales_orders": "طلبات المبيعات",
+        "suppliers": "إدارة الموردين",
+        "purchase_orders": "طلبات الشراء",
+        "receptions": "استلام المخزون",
+        "products": "كتالوج المنتجات",
+        "families": "عائلات المنتجات",
+        "inventory": "إدارة المخزون",
+        "manufacturing": "أوامر التصنيع",
+        "invoices": "الفواتير",
+        "aged_receivables": "ديون العملاء الأعمار",
+        "forecast": "توقعات التدفق النقدي",
+        "expenses": "إدارة المصاريف",
+        "analytics": "الإحصائيات والتقارير",
+        "abc": "تحليل ABC",
+        "dead_stock": "المخزون الراكد",
+        "employees": "إدارة الموظفين",
+        "leaves": "طلبات الإجازات",
+        "payroll": "إدارة الرواتب",
+        "recruitment": "التوظيف والعروض",
+        "performance": "متابعة الأداء",
+        "settings": "إعدادات النظام",
+        "collaboration": "مساحة العمل المشترك",
+        "ai": "أطلس إنتليجنس"
+    },
+    "chat": {
+        "title": "مساعد القرار الذكي",
+        "subtitle": "مساعدك الخاص بالذكاء التشغيلي",
+        "input_placeholder": "اكتب رسالة أو اطرح سؤالاً...",
+        "listening_placeholder": "الاستماع الصوتي نشط...",
+        "voice_tooltip": "الإدخال الصوتي",
+        "suggestions_title": "الأسئلة المقترحة:",
+        "new_session": "جلسة جديدة",
+        "loading": "المساعد يقوم بتحليل بيانات المؤسسة...",
+        "thinking": "جاري التفكير...",
+        "status_online": "مساعد ERP الافتراضي • متصل",
+        "welcome_message": "أنا متصل بالبيانات الحقيقية لمؤسستك (الخزينة، الطلبات، المخزون، وأوامر التصنيع). اختر أحد التحليلات المقترحة أدناه أو اطرح أسئلتك.",
+        "error_connecting": "❌ عذرًا، حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.",
+        "voice_sample": "تحليل التدفقات النقدية",
+        "attach_sample": "إرفاق ملف أمر التصنيع الجاري [OF-2026-0042]",
+        "suggestions": {
+            "cash_flow": "تحليل التدفقات النقدية",
+            "stock_shortage": "فحص نواقص المخازن",
+            "client_performance": "أداء العملاء",
+            "overdue_invoices": "الفواتير المتأخرة",
+            "active_mos": "أوامر التصنيع الجارية"
+        },
+        "attach_tooltip": "إرفاق ملف أمر التصنيع"
+    },
     "login": {
-        "title": "مرحباً بك مجدداً",
-        "subtitle": "سجل الدخول إلى AtlasERP لإدارة عملياتك.",
+        "title": "تسجيل الدخول",
+        "subtitle": "الوصول إلى مساحة عمل AtlasERP",
         "email": "البريد الإلكتروني",
         "password": "كلمة المرور",
         "button": "تسجيل الدخول",
-        "authenticating": "جاري التحقق...",
+        "authenticating": "جاري المصادقة...",
         "no_account": "ليس لديك حساب؟",
-        "register": "طلب وصول"
+        "register": "إنشاء حساب",
+        "error_title": "خطأ في الدخول",
+        "invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة."
     },
     "common": {
         "title": "أطلس",
@@ -94,6 +147,7 @@
             "production": "العمليات والمخزون",
             "finance": "الإدارة المالية",
             "analytics": "التحليلات",
+            "ai": "الذكاء الاصطناعي",
             "hr": "الموارد البشرية",
             "collaboration": "التعاون والمشاريع"
         },
@@ -119,6 +173,11 @@
             "analytics_overview": "نظرة عامة",
             "abc_analysis": "تحليل ABC",
             "dead_stock": "المخزون الراكد",
+            "ai_assistant": "مساعد الذكاء الاصطناعي",
+            "ai_insights": "الرؤى والتنبؤات",
+            "ai_recommendations": "التوصيات الذكية",
+            "ai_analytics": "التحليلات المتقدمة",
+            "ai_automations": "الأتمتة الذكية",
             "hr_employees": "الموظفون",
             "hr_leaves": "الإجازات",
             "hr_payroll": "الرواتب",
@@ -130,7 +189,7 @@
         }
     },
     "dashboard": {
-        "title": "لوحة التحكم التشغيلية",
+        "title": "لوحة القيادة",
         "company_overview": "نظرة عامة على المؤسسة",
         "production_overview": "نظرة عامة على الإنتاج",
         "financial_fortress": "الحصن المالي",
@@ -179,7 +238,69 @@
         "manage_candidates": "إدارة المرشحين",
         "performance": "الأداء",
         "appraisals": "التقييمات",
-        "active_cycle": "الدورة الحالية"
+        "active_cycle": "الدورة الحالية",
+        "actions": {
+            "recalculate": "إعادة حساب البيانات"
+        },
+        "sections": {
+            "today_overview": "نظرة عامة اليوم"
+        },
+        "metrics": {
+            "monthly_goal": "الهدف الشهري",
+            "monthly_revenue": "المبيعات الشهرية",
+            "cash_on_hand": "الخزينة النقدية",
+            "company_health": "صحة الشركة",
+            "stable_month": "← مستقر هذا الشهر",
+            "achieved": "المحقق",
+            "remaining": "المتبقي",
+            "in_cash": "في الخزينة",
+            "out_of_stock": "سلع غير متوفرة",
+            "optimal_level": "مستوى ممتاز",
+            "action_required": "مطلوب إجراء",
+            "orders_this_month": "طلبات هذا الشهر",
+            "active_customers_label": "{count} عميل نشط",
+            "month_over_month": "شهرًا بعد شهر",
+            "vs_last_month": "{percent}% مقارنة بالشهر الماضي",
+            "stable_vs_last_month": "مستقر مقارنة بالشهر الماضي",
+            "plus_100_vs_last_month": "+100% مقارنة بالشهر الماضي",
+            "insufficient_history": "بيانات غير كافية",
+            "insufficient_history_desc": "لا توجد بيانات تاريخية كافية بعد. يرجى العودة بعد بضعة أشهر من النشاط.",
+            "articles_in_alert": "{count} منتجات في حالة تنبيه",
+            "all_stocks_optimal": "جميع مستويات المخزون ممتازة.",
+            "orders_count": "{count} طلبات",
+            "recovery_rate_label": "معدل التحصيل",
+            "view_profile": "عرض الملف",
+            "view_all": "عرض الكل",
+            "no_activity": "لم يتم رصد أي نشاط حديث",
+            "top_suppliers_volume": "أهم الموردين (الحجم)",
+            "cash_tooltip": "السيولة المتاحة مقارنة بيوم أمس",
+            "stock_tooltip": "منتجات غير متوفرة تتطلب إعادة التموين",
+            "sales_tooltip": "طلبات العملاء النشطة",
+            "customers_tooltip": "العملاء الجدد المضافون هذا الشهر",
+            "cash_increase_vs_yesterday": "↗ +15.0% مقارنة بأمس",
+            "total_active_label": "إجمالي النشطين",
+            "new_this_month_label": "الجدد هذا الشهر",
+            "top_customer_label": "🏆 أفضل عميل",
+            "last_order_label": "آخر طلب",
+            "collected_cash": "المحصل",
+            "customers_and_sales": "العملاء والمبيعات"
+        },
+        "quick_actions": {
+            "title": "إجراءات سريعة",
+            "sale": "بيع",
+            "purchase": "شراء",
+            "manufacturing": "تصنيع",
+            "invoice": "فاتورة",
+            "customer": "عميل",
+            "stock": "مخزون",
+            "tasks": "مهام"
+        },
+        "gauge": {
+            "excellent": "ممتاز",
+            "good": "جيد",
+            "warning": "انتباه",
+            "critical": "حرِج"
+        }
     },
     "products": {
         "title": "كتالوج المنتجات",
@@ -332,7 +453,10 @@
             "low_stock": "مخزون منخفض",
             "out_of_stock": "نفاد",
             "all_products": "جميع المنتجات",
-            "min": "الحد الأدنى"
+            "min": "الحد الأدنى",
+            "export_pdf": "تصدير المخزون (PDF)",
+            "cost_undefined": "التكلفة غير محددة",
+            "priority_actions": "إجراءات ذات أولوية مطلوبة"
         },
         "movements": {
             "title": "حركات المخزون",
@@ -471,33 +595,51 @@
             "cancelled": "ملغى"
         },
         "orders": {
-            "title": "إدارة المشتريات",
-            "subtitle": "إدارة طلبات الشراء من الموردين",
+            "title": "طلبات الشراء",
+            "subtitle": "إدارة التوريدات والطلبات الخاصة بك",
             "add": "طلب شراء جديد",
-            "add_subtitle": "التزام شراء صناعي",
-            "kpi": {
-                "active_orders": "الطلبات المفتوحة",
-                "total_cost": "الالتزام المالي HT",
-                "received": "مستلمة ومغلقة",
-                "pending": "مستلمة جزئياً"
-            },
-            "sections": {
-                "items": "العناصر المطلوبة"
+            "add_subtitle": "إنشاء التزام شراء",
+            "list": "سجل الطلبات",
+            "tabs": {
+                "general": "معلومات عامة",
+                "items": "الأصناف",
+                "summary": "التأكيد"
             },
             "form": {
-                "supplier": "المورد *",
+                "supplier": "اختر المورد",
                 "order_date": "تاريخ الطلب",
-                "expected_date": "التسليم المتوقع",
-                "items_title": "عناصر الطلب",
-                "add_line": "إضافة سطر",
-                "product_placeholder": "اختر منتجاً...",
-                "notes": "ملاحظات",
-                "summary_title": "ملخص مالي",
-                "save": "حفظ الطلب"
+                "expected_date": "تاريخ التسليم المتوقع",
+                "notes": "تعليمات وملاحظات داخلية",
+                "items_title": "تفاصيل الأصناف",
+                "add_line": "إضافة صنف",
+                "product_placeholder": "البحث عن صنف...",
+                "summary_title": "الملخص والتأكيد",
+                "save": "حفظ طلب الشراء",
+                "financial_summary": "الملخص المالي",
+                "direct_stock": "إدخال مباشر للمخزون",
+                "direct_stock_desc": "تحديد كمستلم وتغذية المخزون",
+                "stock_feed_title": "تغذية المخزون الحقيقي",
+                "stock_feed_desc": "التأكيد سينشئ استلاماً وحركات مخزون تلقائياً.",
+                "order_mode_title": "وضع الطلب (مسودة/مرسل)",
+                "order_mode_desc": "سيتم إنشاء الطلب دون التأثير على المخزون فوراً.",
+                "progression": "التقدم",
+                "no_nif": "بدون رقم ضريبي",
+                "no_rc": "بدون سجل تجاري",
+                "notes_placeholder": "أضف أي تعليمات تسليم أو شروط خاصة...",
+                "steps": {
+                    "supplier": "الخطوة 1: معلومات المورد",
+                    "items": "الخطوة 2: أسطر المنتجات",
+                    "summary": "الخطوة 3: التكاليف والتأكيد"
+                },
+                "tabs": {
+                    "general": "معلومات عامة",
+                    "items": "الأصناف",
+                    "summary": "التأكيد"
+                }
             },
             "errors": {
                 "no_supplier": "يرجى اختيار مورد",
-                "invalid_lines": "يرجى إكمال جميع الأسطر بشكل صحيح"
+                "invalid_lines": "يرجى التحقق من الأصناف والكميات"
             },
             "success": {
                 "created": "تم إنشاء طلب الشراء بنجاح"
@@ -599,43 +741,6 @@
                 "validate": "تأكيد الاستلام"
             }
         },
-        "orders": {
-            "title": "طلبات الشراء",
-            "subtitle": "إدارة التوريدات والطلبات الخاصة بك",
-            "add": "طلب شراء جديد",
-            "add_subtitle": "إنشاء التزام شراء",
-            "list": "سجل الطلبات",
-            "form": {
-                "supplier": "اختر المورد",
-                "order_date": "تاريخ الطلب",
-                "expected_date": "تاريخ التسليم المتوقع",
-                "notes": "تعليمات وملاحظات داخلية",
-                "items_title": "تفاصيل الأصناف",
-                "add_line": "إضافة صنف",
-                "product_placeholder": "البحث عن صنف...",
-                "summary_title": "الملخص والتأكيد",
-                "save": "حفظ طلب الشراء",
-                "financial_summary": "الملخص المالي",
-                "direct_stock": "إدخال مباشر للمخزون",
-                "direct_stock_desc": "تحديد كمستلم وتغذية المخزون",
-                "stock_feed_title": "تغذية المخزون الحقيقي",
-                "stock_feed_desc": "التأكيد سينشئ استلاماً وحركات مخزون تلقائياً.",
-                "order_mode_title": "وضع الطلب (مسودة/مرسل)",
-                "order_mode_desc": "سيتم إنشاء الطلب دون التأثير على المخزون فوراً.",
-                "tabs": {
-                    "general": "معلومات عامة",
-                    "items": "الأصناف",
-                    "summary": "التأكيد"
-                }
-            },
-            "errors": {
-                "no_supplier": "يرجى اختيار مورد",
-                "invalid_lines": "يرجى التحقق من الأصناف والكميات"
-            },
-            "success": {
-                "created": "تم إنشاء طلب الشراء بنجاح"
-            }
-        },
         "reference": "مرجع طلب الشراء",
         "supplier": "شريك مورد",
         "order_date": "تاريخ الإصدار",
@@ -702,6 +807,31 @@
             "toast": {
                 "shipped": "تم شحن المنتجات وتحديث المخزون",
                 "invoiced": "تم إنشاء الفاتورة بنجاح"
+            },
+            "steps": {
+                "info": "الخطوة 1: تفاصيل العميل",
+                "lines": "الخطوة 2: أسطر المنتجات",
+                "summary": "الخطوة 3: التكاليف والتحقق"
+            },
+            "due_date": "تاريخ الاستحقاق",
+            "notes_placeholder": "تعليمات التسليم والملاحظات...",
+            "continue_lines": "متابعة ← أسطر المنتجات",
+            "continue_summary": "متابعة ← التكاليف والتحقق",
+            "save_draft": "حفظ كمسودة",
+            "validate_order": "تأكيد الطلب",
+            "due": "استحقاق",
+            "status_invoiced_no_action": "طلب مفوتر — لا يوجد إجراء متاح",
+            "status_cancelled_no_action": "طلب ملغى — لا يوجد إجراء متاح",
+            "summary": {
+                "title": "ملخص الطلب",
+                "subtotal": "المجموع الفرعي (قبل الضريبة) ({count} أسطر)",
+                "discount": "خصم إجمالي ({pct}%)",
+                "shipping": "تكاليف الشحن"
+            },
+            "actions": {
+                "validate": "تأكيد طلب البيع",
+                "ship": "شحن طلب البيع",
+                "invoice": "فوترة طلب البيع"
             }
         },
         "customers": {
@@ -858,17 +988,6 @@
             "ar": "العربية"
         }
     },
-    "login": {
-        "title": "تسجيل الدخول",
-        "subtitle": "الوصول إلى مساحة عمل AtlasERP",
-        "email": "البريد الإلكتروني",
-        "password": "كلمة المرور",
-        "button": "تسجيل الدخول",
-        "authenticating": "جاري المصادقة...",
-        "no_account": "ليس لديك حساب؟",
-        "register": "إنشاء حساب",
-        "error_title": "خطأ في الدخول"
-    },
     "register": {
         "title": "إنشاء حساب",
         "subtitle": "انضم إلى منصة AtlasERP",
@@ -937,7 +1056,7 @@
         "new_event": "حدث جديد",
         "new_project": "مشروع جديد",
         "new_task": "مهمة جديدة",
-            "team_calendar": "تقويم الفريق",
+        "team_calendar": "تقويم الفريق",
         "project_list": "قائمة المشاريع",
         "kanban_board": "لوحة كانبان",
         "activity_log": "سجل النشاطات",

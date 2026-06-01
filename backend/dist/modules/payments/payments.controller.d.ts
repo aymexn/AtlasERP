@@ -4,18 +4,18 @@ export declare class PaymentsController {
     constructor(paymentsService: PaymentsService);
     findAll(req: any): Promise<({
         invoice: {
-            reference: string;
             customer: {
                 name: string;
             };
+            reference: string;
         };
     } & {
         id: string;
-        reference: string | null;
-        notes: string | null;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        notes: string | null;
+        updatedAt: Date;
+        reference: string | null;
         date: Date;
         invoiceId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
@@ -23,11 +23,11 @@ export declare class PaymentsController {
     })[]>;
     recordPayment(body: any, req: any): Promise<{
         id: string;
-        reference: string | null;
-        notes: string | null;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        notes: string | null;
+        updatedAt: Date;
+        reference: string | null;
         date: Date;
         invoiceId: string;
         amount: import("@prisma/client/runtime/library").Decimal;

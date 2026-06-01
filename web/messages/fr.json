@@ -1,13 +1,66 @@
 {
+    "page_titles": {
+        "dashboard": "Tableau de Bord",
+        "customers": "Gestion des Clients",
+        "sales_orders": "Bons de Commande Client",
+        "suppliers": "Gestion des Fournisseurs",
+        "purchase_orders": "Bons de Commande Fournisseur",
+        "receptions": "Réceptions de Stock",
+        "products": "Catalogue des Articles",
+        "families": "Familles d'Articles",
+        "inventory": "Gestion des Stocks",
+        "manufacturing": "Ordres de Fabrication",
+        "invoices": "Factures",
+        "aged_receivables": "Balance Âgée Clients",
+        "forecast": "Prévisions de Trésorerie",
+        "expenses": "Gestion des Dépenses",
+        "analytics": "Statistiques & Rapports",
+        "abc": "Analyse ABC",
+        "dead_stock": "Morts en Stock",
+        "employees": "Gestion des Employés",
+        "leaves": "Demandes de Congés",
+        "payroll": "Gestion de la Paie",
+        "recruitment": "Recrutement & Offres",
+        "performance": "Suivi des Performances",
+        "settings": "Paramètres du Système",
+        "collaboration": "Espace Collaboratif",
+        "ai": "Atlas Intelligence"
+    },
+    "chat": {
+        "title": "Assistant Décisionnel AI",
+        "subtitle": "Votre copilote d'intelligence opérationnelle",
+        "input_placeholder": "Écrivez un message ou posez une question...",
+        "listening_placeholder": "Écoute vocale active...",
+        "voice_tooltip": "Saisie vocale",
+        "suggestions_title": "Suggestions de questions :",
+        "new_session": "Nouvelle Session",
+        "loading": "L'assistant analyse les données de l'organisation...",
+        "thinking": "Réflexion en cours...",
+        "status_online": "Assistant Virtuel ERP • En ligne",
+        "welcome_message": "Je suis connecté aux flux réels de votre entreprise (trésorerie, commandes, stocks et OF). Sélectionnez une macro-analyse ci-dessous ou posez-moi vos questions.",
+        "error_connecting": "❌ Désolé, une erreur s'est produite lors de la connexion au moteur AI. Veuillez réessayer.",
+        "voice_sample": "Analyser le Cash Flow",
+        "attach_sample": "Attacher la fiche de l'OF en cours [OF-2026-0042]",
+        "suggestions": {
+            "cash_flow": "Analyser le Cash Flow",
+            "stock_shortage": "Vérifier Ruptures Stocks",
+            "client_performance": "Performance Client",
+            "overdue_invoices": "Factures en retard",
+            "active_mos": "Ordres de fab. en cours"
+        },
+        "attach_tooltip": "Attacher la fiche de l'OF"
+    },
     "login": {
-        "title": "Bon Retour",
-        "subtitle": "Connectez-vous à AtlasERP pour gérer vos opérations.",
+        "title": "Connexion",
+        "subtitle": "Accédez à votre espace de travail AtlasERP",
         "email": "Adresse Email",
         "password": "Mot de Passe",
         "button": "Se Connecter",
         "authenticating": "Authentification...",
-        "no_account": "Vous n'avez pas de compte ?",
-        "register": "Demander l'Accès"
+        "no_account": "Pas encore de compte ?",
+        "register": "Créer un compte",
+        "error_title": "Erreur de connexion",
+        "invalid_credentials": "Email ou mot de passe incorrect."
     },
     "common": {
         "title": "Atlas",
@@ -89,7 +142,17 @@
         "create_mo": "Fabrication",
         "new_customer": "Client",
         "inventory_check": "Inventaire",
-        "finance_report": "Trésorerie"
+        "finance_report": "Trésorerie",
+        "products": {
+            "title": "Catalogue articles",
+            "new_product": "Nouvel article",
+            "name": "Désignation",
+            "sku": "SKU",
+            "type": "Type",
+            "price_ht": "Prix HT",
+            "stock": "Stock disponible",
+            "unit": "Unité"
+        }
     },
     "nav": {
         "dashboard": "Tableau de Bord",
@@ -101,6 +164,7 @@
             "production": "Opérations & Stocks",
             "finance": "Gestion Financière",
             "analytics": "Analytique",
+            "ai": "Intelligence AI",
             "hr": "Ressources Humaines",
             "collaboration": "Collaboration & Projets"
         },
@@ -126,6 +190,11 @@
             "analytics_overview": "Vue d'Ensemble",
             "abc_analysis": "Classification ABC",
             "dead_stock": "Stock Mort",
+            "ai_assistant": "Assistant AI",
+            "ai_insights": "Insights & Prédictions",
+            "ai_recommendations": "Recommandations",
+            "ai_analytics": "Analytique Avancée",
+            "ai_automations": "Automatisations",
             "hr_employees": "Employés",
             "hr_leaves": "Congés",
             "hr_payroll": "Paie",
@@ -170,7 +239,7 @@
         "notifications": "Notifications"
     },
     "dashboard": {
-        "title": "Cockpit Opérationnel",
+        "title": "Tableau de Bord",
         "company_overview": "Surveillance de l'organisation",
         "production_overview": "Flux de Production",
         "financial_fortress": "Forteresse Financière",
@@ -223,7 +292,69 @@
         "manage_candidates": "Gérer les candidats",
         "performance": "Performance",
         "appraisals": "Évaluations",
-        "active_cycle": "Cycle en cours"
+        "active_cycle": "Cycle en cours",
+        "actions": {
+            "recalculate": "RECALCULER LES DONNÉES"
+        },
+        "sections": {
+            "today_overview": "APERÇU AUJOURD'HUI"
+        },
+        "metrics": {
+            "monthly_goal": "OBJECTIF MENSUEL",
+            "monthly_revenue": "CHIFFRE D'AFFAIRES MENSUEL",
+            "cash_on_hand": "TRÉSORERIE EN CAISSE",
+            "company_health": "SANTÉ DE L'ENTREPRISE",
+            "stable_month": "→ Stable ce mois-ci",
+            "achieved": "Atteint",
+            "remaining": "Reste",
+            "in_cash": "en caisse",
+            "out_of_stock": "articles en rupture",
+            "optimal_level": "Niveau optimal",
+            "action_required": "Action requise",
+            "orders_this_month": "commande(s) ce mois",
+            "active_customers_label": "{count} client(s) actif(s)",
+            "month_over_month": "Mois après Mois",
+            "vs_last_month": "{percent}% vs mois dernier",
+            "stable_vs_last_month": "Stable vs mois dernier",
+            "plus_100_vs_last_month": "+100% vs mois dernier",
+            "insufficient_history": "Historique insuffisant",
+            "insufficient_history_desc": "Pas encore assez de données historiques. Revenez après quelques mois d'activité.",
+            "articles_in_alert": "{count} Articles en alerte",
+            "all_stocks_optimal": "Tous les stocks sont à un niveau optimal.",
+            "orders_count": "{count} Commandes",
+            "recovery_rate_label": "Taux de recouvrement",
+            "view_profile": "Voir Profil",
+            "view_all": "Tout voir",
+            "no_activity": "Aucune activité récente détectée",
+            "top_suppliers_volume": "Top Fournisseurs (Volume)",
+            "cash_tooltip": "Liquidités disponibles comparées à hier",
+            "stock_tooltip": "Articles en rupture de stock nécessitant réapprovisionnement",
+            "sales_tooltip": "Commandes clients actives",
+            "customers_tooltip": "Nouveaux clients ajoutés ce mois",
+            "cash_increase_vs_yesterday": "↗ +15.0% vs hier",
+            "total_active_label": "Total Actifs",
+            "new_this_month_label": "Nouveaux ce mois",
+            "top_customer_label": "🏆 Top Client",
+            "last_order_label": "Dernière cmd",
+            "collected_cash": "Encaisse",
+            "customers_and_sales": "Clients & Ventes"
+        },
+        "quick_actions": {
+            "title": "Actions Rapides",
+            "sale": "Vente",
+            "purchase": "Achat",
+            "manufacturing": "Fabrication",
+            "invoice": "Facture",
+            "customer": "Client",
+            "stock": "Stock",
+            "tasks": "Tâches"
+        },
+        "gauge": {
+            "excellent": "EXCELLENT",
+            "good": "BON",
+            "warning": "ATTENTION",
+            "critical": "CRITIQUE"
+        }
     },
     "finances": {
         "invoices": {
@@ -484,7 +615,10 @@
             "low_stock": "Stock Faible",
             "out_of_stock": "Rupture",
             "all_products": "Tous les produits",
-            "min": "Seuil Min"
+            "min": "Seuil Min",
+            "export_pdf": "Exporter l'Inventaire (PDF)",
+            "cost_undefined": "Coût non défini",
+            "priority_actions": "Actions prioritaires requises"
         },
         "movements": {
             "title": "Flux Historiques",
@@ -686,7 +820,16 @@
                 "stock_feed_title": "Alimentation réelle des stocks",
                 "stock_feed_desc": "La validation créera automatiquement une réception et les mouvements de stock.",
                 "order_mode_title": "Mode Commande (Brouillon/Envoyé)",
-                "order_mode_desc": "La commande sera créée sans impacter les stocks immédiatement."
+                "order_mode_desc": "La commande sera créée sans impacter les stocks immédiatement.",
+                "progression": "Progression",
+                "no_nif": "Pas de NIF",
+                "no_rc": "Pas de RC",
+                "notes_placeholder": "Ajouter des instructions de livraison, observations...",
+                "steps": {
+                    "supplier": "Étape 1 : Informations fournisseur",
+                    "items": "Étape 2 : Lignes produits",
+                    "summary": "Étape 3 : Frais et validation"
+                }
             },
             "errors": {
                 "no_supplier": "Veuillez sélectionner un fournisseur",
@@ -797,7 +940,12 @@
         "order_date": "Date Émission",
         "expected_date": "Date de Livraison Prévue",
         "total_ttc": "CA Global TTC",
-        "order_detail_description": "Suivi détaillé de l'engagement d'achat et des réceptions associées."
+        "order_detail_description": "Suivi détaillé de l'engagement d'achat et des réceptions associées.",
+        "new_supplier": "Nouveau Fournisseur",
+        "total_suppliers": "Total Fournisseurs",
+        "active_suppliers": "Fournisseurs Actifs",
+        "pending_orders": "Commandes en attente",
+        "amount": "Montant"
     },
     "sales": {
         "orders": {
@@ -855,6 +1003,31 @@
             "toast": {
                 "shipped": "Produits expédiés, stock mis à jour",
                 "invoiced": "Facture générée avec succès"
+            },
+            "steps": {
+                "info": "Étape 1 : Informations client",
+                "lines": "Étape 2 : Lignes produits",
+                "summary": "Étape 3 : Frais et validation"
+            },
+            "due_date": "Date d'Échéance",
+            "notes_placeholder": "Instructions de livraison, observations...",
+            "continue_lines": "Continuer → Lignes Produits",
+            "continue_summary": "Continuer → Frais & Validation",
+            "save_draft": "Sauvegarder Brouillon",
+            "validate_order": "Valider la Commande",
+            "due": "Éch",
+            "status_invoiced_no_action": "BC Facturé — aucune action disponible",
+            "status_cancelled_no_action": "BC Annulé — aucune action disponible",
+            "summary": {
+                "title": "Récapitulatif de la commande",
+                "subtotal": "Sous-total HT ({count} lignes)",
+                "discount": "Remise globale ({pct}%)",
+                "shipping": "Frais de port"
+            },
+            "actions": {
+                "validate": "Valider BC",
+                "ship": "Expédier BC",
+                "invoice": "Facturer BC"
             }
         },
         "customers": {
@@ -983,17 +1156,6 @@
             "en": "Anglais",
             "ar": "Arabe"
         }
-    },
-    "login": {
-        "title": "Connexion",
-        "subtitle": "Accédez à votre espace de travail AtlasERP",
-        "email": "Adresse Email",
-        "password": "Mot de Passe",
-        "button": "Se Connecter",
-        "authenticating": "Authentification...",
-        "no_account": "Pas encore de compte ?",
-        "register": "Créer un compte",
-        "error_title": "Erreur de connexion"
     },
     "register": {
         "title": "Créer un Compte",
@@ -1174,5 +1336,6 @@
                 "details": "Détails"
             }
         }
-    }
+    },
+    "suppliers": {}
 }

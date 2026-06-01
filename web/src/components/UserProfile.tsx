@@ -22,6 +22,13 @@ const UserProfile = () => {
         ? `${user.employee.firstName} ${user.employee.lastName}`
         : user?.email.split('@')[0] || 'Utilisateur';
 
+    const initials = fullName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -38,8 +45,8 @@ const UserProfile = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2.5 p-1 pr-2 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
             >
-                <div className="h-9 w-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 border border-slate-200/50 shadow-sm shrink-0 transition-transform hover:scale-105">
-                    <UserIcon size={18} className="stroke-[2.5]" />
+                <div className="h-9 w-9 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-sm shadow-md shadow-blue-500/20 shrink-0 transition-transform hover:scale-105">
+                    {initials}
                 </div>
                 <div className="text-left hidden md:block">
                     <p className="text-xs font-bold text-slate-800 leading-none">{fullName}</p>

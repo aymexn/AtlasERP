@@ -7,18 +7,18 @@ export declare class PaymentsService {
     constructor(prisma: PrismaService, eventEmitter: EventEmitter2);
     findAll(companyId: string): Promise<({
         invoice: {
-            reference: string;
             customer: {
                 name: string;
             };
+            reference: string;
         };
     } & {
         id: string;
-        reference: string | null;
-        notes: string | null;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        notes: string | null;
+        updatedAt: Date;
+        reference: string | null;
         date: Date;
         invoiceId: string;
         amount: Prisma.Decimal;
@@ -26,11 +26,11 @@ export declare class PaymentsService {
     })[]>;
     recordPayment(companyId: string, data: any): Promise<{
         id: string;
-        reference: string | null;
-        notes: string | null;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        notes: string | null;
+        updatedAt: Date;
+        reference: string | null;
         date: Date;
         invoiceId: string;
         amount: Prisma.Decimal;

@@ -4,12 +4,15 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     findByEmail(email: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.UserStatus;
         createdAt: Date;
-        companyId: string;
         email: string;
+        invitationToken: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
+        companyId: string;
+        invitationExpires: Date | null;
+        companyRoleId: string | null;
     }>;
     create(data: {
         email: string;
@@ -17,54 +20,63 @@ export declare class UsersService {
         companyId?: string;
     }): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.UserStatus;
         createdAt: Date;
-        companyId: string;
         email: string;
+        invitationToken: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
+        companyId: string;
+        invitationExpires: Date | null;
+        companyRoleId: string | null;
     }>;
     updateCompany(userId: string, companyId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.UserStatus;
         createdAt: Date;
-        companyId: string;
         email: string;
+        invitationToken: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
+        companyId: string;
+        invitationExpires: Date | null;
+        companyRoleId: string | null;
     }>;
     findAll(): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.UserStatus;
         createdAt: Date;
         email: string;
+        status: import(".prisma/client").$Enums.UserStatus;
         roles: ({
             role: {
                 id: string;
                 createdAt: Date;
-                updatedAt: Date;
                 name: string;
                 description: string | null;
+                updatedAt: Date;
                 displayName: string;
                 isSystemRole: boolean;
             };
         } & {
             id: string;
-            isActive: boolean;
             userId: string;
+            isActive: boolean;
+            roleId: string;
             assignedAt: Date;
             assignedBy: string | null;
             expiresAt: Date | null;
-            roleId: string;
         })[];
     }[]>;
     invite(email: string, roleId: string, invitedBy: string, companyId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.UserStatus;
         createdAt: Date;
-        companyId: string;
         email: string;
+        invitationToken: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
+        status: import(".prisma/client").$Enums.UserStatus;
+        companyId: string;
+        invitationExpires: Date | null;
+        companyRoleId: string | null;
     }>;
 }

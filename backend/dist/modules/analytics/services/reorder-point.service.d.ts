@@ -7,15 +7,15 @@ export declare class ReorderPointService {
     calculateReorderPoint(companyId: string, productId: string, warehouseId: string | null, serviceLevelPercent?: number): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        updatedAt: Date;
+        reorderPoint: Decimal;
         productId: string;
         warehouseId: string | null;
-        reorderPoint: Decimal;
-        leadTimeDays: number | null;
         safetyStock: Decimal;
         reorderQuantity: Decimal;
         maximumStock: Decimal | null;
+        leadTimeDays: number | null;
         averageDailyDemand: Decimal | null;
         demandVariability: Decimal | null;
         serviceLevel: Decimal;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-type BadgeVariant = 
+export type BadgeVariant = 
     | 'draft' 
     | 'confirmed' 
     | 'received' 
@@ -13,6 +13,8 @@ type BadgeVariant =
     | 'inactive'
     | 'warning'
     | 'danger'
+    | 'destructive'
+    | 'success'
     | 'info'
     | 'primary'
     | 'default';
@@ -30,12 +32,14 @@ const variantStyles: Record<BadgeVariant, string> = {
     cancelled: 'bg-red-50 text-red-700 border-red-100',
     validated: 'bg-blue-600/10 text-primary border-primary/10',
     in_progress: 'bg-blue-50 text-blue-700 border-blue-100',
-    completed: 'bg-blue-50/50 text-blue-700 border-blue-100/50',
+    completed: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     planned: 'bg-purple-50 text-purple-700 border-purple-100',
     active: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     inactive: 'bg-gray-50 text-gray-500 border-gray-100',
     warning: 'bg-amber-50 text-amber-700 border-amber-100',
     danger: 'bg-red-50 text-red-700 border-red-100',
+    destructive: 'bg-red-500 text-white border-red-600',
+    success: 'bg-emerald-500 text-white border-emerald-600',
     info: 'bg-sky-50 text-sky-700 border-sky-100',
     primary: 'bg-blue-50 text-primary border-primary/10',
     default: 'bg-gray-50 text-gray-600 border-gray-100'
@@ -52,4 +56,3 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', cla
         </span>
     );
 };
-

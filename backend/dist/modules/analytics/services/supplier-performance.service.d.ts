@@ -6,12 +6,12 @@ export declare class SupplierPerformanceService {
     constructor(prisma: PrismaService);
     calculatePerformance(companyId: string, supplierId: string, startDate: Date, endDate: Date): Promise<{
         id: string;
-        notes: string | null;
         createdAt: Date;
         companyId: string;
-        supplierId: string;
+        notes: string | null;
         periodStart: Date;
         periodEnd: Date;
+        supplierId: string;
         totalOrders: number;
         onTimeDeliveries: number;
         lateDeliveries: number;
@@ -33,18 +33,18 @@ export declare class SupplierPerformanceService {
     }>;
     getRankings(companyId: string, startDate: Date, endDate: Date): Promise<({
         supplier: {
-            name: string;
             email: string;
+            name: string;
             phone: string;
         };
     } & {
         id: string;
-        notes: string | null;
         createdAt: Date;
         companyId: string;
-        supplierId: string;
+        notes: string | null;
         periodStart: Date;
         periodEnd: Date;
+        supplierId: string;
         totalOrders: number;
         onTimeDeliveries: number;
         lateDeliveries: number;

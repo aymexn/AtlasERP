@@ -25,7 +25,12 @@ import {
     UserPlus,
     UserCog,
     PieChart,
-    Calendar
+    Calendar,
+    Sparkles,
+    MessageSquare,
+    Eye,
+    CheckSquare,
+    Zap
 } from 'lucide-react';
 import { useState } from 'react';
 import { Can } from '@/components/guards/PermissionGuard';
@@ -81,7 +86,7 @@ const Sidebar = () => {
             title: t('groups.catalogue'),
             icon: Package,
             items: [
-                { name: t('items.products'), href: '/products', icon: Package },
+                { name: t('items.products'), href: '/catalogue/products', icon: Package },
                 { name: t('items.families'), href: '/product-families', icon: FolderTree },
             ]
         },
@@ -113,6 +118,18 @@ const Sidebar = () => {
                 { name: t('items.analytics_overview'), href: '/analytics', icon: LineChart },
                 { name: t('items.abc_analysis'), href: '/analytics/abc', icon: PieChart },
                 { name: t('items.dead_stock'), href: '/analytics/dead-stock', icon: AlertCircle },
+            ]
+        },
+        {
+            id: 'ai',
+            title: t('groups.ai'),
+            icon: Sparkles,
+            items: [
+                { name: t('items.ai_assistant'), href: '/ai/chat', icon: MessageSquare },
+                { name: t('items.ai_insights'), href: '/ai/insights', icon: Eye },
+                { name: t('items.ai_recommendations'), href: '/ai/recommendations', icon: CheckSquare },
+                { name: t('items.ai_analytics'), href: '/ai/analytics', icon: TrendingUp },
+                { name: t('items.ai_automations'), href: '/ai/automations', icon: Zap },
             ]
         },
         {

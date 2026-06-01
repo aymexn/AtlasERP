@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { 
   Users, 
@@ -15,7 +15,9 @@ import {
   X,
   AlertCircle,
   Plus,
-  Send
+  Send,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
@@ -43,22 +45,34 @@ export default function UsersClient() {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeMenuUserId, setActiveMenuUserId] = useState<string | null>(null);
   
   // Invite form state
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRoleId, setInviteRoleId] = useState('');
   const [inviting, setInviting] = useState(false);
 
+  const menuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     loadData();
+    
+    // Close dropdown on outside click
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenuUserId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const loadData = async () => {
     setLoading(true);
     try {
       const [usersData, rolesData] = await Promise.all([
-        apiFetch('/users'),
-        apiFetch('/rbac/roles')
+        apiFetch('/api/users'),
+        apiFetch('/api/roles')
       ]);
       setUsers(usersData || []);
       setRoles(rolesData || []);
@@ -76,7 +90,7 @@ export default function UsersClient() {
     
     setInviting(true);
     try {
-      await apiFetch('/users/invite', {
+      await apiFetch('/api/users', {
         method: 'POST',
         body: JSON.stringify({ email: inviteEmail, roleId: inviteRoleId }),
       });
@@ -85,8 +99,8 @@ export default function UsersClient() {
       setInviteEmail('');
       setInviteRoleId('');
       loadData();
-    } catch (error) {
-      toast.error('Error sending invitation');
+    } catch (error: any) {
+      toast.error(error.message || 'Error sending invitation');
     } finally {
       setInviting(false);
     }
@@ -94,7 +108,7 @@ export default function UsersClient() {
 
   const handleAssignRole = async (userId: string, roleId: string) => {
     try {
-      await apiFetch(`/rbac/users/${userId}/roles`, {
+      await apiFetch(`/api/users/${userId}/roles`, {
         method: 'POST',
         body: JSON.stringify({ roleId }),
       });
@@ -107,13 +121,40 @@ export default function UsersClient() {
 
   const handleRevokeRole = async (userId: string, roleId: string) => {
     try {
-      await apiFetch(`/rbac/users/${userId}/roles/${roleId}`, {
+      await apiFetch(`/api/users/${userId}/roles/${roleId}`, {
         method: 'DELETE',
       });
       toast.success('Role revoked successfully');
       loadData();
     } catch (error) {
       toast.error('Error revoking role');
+    }
+  };
+
+  const handleSuspendUser = async (userId: string) => {
+    try {
+      await apiFetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+      toast.success('Collaborateur suspendu avec succès');
+      setActiveMenuUserId(null);
+      loadData();
+    } catch (error) {
+      toast.error('Erreur lors de la suspension');
+    }
+  };
+
+  const handleActivateUser = async (userId: string) => {
+    try {
+      await apiFetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'ACTIVE' }),
+      });
+      toast.success('Collaborateur activé avec succès');
+      setActiveMenuUserId(null);
+      loadData();
+    } catch (error) {
+      toast.error('Erreur lors de l\'activation');
     }
   };
 
@@ -142,7 +183,7 @@ export default function UsersClient() {
           </button>
         </div>
 
-        <div className="bg-white border-2 border-slate-100 rounded-4xl overflow-hidden shadow-sm">
+        <div className="bg-white border-2 border-slate-100 rounded-4xl overflow-visible shadow-sm">
           <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative w-full sm:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -161,7 +202,7 @@ export default function UsersClient() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-visible">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-100">
@@ -207,7 +248,7 @@ export default function UsersClient() {
                             setSelectedUser(user);
                             setIsRoleModalOpen(true);
                           }}
-                          className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-tighter border border-slate-100 transition-all"
+                          className="flex items-center gap-1.5 px-3 py-1 bg-slate-55 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-tighter border border-slate-100 transition-all"
                         >
                           <Plus size={10} />
                           {t('role_modal.add')}
@@ -226,10 +267,50 @@ export default function UsersClient() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-5 text-right">
-                      <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all">
+                    <td className="px-8 py-5 text-right relative overflow-visible">
+                      <button 
+                        onClick={() => setActiveMenuUserId(activeMenuUserId === user.id ? null : user.id)}
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
+                      >
                         <MoreVertical size={18} />
                       </button>
+                      
+                      {activeMenuUserId === user.id && (
+                        <div 
+                          ref={menuRef}
+                          className="absolute right-8 top-12 z-50 w-56 bg-white border-2 border-slate-100 rounded-2xl shadow-xl py-2 text-left animate-in fade-in slide-in-from-top-2 duration-200"
+                        >
+                          <button
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setIsRoleModalOpen(true);
+                              setActiveMenuUserId(null);
+                            }}
+                            className="w-full px-4 py-2.5 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
+                          >
+                            <Shield size={14} className="text-slate-400" />
+                            Gérer les rôles
+                          </button>
+                          
+                          {user.status === 'SUSPENDED' ? (
+                            <button
+                              onClick={() => handleActivateUser(user.id)}
+                              className="w-full px-4 py-2.5 hover:bg-green-50 hover:text-green-700 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
+                            >
+                              <UserCheck size={14} className="text-green-500" />
+                              Activer le collaborateur
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleSuspendUser(user.id)}
+                              className="w-full px-4 py-2.5 hover:bg-red-50 hover:text-red-700 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
+                            >
+                              <UserX size={14} className="text-red-500" />
+                              Suspendre le collaborateur
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -269,7 +350,7 @@ export default function UsersClient() {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('invite_modal.role')}</label>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
                     {roles.map(role => (
                       <button
                         key={role.id}
@@ -327,7 +408,7 @@ export default function UsersClient() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="p-8 space-y-3">
+              <div className="p-8 space-y-3 max-h-[24rem] overflow-y-auto">
                 {roles.map(role => {
                   const isAssigned = selectedUser.roles.some(ur => ur.role.id === role.id);
                   return (
@@ -363,7 +444,7 @@ export default function UsersClient() {
               <div className="p-8 bg-slate-50 flex gap-4">
                 <button 
                   onClick={() => setIsRoleModalOpen(false)}
-                  className="flex-1 h-12 bg-white text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all"
+                  className="flex-1 h-12 bg-white text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200 shadow-sm"
                 >
                   Cancel
                 </button>

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Supplier } from '@/services/suppliers';
-import { Product } from '@/services/products';
+import { Product, productsService } from '@/services/products';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
 import { apiFetch } from '@/lib/api';
@@ -18,6 +18,7 @@ import { ProductCombobox } from '@/components/ui/product-combobox';
 import { Combobox } from '@/components/ui/combobox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { OrderLineEditor } from '@/components/orders/OrderLineEditor';
 
 interface OrderLineForm {
     productId: string;
@@ -71,12 +72,8 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
 
     const refreshStock = async () => {
         try {
-            const productsData = await apiFetch('/products');
-            const productsList = Array.isArray(productsData) ? productsData : productsData.data ?? [];
-            const filteredProducts = productsList.filter((p: any) => 
-                p.articleType === 'RAW_MATERIAL' || p.articleType === 'PACKAGING'
-            );
-            setAvailableProducts(filteredProducts);
+            const productsList = await productsService.list();
+            setAvailableProducts(productsList);
         } catch (err) {
             console.error('Failed to refresh stock:', err);
             toast.error("Erreur de rafraîchissement des stocks");
@@ -86,21 +83,17 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [suppliersData, productsData, warehousesData] = await Promise.all([
+            const [suppliersData, productsList, warehousesData] = await Promise.all([
                 apiFetch('/suppliers'),
-                apiFetch('/products'),
+                productsService.list(),
                 apiFetch('/warehouses')
             ]);
             
             const suppliersList = Array.isArray(suppliersData) ? suppliersData : suppliersData.data ?? [];
-            const productsList = Array.isArray(productsData) ? productsData : productsData.data ?? [];
             const warehousesList = Array.isArray(warehousesData) ? warehousesData : warehousesData.data ?? [];
 
             setSuppliers(suppliersList);
-            const filteredProducts = productsList.filter((p: any) => 
-                p.articleType === 'RAW_MATERIAL' || p.articleType === 'PACKAGING'
-            );
-            setAvailableProducts(filteredProducts);
+            setAvailableProducts(productsList);
             setWarehouses(warehousesList);
             
             if (id) {
@@ -315,16 +308,16 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                             return s ? (
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Raison Sociale</p>
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('suppliers.name_label')}</p>
                                                         <p className="font-black text-slate-900">{s.name}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Email / Contact</p>
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('suppliers.email_label')}</p>
                                                         <p className="font-bold text-slate-600 text-sm">{s.email || 'N/A'}</p>
                                                     </div>
                                                     <div className="col-span-2 pt-2 border-t border-slate-200/50 flex gap-4">
-                                                        <Badge variant="draft" className="bg-white">{s.nif ? `NIF: ${s.nif}` : 'No NIF'}</Badge>
-                                                        <Badge variant="draft" className="bg-white">{s.rc ? `RC: ${s.rc}` : 'No RC'}</Badge>
+                                                        <Badge variant="draft" className="bg-white">{s.nif ? `NIF: ${s.nif}` : t('orders.form.no_nif')}</Badge>
+                                                        <Badge variant="draft" className="bg-white">{s.rc ? `RC: ${s.rc}` : t('orders.form.no_rc')}</Badge>
                                                     </div>
                                                 </div>
                                             ) : null;
@@ -339,12 +332,12 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                         {t('orders.form.order_date')}
                                     </label>
                                     <div className="relative group">
-                                        <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" size={20} />
+                                        <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-orange-600 transition-colors" size={20} />
                                         <input 
                                             type="date"
                                             value={formState.orderDate}
                                             onChange={(e) => setFormState({ ...formState, orderDate: e.target.value })}
-                                            className="w-full h-14 pl-16 pr-6 bg-slate-50 border-2 border-transparent rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-black text-slate-900 shadow-sm"
+                                            className="w-full h-14 pl-16 pr-6 bg-slate-50 border-2 border-transparent rounded-2xl outline-none focus:border-orange-600 focus:bg-white transition-all font-black text-slate-900 shadow-sm"
                                         />
                                     </div>
                                 </div>
@@ -353,12 +346,12 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                         {t('orders.form.expected_date')}
                                     </label>
                                     <div className="relative group">
-                                        <Truck className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" size={20} />
+                                        <Truck className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-orange-600 transition-colors" size={20} />
                                         <input 
                                             type="date"
                                             value={formState.expectedDate}
                                             onChange={(e) => setFormState({ ...formState, expectedDate: e.target.value })}
-                                            className="w-full h-14 pl-16 pr-6 bg-slate-50 border-2 border-transparent rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all font-black text-slate-900 shadow-sm"
+                                            className="w-full h-14 pl-16 pr-6 bg-slate-50 border-2 border-transparent rounded-2xl outline-none focus:border-orange-600 focus:bg-white transition-all font-black text-slate-900 shadow-sm"
                                         />
                                     </div>
                                 </div>
@@ -371,8 +364,8 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                 <textarea 
                                     value={formState.notes}
                                     onChange={(e) => setFormState({ ...formState, notes: e.target.value })}
-                                    className="w-full min-h-[150px] p-8 bg-slate-50 border-2 border-transparent rounded-4xl outline-none focus:border-blue-600 focus:bg-white transition-all font-bold text-slate-900 shadow-sm resize-none"
-                                    placeholder="Add any specific instructions or terms..."
+                                    className="w-full min-h-[150px] p-8 bg-slate-50 border-2 border-transparent rounded-4xl outline-none focus:border-orange-600 focus:bg-white transition-all font-bold text-slate-900 shadow-sm resize-none"
+                                    placeholder={t('orders.form.notes_placeholder')}
                                 />
                             </div>
                         </Card>
@@ -382,68 +375,37 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                         <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl overflow-hidden bg-white p-8">
                             <div className="flex items-center justify-between mb-8 px-4">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter flex items-center gap-3">
-                                    <Package className="text-blue-600" />
+                                    <Package className="text-orange-600" />
                                     {t('orders.form.items_title')}
                                 </h3>
-                                <button 
-                                    onClick={addLine}
-                                    className="bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl px-6 py-2 h-auto text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border-none transition-all active:scale-95"
-                                >
-                                    <Plus size={14} /> {t('orders.form.add_line')}
-                                </button>
                             </div>
-
-                            <div className="space-y-4">
-                                {formState.lines.map((line, index) => (
-                                    <div key={index} className="group relative bg-slate-50 border border-slate-100 p-6 rounded-[2rem] hover:bg-white hover:shadow-xl hover:shadow-slate-100/50 transition-all duration-300">
-                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                                            <div className="md:col-span-5 space-y-2">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Product / SKU</label>
-                                                <ProductCombobox 
-                                                    products={availableProducts}
-                                                    value={line.productId}
-                                                    onChange={(val) => updateLine(index, 'productId', val)}
-                                                    placeholder={t('orders.form.product_placeholder')}
-                                                    priceMode="purchase"
-                                                    onRefresh={refreshStock}
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2 space-y-2">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Qty ({line.unit})</label>
-                                                <input 
-                                                    type="number"
-                                                    value={line.quantity}
-                                                    onChange={(e) => updateLine(index, 'quantity', e.target.value)}
-                                                    className="w-full h-12 px-4 bg-white border border-slate-200 rounded-2xl outline-none focus:border-blue-600 transition-all font-black text-slate-900 text-center"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2 space-y-2">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Price HT</label>
-                                                <input 
-                                                    type="number"
-                                                    value={line.unitPriceHt}
-                                                    onChange={(e) => updateLine(index, 'unitPriceHt', e.target.value)}
-                                                    className="w-full h-12 px-4 bg-white border border-slate-200 rounded-2xl outline-none focus:border-blue-600 transition-all font-black text-slate-900 text-right"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2 space-y-2 flex flex-col items-end pb-3 pr-2">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1">Subtotal HT</label>
-                                                <span className="text-sm font-black text-slate-900">
-                                                    {formatCurrency(Number(line.quantity || 0) * Number(line.unitPriceHt || 0))}
-                                                </span>
-                                            </div>
-                                            <div className="md:col-span-1 flex justify-center pb-2">
-                                                <button 
-                                                    onClick={() => removeLine(index)}
-                                                    className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                >
-                                                    <Trash2 size={20} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <OrderLineEditor
+                                initialLines={formState.lines.map(line => {
+                                    const p = availableProducts.find(prod => prod.id === line.productId);
+                                    return {
+                                        productId: line.productId,
+                                        productName: p?.name || '',
+                                        productSku: p?.sku || '',
+                                        productUnit: p?.unit || line.unit || 'PCS',
+                                        quantity: Number(line.quantity),
+                                        unitPriceHt: Number(line.unitPriceHt),
+                                        discountPercent: 0
+                                    };
+                                })}
+                                onChange={(lines, totals) => {
+                                    setFormState(prev => ({
+                                        ...prev,
+                                        lines: lines.map(l => ({
+                                            productId: l.productId,
+                                            quantity: l.quantity,
+                                            unit: l.productUnit || 'PCS',
+                                            unitPriceHt: l.unitPriceHt,
+                                            taxRate: 0.19
+                                        }))
+                                    }));
+                                }}
+                                hideExtraCalculations={true}
+                            />
                         </Card>
                     )}
 
@@ -451,7 +413,7 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                         <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-white p-10 flex flex-col justify-center items-center text-center space-y-6">
-                                    <div className="w-20 h-20 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                                    <div className="w-20 h-20 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center shadow-inner">
                                         <Receipt size={32} />
                                     </div>
                                     <div>
@@ -468,17 +430,17 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-8">{t('orders.form.financial_summary')}</h3>
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-center opacity-60">
-                                                <span className="text-xs font-bold uppercase tracking-widest">Subtotal HT</span>
-                                                <span className="text-lg font-black">{formatCurrency(totals.ht)}</span>
+                                                <span className="text-xs font-bold uppercase tracking-widest">{ct('total_ht')}</span>
+                                                <span className="text-lg font-black">{formatCurrency(totals.ht, locale)}</span>
                                             </div>
-                                            <div className="flex justify-between items-center text-blue-400">
-                                                <span className="text-xs font-bold uppercase tracking-widest">VAT (19%)</span>
-                                                <span className="text-lg font-black">+{formatCurrency(totals.tva)}</span>
+                                            <div className="flex justify-between items-center text-orange-400">
+                                                <span className="text-xs font-bold uppercase tracking-widest">{ct('tva')} (19%)</span>
+                                                <span className="text-lg font-black">+{formatCurrency(totals.tva, locale)}</span>
                                             </div>
                                             <div className="h-px bg-white/10 my-6" />
                                             <div className="flex justify-between items-center">
-                                                <span className="text-sm font-black uppercase tracking-widest text-primary">Total TTC</span>
-                                                <span className="text-4xl font-black tracking-tighter">{formatCurrency(totals.ttc)}</span>
+                                                <span className="text-sm font-black uppercase tracking-widest text-primary">{ct('total_ttc')}</span>
+                                                <span className="text-4xl font-black tracking-tighter">{formatCurrency(totals.ttc, locale)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -539,17 +501,17 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                 {/* Sidebar Info/Status */}
                 <div className="space-y-8">
                     <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-white p-8">
-                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6">{ct('progress' as any)}</h3>
+                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6">{t('orders.form.progression')}</h3>
                         <div className="space-y-6">
                             {[
-                                { step: 'general', label: t('orders.tabs.general'), status: formState.supplierId ? 'done' : 'current' },
-                                { step: 'items', label: t('orders.tabs.items'), status: formState.lines.some(l => l.productId) ? 'done' : 'pending' },
-                                { step: 'summary', label: t('orders.tabs.summary'), status: 'pending' },
+                                { step: 'general', label: t('orders.form.steps.supplier'), status: formState.supplierId ? 'done' : 'current' },
+                                { step: 'items', label: t('orders.form.steps.items'), status: formState.lines.some(l => l.productId) ? 'done' : 'pending' },
+                                { step: 'summary', label: t('orders.form.steps.summary'), status: 'pending' },
                             ].map((s, i) => (
                                 <div key={i} className="flex items-center gap-4">
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${
                                         s.status === 'done' ? 'bg-green-100 text-green-600' : 
-                                        s.status === 'current' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-300'
+                                        s.status === 'current' ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-300'
                                     }`}>
                                         {s.status === 'done' ? <CheckCircle2 size={16} /> : i + 1}
                                     </div>
@@ -558,20 +520,6 @@ export default function OrderFormClient({ id }: OrderFormClientProps) {
                                     }`}>{s.label}</span>
                                 </div>
                             ))}
-                        </div>
-                    </Card>
-
-                    <Card className="border-none shadow-2xl shadow-slate-100 rounded-4xl bg-linear-to-br from-blue-600 to-indigo-700 p-8 text-white">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center">
-                                <TrendingUp size={28} />
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-black tracking-tighter">Inventory Insights</h4>
-                                <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest mt-2 leading-relaxed">
-                                    Real-time tracking of stock movements ensures accurate planning and avoids stockouts.
-                                </p>
-                            </div>
                         </div>
                     </Card>
                 </div>

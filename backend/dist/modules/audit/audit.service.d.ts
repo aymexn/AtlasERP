@@ -14,15 +14,15 @@ export declare class AuditService {
     }): Promise<{
         id: string;
         createdAt: Date;
+        userId: string | null;
         companyId: string;
         description: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        entityId: string;
         action: string;
         entity: string;
-        entityId: string;
         oldValues: import("@prisma/client/runtime/library").JsonValue | null;
         newValues: import("@prisma/client/runtime/library").JsonValue | null;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        userId: string | null;
     }>;
     findAll(companyId: string, filters?: {
         entity?: string;
@@ -35,14 +35,14 @@ export declare class AuditService {
     } & {
         id: string;
         createdAt: Date;
+        userId: string | null;
         companyId: string;
         description: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        entityId: string;
         action: string;
         entity: string;
-        entityId: string;
         oldValues: import("@prisma/client/runtime/library").JsonValue | null;
         newValues: import("@prisma/client/runtime/library").JsonValue | null;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        userId: string | null;
     })[]>;
 }

@@ -39,9 +39,9 @@ export declare class RbacController {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        updatedAt: Date;
         displayName: string;
         isSystemRole: boolean;
     })[]>;
@@ -57,20 +57,20 @@ export declare class RbacController {
     removePermissionFromRole(roleId: string, permissionId: string, req: any): Promise<import(".prisma/client").Prisma.BatchPayload>;
     assignRole(userId: string, roleId: string, expiresAt: string, req: any): Promise<{
         id: string;
-        isActive: boolean;
         userId: string;
+        isActive: boolean;
+        roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
-        roleId: string;
     }>;
     revokeRole(userId: string, roleId: string, req: any): Promise<{
         id: string;
-        isActive: boolean;
         userId: string;
+        isActive: boolean;
+        roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
-        roleId: string;
     }>;
 }

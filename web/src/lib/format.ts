@@ -10,8 +10,10 @@
  * @param amount - The numeric value or string to format
  * @returns A formatted string in Algerian Dinars
  */
-export function formatCurrency(amount: number | string | any): string {
-    if (amount === null || amount === undefined) return '0 DA';
+export function formatCurrency(amount: number | string | any, locale?: string): string {
+    if (amount === null || amount === undefined) {
+        return locale === 'ar' ? '0,00 د.ج' : '0,00 DA';
+    }
 
     // Handle Prisma Decimal objects which have a toString() method
     let num: number;
@@ -23,16 +25,33 @@ export function formatCurrency(amount: number | string | any): string {
         num = Number(amount);
     }
 
-    if (isNaN(num)) return '0 DA';
+    if (isNaN(num)) {
+        return locale === 'ar' ? '0,00 د.ج' : '0,00 DA';
+    }
 
-    // Standard fr-FR: uses non-breaking space (U+00A0) as thousands
-    const formatted = new Intl.NumberFormat('fr-FR', {
+    // Auto-detect locale from window if not provided
+    let activeLocale = locale;
+    if (!activeLocale && typeof window !== 'undefined') {
+        const pathParts = window.location.pathname.split('/');
+        const firstPart = pathParts[1];
+        if (['ar', 'fr', 'en'].includes(firstPart)) {
+            activeLocale = firstPart;
+        }
+    }
+    if (!activeLocale) {
+        activeLocale = 'fr';
+    }
+
+    // For ar-DZ standard currency formatting with Latin numbers:
+    const numLocale = activeLocale === 'ar' ? 'ar-DZ' : 'fr-DZ';
+    const formatted = new Intl.NumberFormat(numLocale, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(num);
 
-    // Ensure we use a clean non-breaking space for consistency
-    return formatted.replace(/\u202f/g, '\u00a0') + '\u00a0DA';
+    const suffix = activeLocale === 'ar' ? ' د.ج' : ' DA';
+    // Normalize spacing to standard space for consistency
+    return formatted.replace(/[\u202f\u00a0]/g, ' ') + suffix;
 }
 
 /**

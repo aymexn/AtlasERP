@@ -33,11 +33,11 @@ export default async function AppLayout({
                                 </main>
 
                                 {/* Modern Footer (Simple) */}
-                                <footer className="p-8 border-t border-gray-100 flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-gray-400">
-                                    <span>© 2026 Atlas Intelligence ERP</span>
+                                <footer className="p-8 border-t border-gray-100 flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-slate-500">
+                                    <span>© 2026 Atlas Intelligence ERP — Version 2.0</span>
                                     <div className="flex gap-6">
-                                        <span className="hover:text-blue-600 cursor-pointer transition-colors">Documentation</span>
-                                        <span className="hover:text-blue-600 cursor-pointer transition-colors">Support</span>
+                                        <a href="/settings" className="hover:text-blue-600 transition-colors">Documentation</a>
+                                        <a href="mailto:support@atlaserp.com" className="hover:text-blue-600 transition-colors">Support</a>
                                     </div>
                                 </footer>
                             </div>

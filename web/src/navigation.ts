@@ -9,6 +9,9 @@ export const routing = defineRouting({
         '/': '/',
         '/dashboard': '/dashboard',
         '/products': '/products',
+        '/catalogue/products': '/catalogue/products',
+        '/catalogue/products/new': '/catalogue/products/new',
+        '/catalogue/products/[id]/edit': '/catalogue/products/[id]/edit',
         '/product-families': '/product-families',
         '/inventory': '/inventory',
         '/inventory/movements': '/inventory/movements',
@@ -43,7 +46,13 @@ export const routing = defineRouting({
         '/treasury/forecast': '/treasury/forecast',
         '/analytics': '/analytics',
         '/analytics/abc': '/analytics/abc',
-        '/analytics/dead-stock': '/analytics/dead-stock'
+        '/analytics/dead-stock': '/analytics/dead-stock',
+        '/ai': '/ai',
+        '/ai/chat': '/ai/chat',
+        '/ai/insights': '/ai/insights',
+        '/ai/recommendations': '/ai/recommendations',
+        '/ai/analytics': '/ai/analytics',
+        '/ai/automations': '/ai/automations'
     }
 });
 

@@ -5,9 +5,9 @@ export declare class VariantsService {
     findAll(productId: string): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
@@ -15,9 +15,9 @@ export declare class VariantsService {
     create(productId: string, data: any): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
@@ -25,9 +25,9 @@ export declare class VariantsService {
     update(id: string, data: any): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
@@ -35,9 +35,9 @@ export declare class VariantsService {
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
-        productId: string;
         name: string | null;
         isActive: boolean;
+        productId: string;
         sku: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;

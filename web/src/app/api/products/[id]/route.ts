@@ -18,6 +18,17 @@ function sanitizeDecimals(obj: any): any {
     return obj;
 }
 
+function mapProductFields(product: any) {
+    if (!product) return product;
+    const clean = sanitizeDecimals(product);
+    return {
+        ...clean,
+        priceHT: clean.salePriceHt !== undefined ? Number(clean.salePriceHt) : undefined,
+        costPrice: clean.standardCost !== undefined ? Number(clean.standardCost) : undefined,
+        alertThreshold: clean.minStock !== undefined ? Number(clean.minStock) : undefined,
+    };
+}
+
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -32,7 +43,7 @@ export async function GET(
         const product = await prisma.product.findUnique({
             where: { 
                 id,
-                companyId: companyId
+                companyId
             },
             include: {
                 family: true,
@@ -53,45 +64,46 @@ export async function GET(
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
-        return NextResponse.json(sanitizeDecimals(product));
+        return NextResponse.json(mapProductFields(product));
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
-export async function PATCH(
+export async function PUT(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id: productId } = await params;
-    const body = await request.json();
-    const { formulaLines, ...productData } = body;
-
-    // 1. SESSION VALIDATION
-    const sessionCompanyId = await getTenantId();
-    if (!sessionCompanyId) {
-        return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
-    }
-
-    // 2. Identify context
-    const existingProduct = await prisma.product.findUnique({
-        where: { id: productId },
-        select: { companyId: true, name: true, stockQuantity: true }
-    });
-
-    if (!existingProduct) {
-        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
-
-    if (existingProduct.companyId !== sessionCompanyId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const companyId = existingProduct.companyId;
-
     try {
+        const { id: productId } = await params;
+        const companyId = await getTenantId();
+        if (!companyId) {
+            return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { formulaLines, ...productData } = body;
+
+        // Verify product ownership
+        const existingProduct = await prisma.product.findUnique({
+            where: { id: productId },
+            select: { companyId: true, name: true, stockQuantity: true }
+        });
+
+        if (!existingProduct) {
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        if (existingProduct.companyId !== companyId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        const priceHT = productData.priceHT !== undefined ? parseFloat(productData.priceHT) : parseFloat(productData.salePriceHt);
+        const costPrice = productData.costPrice !== undefined ? parseFloat(productData.costPrice) : parseFloat(productData.standardCost);
+        const alertThreshold = productData.alertThreshold !== undefined ? parseFloat(productData.alertThreshold) : parseFloat(productData.minStock);
+
         const result = await prisma.$transaction(async (tx: any) => {
-            // 3. Stock Adjustment Logging
+            // Stock adjustment log
             if (productData.stockQuantity !== undefined) {
                 const newStock = Number(productData.stockQuantity);
                 const oldStock = Number(existingProduct.stockQuantity || 0);
@@ -108,15 +120,15 @@ export async function PATCH(
                             reference: `ADJ-${Date.now()}`,
                             reason: 'Ajustement manuel de l\'inventaire',
                             date: new Date(),
-                            unitCost: 0,
-                            totalCost: 0,
+                            unitCost: !isNaN(costPrice) ? costPrice : 0,
+                            totalCost: difference * (!isNaN(costPrice) ? costPrice : 0),
                             unit: productData.unit || 'PCS'
                         }
                     });
                 }
             }
 
-            // 4. Synchronize basic product data
+            // Update basic details
             const updatedProduct = await tx.product.update({
                 where: { id: productId },
                 data: {
@@ -124,11 +136,13 @@ export async function PATCH(
                     sku: productData.sku,
                     secondaryName: productData.secondaryName,
                     familyId: productData.familyId || null,
-                    articleType: productData.articleType,
                     unit: productData.unit,
-                    salePriceHt: Number(productData.salePriceHt),
-                    taxRate: Number(productData.taxRate),
-                    minStock: Number(productData.minStock),
+                    articleType: productData.articleType,
+                    type: productData.type || (productData.articleType === 'FINISHED_PRODUCT' ? 'FINISHED_GOOD' : (productData.articleType === 'SEMI_FINISHED' ? 'SEMI_FINISHED' : (productData.articleType ? 'RAW_MATERIAL' : undefined))),
+                    salePriceHt: !isNaN(priceHT) ? priceHT : undefined,
+                    purchasePriceHt: !isNaN(costPrice) ? costPrice : undefined,
+                    standardCost: !isNaN(costPrice) ? costPrice : undefined,
+                    minStock: !isNaN(alertThreshold) ? alertThreshold : undefined,
                     stockQuantity: productData.stockQuantity !== undefined ? Number(productData.stockQuantity) : undefined,
                     trackStock: productData.trackStock,
                     isActive: productData.isActive,
@@ -136,9 +150,8 @@ export async function PATCH(
                 }
             });
 
-            // 3. BOM Synchronization (Active Version 1.0)
+            // BOM Synchronization
             if (formulaLines !== undefined) {
-                // Find existing active BOM or create one
                 let bom = await tx.billOfMaterials.findFirst({
                     where: { productId, companyId, version: "1.0" }
                 });
@@ -163,7 +176,6 @@ export async function PATCH(
                     });
                 }
 
-                // 4. Component Sync (Atomic Wipe & Rebuild)
                 await tx.bOMComponent.deleteMany({
                     where: { bomId: bom.id }
                 });
@@ -185,8 +197,9 @@ export async function PATCH(
                         if (isNaN(quantity)) {
                             throw new Error(`Quantité invalide pour l'ingrédient ${line.componentId}`);
                         }
-                        const unitCost = Number(component.standardCost || component.purchasePriceHt || 0);
-                        totalCalculatedCost += quantity * unitCost;
+                        const defaultCost = Number(component.standardCost || component.purchasePriceHt || 0);
+                        const lineUnitCost = line.unitCost !== undefined && line.unitCost !== null ? Number(line.unitCost) : defaultCost;
+                        totalCalculatedCost += quantity * lineUnitCost;
 
                         await tx.bOMComponent.create({
                             data: {
@@ -194,6 +207,7 @@ export async function PATCH(
                                 componentProductId: line.componentId,
                                 quantity: quantity,
                                 unit: line.unit || component.unit || 'KG',
+                                unitCost: lineUnitCost,
                                 wastagePercent: 0,
                                 sortOrder: 0
                             }
@@ -201,8 +215,6 @@ export async function PATCH(
                     }
                 }
 
-                // 5. Atomic Cost Update
-                // We perform a second update to ensure the database record is fresh and returnable
                 const finalProduct = await tx.product.update({
                     where: { id: productId },
                     data: { standardCost: totalCalculatedCost }
@@ -214,12 +226,43 @@ export async function PATCH(
             return updatedProduct;
         });
 
-        return NextResponse.json(result);
+        return NextResponse.json(mapProductFields(result));
     } catch (error: any) {
-        console.error('BOM Patch Failure:', error);
+        console.error('BOM PUT Failure:', error);
         return NextResponse.json({ 
-            error: error.message || 'La sauvegarde de la nomenclature a échoué.',
-            code: error.code 
+            error: error.message || 'La mise à jour de l\'article a échoué.' 
         }, { status: 500 });
+    }
+}
+
+// Support PATCH as alias to PUT
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+    return PUT(request, context);
+}
+
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const companyId = await getTenantId();
+        if (!companyId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { id } = await params;
+        const deletedProduct = await prisma.product.update({
+            where: { 
+                id,
+                companyId
+            },
+            data: {
+                isActive: false // Soft delete
+            }
+        });
+
+        return NextResponse.json({ success: true, data: mapProductFields(deletedProduct) });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

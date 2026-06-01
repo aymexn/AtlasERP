@@ -8,20 +8,17 @@ export declare class ProjectService {
     constructor(prisma: PrismaService, activityService: ActivityService, gateway: CollaborationGateway);
     createProject(companyId: string, userId: string, data: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.ProjectStatus;
         createdAt: Date;
-        updatedAt: Date;
+        status: import(".prisma/client").$Enums.ProjectStatus;
         companyId: string;
         name: string;
-        code: string | null;
         description: string | null;
-        createdBy: string | null;
-        tags: string[];
-        startDate: Date | null;
-        color: string | null;
-        category: string | null;
-        isPublic: boolean;
         departmentId: string | null;
+        updatedAt: Date;
+        color: string | null;
+        createdBy: string | null;
+        code: string | null;
+        startDate: Date | null;
         targetEndDate: Date | null;
         actualEndDate: Date | null;
         progress: import("@prisma/client/runtime/library").Decimal;
@@ -29,6 +26,9 @@ export declare class ProjectService {
         budget: import("@prisma/client/runtime/library").Decimal | null;
         currency: string;
         teamMembers: import("@prisma/client/runtime/library").JsonValue | null;
+        tags: string[];
+        category: string | null;
+        isPublic: boolean;
         projectManagerId: string | null;
         clientId: string | null;
     }>;
@@ -38,20 +38,17 @@ export declare class ProjectService {
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.ProjectStatus;
         createdAt: Date;
-        updatedAt: Date;
+        status: import(".prisma/client").$Enums.ProjectStatus;
         companyId: string;
         name: string;
-        code: string | null;
         description: string | null;
-        createdBy: string | null;
-        tags: string[];
-        startDate: Date | null;
-        color: string | null;
-        category: string | null;
-        isPublic: boolean;
         departmentId: string | null;
+        updatedAt: Date;
+        color: string | null;
+        createdBy: string | null;
+        code: string | null;
+        startDate: Date | null;
         targetEndDate: Date | null;
         actualEndDate: Date | null;
         progress: import("@prisma/client/runtime/library").Decimal;
@@ -59,43 +56,45 @@ export declare class ProjectService {
         budget: import("@prisma/client/runtime/library").Decimal | null;
         currency: string;
         teamMembers: import("@prisma/client/runtime/library").JsonValue | null;
+        tags: string[];
+        category: string | null;
+        isPublic: boolean;
         projectManagerId: string | null;
         clientId: string | null;
     })[]>;
     getProjectById(id: string): Promise<{
         milestones: {
             id: string;
-            status: import(".prisma/client").$Enums.MilestoneStatus;
             createdAt: Date;
-            updatedAt: Date;
+            status: import(".prisma/client").$Enums.MilestoneStatus;
             name: string;
             description: string | null;
-            dueDate: Date;
             projectId: string;
+            updatedAt: Date;
+            dueDate: Date;
             completedDate: Date | null;
             dependsOnId: string | null;
             displayOrder: number | null;
         }[];
         tasks: ({
             assignedTo: {
+                email: string;
                 employee: {
                     firstName: string;
                     lastName: string;
                 };
-                email: string;
             };
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            completedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            description: string | null;
-            createdBy: string | null;
-            dueDate: Date | null;
             title: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
             projectId: string | null;
+            updatedAt: Date;
+            createdBy: string | null;
             priority: import(".prisma/client").$Enums.Priority;
+            dueDate: Date | null;
             displayOrder: number | null;
             taskNumber: string | null;
             taskType: string;
@@ -104,6 +103,7 @@ export declare class ProjectService {
             reporterId: string | null;
             estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
             actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            completedAt: Date | null;
             boardColumn: string | null;
             parentTaskId: string | null;
             attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -111,20 +111,17 @@ export declare class ProjectService {
         })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.ProjectStatus;
         createdAt: Date;
-        updatedAt: Date;
+        status: import(".prisma/client").$Enums.ProjectStatus;
         companyId: string;
         name: string;
-        code: string | null;
         description: string | null;
-        createdBy: string | null;
-        tags: string[];
-        startDate: Date | null;
-        color: string | null;
-        category: string | null;
-        isPublic: boolean;
         departmentId: string | null;
+        updatedAt: Date;
+        color: string | null;
+        createdBy: string | null;
+        code: string | null;
+        startDate: Date | null;
         targetEndDate: Date | null;
         actualEndDate: Date | null;
         progress: import("@prisma/client/runtime/library").Decimal;
@@ -132,21 +129,23 @@ export declare class ProjectService {
         budget: import("@prisma/client/runtime/library").Decimal | null;
         currency: string;
         teamMembers: import("@prisma/client/runtime/library").JsonValue | null;
+        tags: string[];
+        category: string | null;
+        isPublic: boolean;
         projectManagerId: string | null;
         clientId: string | null;
     }>;
     createTask(companyId: string, userId: string, projectId: string, data: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        completedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string | null;
-        createdBy: string | null;
-        dueDate: Date | null;
         title: string;
+        createdAt: Date;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
         projectId: string | null;
+        updatedAt: Date;
+        createdBy: string | null;
         priority: import(".prisma/client").$Enums.Priority;
+        dueDate: Date | null;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -155,6 +154,7 @@ export declare class ProjectService {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -162,16 +162,15 @@ export declare class ProjectService {
     }>;
     updateTask(taskId: string, data: any, userId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        completedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string | null;
-        createdBy: string | null;
-        dueDate: Date | null;
         title: string;
+        createdAt: Date;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
         projectId: string | null;
+        updatedAt: Date;
+        createdBy: string | null;
         priority: import(".prisma/client").$Enums.Priority;
+        dueDate: Date | null;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -180,6 +179,7 @@ export declare class ProjectService {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -190,16 +190,15 @@ export declare class ProjectService {
         displayOrder: number;
     }): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        completedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string | null;
-        createdBy: string | null;
-        dueDate: Date | null;
         title: string;
+        createdAt: Date;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
         projectId: string | null;
+        updatedAt: Date;
+        createdBy: string | null;
         priority: import(".prisma/client").$Enums.Priority;
+        dueDate: Date | null;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -208,6 +207,7 @@ export declare class ProjectService {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -215,16 +215,15 @@ export declare class ProjectService {
     }>;
     deleteTask(taskId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        completedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string | null;
-        createdBy: string | null;
-        dueDate: Date | null;
         title: string;
+        createdAt: Date;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
         projectId: string | null;
+        updatedAt: Date;
+        createdBy: string | null;
         priority: import(".prisma/client").$Enums.Priority;
+        dueDate: Date | null;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -233,6 +232,7 @@ export declare class ProjectService {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
+        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -242,24 +242,23 @@ export declare class ProjectService {
         TODO: ({
             assignedTo: {
                 id: string;
+                email: string;
                 employee: {
                     firstName: string;
                     lastName: string;
                 };
-                email: string;
             };
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            completedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            description: string | null;
-            createdBy: string | null;
-            dueDate: Date | null;
             title: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
             projectId: string | null;
+            updatedAt: Date;
+            createdBy: string | null;
             priority: import(".prisma/client").$Enums.Priority;
+            dueDate: Date | null;
             displayOrder: number | null;
             taskNumber: string | null;
             taskType: string;
@@ -268,6 +267,7 @@ export declare class ProjectService {
             reporterId: string | null;
             estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
             actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            completedAt: Date | null;
             boardColumn: string | null;
             parentTaskId: string | null;
             attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -276,24 +276,23 @@ export declare class ProjectService {
         IN_PROGRESS: ({
             assignedTo: {
                 id: string;
+                email: string;
                 employee: {
                     firstName: string;
                     lastName: string;
                 };
-                email: string;
             };
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            completedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            description: string | null;
-            createdBy: string | null;
-            dueDate: Date | null;
             title: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
             projectId: string | null;
+            updatedAt: Date;
+            createdBy: string | null;
             priority: import(".prisma/client").$Enums.Priority;
+            dueDate: Date | null;
             displayOrder: number | null;
             taskNumber: string | null;
             taskType: string;
@@ -302,6 +301,7 @@ export declare class ProjectService {
             reporterId: string | null;
             estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
             actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            completedAt: Date | null;
             boardColumn: string | null;
             parentTaskId: string | null;
             attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -310,24 +310,23 @@ export declare class ProjectService {
         IN_REVIEW: ({
             assignedTo: {
                 id: string;
+                email: string;
                 employee: {
                     firstName: string;
                     lastName: string;
                 };
-                email: string;
             };
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            completedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            description: string | null;
-            createdBy: string | null;
-            dueDate: Date | null;
             title: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
             projectId: string | null;
+            updatedAt: Date;
+            createdBy: string | null;
             priority: import(".prisma/client").$Enums.Priority;
+            dueDate: Date | null;
             displayOrder: number | null;
             taskNumber: string | null;
             taskType: string;
@@ -336,6 +335,7 @@ export declare class ProjectService {
             reporterId: string | null;
             estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
             actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            completedAt: Date | null;
             boardColumn: string | null;
             parentTaskId: string | null;
             attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -344,24 +344,23 @@ export declare class ProjectService {
         DONE: ({
             assignedTo: {
                 id: string;
+                email: string;
                 employee: {
                     firstName: string;
                     lastName: string;
                 };
-                email: string;
             };
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            completedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            description: string | null;
-            createdBy: string | null;
-            dueDate: Date | null;
             title: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
             projectId: string | null;
+            updatedAt: Date;
+            createdBy: string | null;
             priority: import(".prisma/client").$Enums.Priority;
+            dueDate: Date | null;
             displayOrder: number | null;
             taskNumber: string | null;
             taskType: string;
@@ -370,6 +369,7 @@ export declare class ProjectService {
             reporterId: string | null;
             estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
             actualHours: import("@prisma/client/runtime/library").Decimal | null;
+            completedAt: Date | null;
             boardColumn: string | null;
             parentTaskId: string | null;
             attachments: import("@prisma/client/runtime/library").JsonValue | null;

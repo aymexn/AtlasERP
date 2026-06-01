@@ -124,7 +124,7 @@ export default function ReceptionsClient() {
                     notes: createForm.notes
                 })
             });
-            toast.success(t('purchases.receptions.toast.created' as any) || 'Réception créée');
+            toast.success(t('receptions.toast.created' as any) || 'Réception créée');
             setIsModalOpen(false);
             loadData();
         } catch (error: any) {

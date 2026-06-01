@@ -2,11 +2,36 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/api-helpers';
 
+function sanitizeDecimals(obj: any): any {
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj === 'number') return obj;
+    if (typeof obj.toNumber === 'function') return obj.toNumber();
+    if (Array.isArray(obj)) return obj.map(sanitizeDecimals);
+    if (typeof obj === 'object') {
+        if (obj instanceof Date) return obj;
+        const clean: any = {};
+        for (const key in obj) {
+            clean[key] = sanitizeDecimals(obj[key]);
+        }
+        return clean;
+    }
+    return obj;
+}
+
+function mapProductFields(product: any) {
+    if (!product) return product;
+    const clean = sanitizeDecimals(product);
+    return {
+        ...clean,
+        priceHT: clean.salePriceHt !== undefined ? Number(clean.salePriceHt) : undefined,
+        costPrice: clean.standardCost !== undefined ? Number(clean.standardCost) : undefined,
+        alertThreshold: clean.minStock !== undefined ? Number(clean.minStock) : undefined,
+    };
+}
+
 export async function POST(request: Request) {
     try {
-        // 1. SESSION VALIDATION
         const companyId = await getTenantId();
-        
         if (!companyId) {
             return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
         }
@@ -15,7 +40,7 @@ export async function POST(request: Request) {
 
         const { formulaLines, ...productData } = body;
 
-        // 2. DUPLICATE SKU CHECK
+        // Check duplicate SKU
         if (productData.sku) {
             const existingProduct = await prisma.product.findFirst({
                 where: { 
@@ -30,30 +55,57 @@ export async function POST(request: Request) {
             }
         }
 
+        const priceHT = productData.priceHT !== undefined ? parseFloat(productData.priceHT) : (parseFloat(productData.salePriceHt) || 0);
+        const costPrice = productData.costPrice !== undefined ? parseFloat(productData.costPrice) : (parseFloat(productData.standardCost) || parseFloat(productData.purchasePriceHt) || 0);
+        const alertThreshold = productData.alertThreshold !== undefined ? parseFloat(productData.alertThreshold) : (parseFloat(productData.minStock) || 0);
+        const stockQuantity = productData.stockQuantity !== undefined ? parseFloat(productData.stockQuantity) : 0;
+
+        const resolvedArticleType = productData.articleType || 'FINISHED_PRODUCT';
+        const resolvedType = productData.type || (resolvedArticleType === 'FINISHED_PRODUCT' ? 'FINISHED_GOOD' : (resolvedArticleType === 'SEMI_FINISHED' ? 'SEMI_FINISHED' : 'RAW_MATERIAL'));
+
         const result = await prisma.$transaction(async (tx: any) => {
-            // 3. Create Product with defaults & Normalization
             const product = await tx.product.create({
                 data: {
                     name: productData.name,
                     sku: productData.sku,
-                    secondaryName: productData.secondaryName,
+                    secondaryName: productData.secondaryName || null,
                     familyId: productData.familyId || null,
-                    articleType: productData.articleType || 'FINISHED_PRODUCT',
                     unit: productData.unit || 'PCS',
-                    salePriceHt: parseFloat(productData.salePriceHt) || 0,
-                    taxRate: parseFloat(productData.taxRate) || 0,
-                    purchasePriceHt: parseFloat(productData.purchasePriceHt) || 0,
-                    minStock: parseFloat(productData.minStock) || 0,
+                    articleType: resolvedArticleType,
+                    type: resolvedType,
+                    salePriceHt: priceHT,
+                    taxRate: parseFloat(productData.taxRate) || 0.19,
+                    purchasePriceHt: costPrice,
+                    standardCost: costPrice,
+                    minStock: alertThreshold,
+                    stockQuantity: stockQuantity,
+                    trackStock: productData.trackStock ?? true,
+                    isActive: true,
                     description: productData.description || '',
                     companyId,
-                    standardCost: parseFloat(productData.purchasePriceHt) || 0, 
-                    stockQuantity: 0, // ALWAYS initialize to 0
-                    trackStock: productData.trackStock ?? true,
-                    isActive: true, // Force to true
                 }
             });
 
-            // 4. Handle Formulation (BOM)
+            // Initial stock movement log if stock is specified and > 0
+            if (stockQuantity > 0) {
+                await tx.stockMovement.create({
+                    data: {
+                        companyId,
+                        productId: product.id,
+                        quantity: stockQuantity,
+                        movementType: 'IN',
+                        type: 'IN',
+                        reference: `INIT-${product.sku}`,
+                        reason: 'Initialisation du stock de départ',
+                        date: new Date(),
+                        unitCost: costPrice,
+                        totalCost: stockQuantity * costPrice,
+                        unit: product.unit
+                    }
+                });
+            }
+
+            // Handle Formulation (BOM)
             if (formulaLines && formulaLines.length > 0) {
                 const bom = await tx.billOfMaterials.create({
                     data: {
@@ -84,8 +136,9 @@ export async function POST(request: Request) {
                     if (isNaN(qty)) {
                         throw new Error(`Quantité invalide pour l'ingrédient ${item.componentId}`);
                     }
-                    const unitCost = Number(componentProduct.standardCost || componentProduct.purchasePriceHt || 0);
-                    totalStandardCost += qty * unitCost;
+                    const defaultCost = Number(componentProduct.standardCost || componentProduct.purchasePriceHt || 0);
+                    const lineUnitCost = item.unitCost !== undefined && item.unitCost !== null ? Number(item.unitCost) : defaultCost;
+                    totalStandardCost += qty * lineUnitCost;
 
                     await tx.bOMComponent.create({
                         data: {
@@ -93,13 +146,14 @@ export async function POST(request: Request) {
                             componentProductId: item.componentId,
                             quantity: qty,
                             unit: item.unit || componentProduct.unit || 'PCS',
+                            unitCost: lineUnitCost,
                             wastagePercent: 0,
                             sortOrder: 0
                         }
                     });
                 }
 
-                // 5. Update Product Standard Cost from BOM
+                // Update standard cost from formulation
                 await tx.product.update({
                     where: { id: product.id },
                     data: { standardCost: totalStandardCost }
@@ -111,11 +165,79 @@ export async function POST(request: Request) {
             return product;
         });
 
-        return NextResponse.json(result);
+        return NextResponse.json(mapProductFields(result));
     } catch (error: any) {
         console.error('Product Creation Error:', error);
         return NextResponse.json({ 
             error: error.message || 'API request failed' 
+        }, { status: 500 });
+    }
+}
+
+export async function GET(request: Request) {
+    try {
+        const companyId = await getTenantId();
+        if (!companyId) {
+            return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const search = searchParams.get('search') || '';
+        const type = searchParams.get('type') || '';
+
+        const where: any = {
+            companyId,
+            isActive: true,
+        };
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { sku: { contains: search, mode: 'insensitive' } }
+            ];
+        }
+
+        if (type) {
+            const upperType = type.toUpperCase();
+            if (['RAW_MATERIAL', 'SEMI_FINISHED', 'FINISHED_GOOD'].includes(upperType)) {
+                where.type = upperType;
+            }
+        }
+
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '50');
+        const skip = (page - 1) * limit;
+
+        const [products, total] = await Promise.all([
+            prisma.product.findMany({
+                where,
+                include: {
+                    family: true,
+                },
+                orderBy: {
+                    name: 'asc',
+                },
+                skip,
+                take: limit
+            }),
+            prisma.product.count({ where })
+        ]);
+
+        const mappedProducts = products.map(mapProductFields);
+
+        return NextResponse.json({
+            data: mappedProducts,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error: any) {
+        console.error('Failed to fetch products:', error);
+        return NextResponse.json({ 
+            error: error.message || 'Failed to fetch products' 
         }, { status: 500 });
     }
 }

@@ -4,43 +4,46 @@ import { usePathname } from '@/navigation';
 import { Menu, LogOut } from 'lucide-react';
 import UserProfile from './UserProfile';
 import NotificationsDropdown from './NotificationsDropdown';
+import { useTranslations } from 'next-intl';
 
 const Topbar = () => {
     const pathname = usePathname();
+    const t = useTranslations('page_titles');
     
-    // Map paths to French titles
-    const getPageTitle = (path: string) => {
+    // Map paths to translation keys
+    const getPageTitleKey = (path: string) => {
         const cleanPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
         
-        if (cleanPath === '/dashboard' || cleanPath === '') return 'Tableau de Bord';
-        if (cleanPath === '/sales/customers') return 'Gestion des Clients';
-        if (cleanPath === '/sales/orders') return 'Bons de Commande Client';
-        if (cleanPath === '/purchases/suppliers') return 'Gestion des Fournisseurs';
-        if (cleanPath === '/purchases/orders') return 'Bons de Commande Fournisseur';
-        if (cleanPath === '/purchases/receptions') return 'Réceptions de Stock';
-        if (cleanPath === '/products') return 'Catalogue des Articles';
-        if (cleanPath === '/product-families') return 'Familles d\'Articles';
-        if (cleanPath === '/inventory') return 'Gestion des Stocks';
-        if (cleanPath === '/manufacturing/orders') return 'Ordres de Fabrication';
-        if (cleanPath === '/invoices') return 'Factures';
-        if (cleanPath === '/treasury/aged-receivables') return 'Balance Âgée Clients';
-        if (cleanPath === '/treasury/forecast') return 'Prévisions de Trésorerie';
-        if (cleanPath === '/expenses') return 'Gestion des Dépenses';
-        if (cleanPath === '/analytics') return 'Statistiques & Rapports';
-        if (cleanPath === '/analytics/abc') return 'Analyse ABC';
-        if (cleanPath === '/analytics/dead-stock') return 'Morts en Stock';
-        if (cleanPath === '/hr/employees') return 'Gestion des Employés';
-        if (cleanPath === '/hr/leaves') return 'Demandes de Congés';
-        if (cleanPath === '/hr/payroll') return 'Gestion de la Paie';
-        if (cleanPath === '/hr/recruitment') return 'Recrutement & Offres';
-        if (cleanPath === '/hr/performance') return 'Suivi des Performances';
-        if (cleanPath.startsWith('/settings')) return 'Paramètres du Système';
-        if (cleanPath.startsWith('/collaboration')) return 'Espace Collaboratif';
+        if (cleanPath === '/dashboard' || cleanPath === '') return 'dashboard';
+        if (cleanPath === '/sales/customers') return 'customers';
+        if (cleanPath === '/sales/orders') return 'sales_orders';
+        if (cleanPath === '/purchases/suppliers') return 'suppliers';
+        if (cleanPath === '/purchases/orders') return 'purchase_orders';
+        if (cleanPath === '/purchases/receptions') return 'receptions';
+        if (cleanPath === '/catalogue/products' || cleanPath === '/products') return 'products';
+        if (cleanPath === '/product-families') return 'families';
+        if (cleanPath === '/inventory') return 'inventory';
+        if (cleanPath === '/manufacturing/orders') return 'manufacturing';
+        if (cleanPath === '/invoices') return 'invoices';
+        if (cleanPath === '/treasury/aged-receivables') return 'aged_receivables';
+        if (cleanPath === '/treasury/forecast') return 'forecast';
+        if (cleanPath === '/expenses') return 'expenses';
+        if (cleanPath === '/analytics') return 'analytics';
+        if (cleanPath === '/analytics/abc') return 'abc';
+        if (cleanPath === '/analytics/dead-stock') return 'dead_stock';
+        if (cleanPath === '/hr/employees') return 'employees';
+        if (cleanPath === '/hr/leaves') return 'leaves';
+        if (cleanPath === '/hr/payroll') return 'payroll';
+        if (cleanPath === '/hr/recruitment') return 'recruitment';
+        if (cleanPath === '/hr/performance') return 'performance';
+        if (cleanPath.startsWith('/settings')) return 'settings';
+        if (cleanPath.startsWith('/collaboration')) return 'collaboration';
         
-        return 'Atlas Intelligence';
+        return 'ai';
     };
     
-    const pageTitle = getPageTitle(pathname);
+    const pageTitleKey = getPageTitleKey(pathname);
+    const pageTitle = t(pageTitleKey);
 
     return (
         <header className="bg-white border-b border-slate-100 h-16 sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all shadow-sm">

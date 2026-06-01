@@ -8,13 +8,9 @@ import {
   Users, 
   ChevronRight, 
   Check, 
-  AlertCircle, 
   Plus, 
-  Save, 
-  Trash2,
   Search,
   Lock,
-  Globe,
   Layout,
   Database,
   Briefcase,
@@ -50,8 +46,14 @@ export default function RolesClient() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [rolePermissions, setRolePermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Create Role Modal States
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDisplayName, setNewRoleDisplayName] = useState('');
+  const [newRoleDescription, setNewRoleDescription] = useState('');
+  const [creatingRole, setCreatingRole] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -61,8 +63,8 @@ export default function RolesClient() {
     setLoading(true);
     try {
       const [rolesData, permsData] = await Promise.all([
-        apiFetch('/rbac/roles'),
-        apiFetch('/rbac/permissions')
+        apiFetch('/api/roles'),
+        apiFetch('/api/permissions')
       ]);
       setRoles(rolesData || []);
       setPermissions(permsData || []);
@@ -76,10 +78,18 @@ export default function RolesClient() {
 
   const loadRolePermissions = (role: Role) => {
     setSelectedRole(role);
-    setRolePermissions(role.permissions.map(p => p.permission.id));
+    if (role.name === 'ADMIN') {
+      setRolePermissions(permissions.map(p => p.id));
+    } else {
+      setRolePermissions(role.permissions.map(p => p.permission.id));
+    }
   };
 
   const togglePermission = async (permissionId: string) => {
+    if (!selectedRole || selectedRole.name === 'ADMIN' || selectedRole.isSystemRole) {
+      return;
+    }
+
     const isAssigned = rolePermissions.includes(permissionId);
     
     // Optimistic UI update
@@ -92,22 +102,22 @@ export default function RolesClient() {
     try {
       if (isAssigned) {
         // Remove permission
-        await apiFetch(`/rbac/roles/${selectedRole?.id}/permissions/${permissionId}`, {
+        await apiFetch(`/api/roles/${selectedRole.id}/permissions/${permissionId}`, {
           method: 'DELETE',
         });
-        toast.success('Permission removed');
+        toast.success('Permission supprimée');
       } else {
         // Add permission
-        await apiFetch(`/rbac/roles/${selectedRole?.id}/permissions`, {
+        await apiFetch(`/api/roles/${selectedRole.id}/permissions`, {
           method: 'POST',
           body: JSON.stringify({ permissionIds: permissionId }),
         });
-        toast.success('Permission added');
+        toast.success('Permission ajoutée');
       }
       
       // Update the local roles state to keep everything in sync
       setRoles(prev => prev.map(r => {
-        if (r.id === selectedRole?.id) {
+        if (r.id === selectedRole.id) {
           const newPerms = isAssigned 
             ? r.permissions.filter(p => p.permission.id !== permissionId)
             : [...r.permissions, { permission: permissions.find(p => p.id === permissionId)! }];
@@ -122,7 +132,37 @@ export default function RolesClient() {
           ? [...prev, permissionId]
           : prev.filter(id => id !== permissionId)
       );
-      toast.error('Error updating permission');
+      toast.error('Erreur lors de la mise à jour de la permission');
+    }
+  };
+
+  const handleCreateRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoleName || !newRoleDisplayName) {
+      toast.error('Nom et nom d\'affichage requis');
+      return;
+    }
+    setCreatingRole(true);
+    try {
+      const result = await apiFetch('/api/roles', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: newRoleName,
+          displayName: newRoleDisplayName,
+          description: newRoleDescription
+        })
+      });
+      toast.success('Rôle créé avec succès');
+      setRoles(prev => [...prev, result]);
+      setShowCreateModal(false);
+      setNewRoleName('');
+      setNewRoleDisplayName('');
+      setNewRoleDescription('');
+    } catch (error: any) {
+      console.error('Error creating role:', error);
+      toast.error(error.message || 'Erreur lors de la création du rôle');
+    } finally {
+      setCreatingRole(false);
     }
   };
 
@@ -151,7 +191,7 @@ export default function RolesClient() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -165,7 +205,10 @@ export default function RolesClient() {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{t('title')}</h1>
             <p className="text-slate-500 text-sm font-medium">{t('subtitle')}</p>
           </div>
-          <button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl flex items-center gap-2 font-black text-sm transition-all shadow-lg shadow-blue-100 uppercase tracking-tighter">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl flex items-center gap-2 font-black text-sm transition-all shadow-lg shadow-blue-100 uppercase tracking-tighter"
+          >
             <Plus size={18} />
             {t('create')}
           </button>
@@ -178,7 +221,7 @@ export default function RolesClient() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="text" 
-                placeholder="Search role..."
+                placeholder="Rechercher un rôle..."
                 className="w-full h-12 pl-12 pr-4 bg-white border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-600 transition-all font-bold text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -187,7 +230,7 @@ export default function RolesClient() {
 
             <div className="bg-white border-2 border-slate-100 rounded-[2rem] overflow-hidden shadow-sm">
               <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Available Profiles</h3>
+                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Profils Disponibles</h3>
               </div>
               <div className="divide-y divide-slate-100">
                 {roles.filter(r => r.displayName.toLowerCase().includes(searchTerm.toLowerCase())).map((role) => (
@@ -206,10 +249,10 @@ export default function RolesClient() {
                       </div>
                       <div>
                         <div className="font-black text-slate-900 text-sm tracking-tight">{role.displayName}</div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{role.description || 'No description'}</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{role.description || 'Sans description'}</div>
                       </div>
                     </div>
-                    {role.isSystemRole && (
+                    {role.name === 'ADMIN' && (
                       <Lock size={14} className="text-slate-300" />
                     )}
                     <ChevronRight size={18} className={`transition-all ${selectedRole?.id === role.id ? 'text-blue-600 translate-x-1' : 'text-slate-300'}`} />
@@ -227,8 +270,8 @@ export default function RolesClient() {
                   <Shield size={32} />
                 </div>
                 <div>
-                  <p className="font-black text-slate-900 uppercase tracking-tighter">Select a role</p>
-                  <p className="text-slate-400 text-sm font-bold">Choose a profile from the left to configure its access.</p>
+                  <p className="font-black text-slate-900 uppercase tracking-tighter">Sélectionnez un rôle</p>
+                  <p className="text-slate-400 text-sm font-bold">Choisissez un profil à gauche pour configurer ses accès.</p>
                 </div>
               </div>
             ) : (
@@ -241,9 +284,9 @@ export default function RolesClient() {
                     <div>
                       <h2 className="text-xl font-black text-slate-900 tracking-tight">{selectedRole.displayName}</h2>
                       <div className="flex items-center gap-2">
-                        <span className={`h-1.5 w-1.5 rounded-full ${selectedRole.isSystemRole ? 'bg-amber-500' : 'bg-green-500'}`}></span>
+                        <span className={`h-1.5 w-1.5 rounded-full ${(selectedRole.name === 'ADMIN' || selectedRole.isSystemRole) ? 'bg-amber-500' : 'bg-green-500'}`}></span>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          {selectedRole.isSystemRole ? 'System Role' : 'Custom Role'}
+                          {(selectedRole.name === 'ADMIN' || selectedRole.isSystemRole) ? 'Rôle Système (Lecture Seule)' : 'Rôle Personnalisé'}
                         </p>
                       </div>
                     </div>
@@ -263,29 +306,36 @@ export default function RolesClient() {
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {perms.map((perm) => (
-                            <button
-                              key={perm.id}
-                              onClick={() => togglePermission(perm.id)}
-                              className={`group text-left p-4 rounded-2xl border-2 transition-all flex items-start gap-4 cursor-pointer ${
-                                rolePermissions.includes(perm.id)
-                                  ? 'bg-blue-50/50 border-blue-600 shadow-sm shadow-blue-50'
-                                  : 'bg-slate-50/50 border-transparent hover:border-slate-200'
-                              }`}
-                            >
-                              <div className={`mt-1 w-5 h-5 rounded flex items-center justify-center transition-all ${
-                                rolePermissions.includes(perm.id)
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white border-2 border-slate-200 group-hover:border-slate-300'
-                              }`}>
-                                {rolePermissions.includes(perm.id) && <Check size={12} />}
-                              </div>
-                              <div>
-                                <div className="font-black text-slate-900 text-xs uppercase tracking-tight">{perm.resource} - {perm.action}</div>
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1 leading-relaxed">{perm.description}</div>
-                              </div>
-                            </button>
-                          ))}
+                          {perms.map((perm) => {
+                            const isDisabled = selectedRole.name === 'ADMIN' || selectedRole.isSystemRole;
+                            const isChecked = rolePermissions.includes(perm.id);
+                            return (
+                              <button
+                                key={perm.id}
+                                disabled={isDisabled}
+                                onClick={() => togglePermission(perm.id)}
+                                className={`group text-left p-4 rounded-2xl border-2 transition-all flex items-start gap-4 ${
+                                  isDisabled ? 'opacity-65 cursor-not-allowed border-transparent' : 'cursor-pointer'
+                                } ${
+                                  isChecked
+                                    ? 'bg-blue-50/50 border-blue-600 shadow-sm shadow-blue-50'
+                                    : 'bg-slate-50/50 border-transparent hover:border-slate-200'
+                                }`}
+                              >
+                                <div className={`mt-1 w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                  isChecked
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white border-2 border-slate-200 group-hover:border-slate-300'
+                                }`}>
+                                  {isChecked && <Check size={12} />}
+                                </div>
+                                <div>
+                                  <div className="font-black text-slate-900 text-xs uppercase tracking-tight">{perm.resource} - {perm.action}</div>
+                                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1 leading-relaxed">{perm.description}</div>
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     );
@@ -295,7 +345,74 @@ export default function RolesClient() {
             )}
           </div>
         </div>
+
+        {/* Modal: Créer un Rôle */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2rem] p-8 max-w-md w-full border border-slate-100 shadow-2xl space-y-6 animate-in zoom-in-95 duration-300">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Créer un Rôle</h3>
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mt-1">Nouveau profil d'accès système</p>
+              </div>
+
+              <form onSubmit={handleCreateRole} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Code du Rôle (Unique, Majuscules)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="E.g. COMPTABLE"
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-55 border-2 border-slate-100 rounded-xl outline-none focus:bg-white focus:border-blue-600 transition-all font-bold text-sm shadow-inner"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nom d'affichage</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="E.g. Comptable Senior"
+                    value={newRoleDisplayName}
+                    onChange={(e) => setNewRoleDisplayName(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-55 border-2 border-slate-100 rounded-xl outline-none focus:bg-white focus:border-blue-600 transition-all font-bold text-sm shadow-inner"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Description</label>
+                  <textarea
+                    placeholder="Description du rôle..."
+                    value={newRoleDescription}
+                    onChange={(e) => setNewRoleDescription(e.target.value)}
+                    className="w-full h-20 p-4 bg-slate-55 border-2 border-slate-100 rounded-xl outline-none focus:bg-white focus:border-blue-600 transition-all font-bold text-sm shadow-inner resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="h-11 px-6 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={creatingRole}
+                    className="h-11 px-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
+                  >
+                    {creatingRole && <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white animate-fast"></div>}
+                    Créer
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </PermissionGuard>
   );
 }
+

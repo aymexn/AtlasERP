@@ -72,8 +72,8 @@ export default function SettingsClient() {
     }, []);
 
     const handleLanguageChange = (newLocale: string) => {
-        router.push(pathname as any, { locale: newLocale });
-        toast.success(ct('save_success'));
+        // Force a full reload to ensure the html dir/lang and all cached translations update
+        window.location.href = `/${newLocale}${pathname === '/' ? '' : pathname}`;
     };
 
     const handleSave = async () => {

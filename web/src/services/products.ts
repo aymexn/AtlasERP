@@ -6,13 +6,18 @@ export interface Product {
     sku: string;
     secondaryName?: string | null;
     articleType: string;
+    type?: string;
     unit: string;
     salePriceHt: number;
+    priceHT?: number;
     taxRate: number;
     purchasePriceHt?: number | null;
     standardCost: number;
+    costPrice?: number;
     stockQuantity: number;
+    stockReserved?: number | null;
     minStock: number;
+    alertThreshold?: number | null;
     maxStock?: number | null;
     trackStock: boolean;
     isActive: boolean;
@@ -29,12 +34,36 @@ export interface Product {
 }
 
 export const productsService = {
-    async list() {
-        return apiFetch('/products');
+    async list(options?: { type?: string; search?: string; page?: number; limit?: number }) {
+        const params = new URLSearchParams();
+        if (options?.type) params.append('type', options.type);
+        if (options?.search) params.append('search', options.search);
+        if (options?.page) params.append('page', options.page.toString());
+        if (options?.limit) params.append('limit', options.limit.toString());
+        
+        const queryString = params.toString();
+        const url = `/api/products${queryString ? '?' + queryString : ''}`;
+        
+        const response = await apiFetch(url);
+        // Safely extract the array for backwards compatibility
+        return Array.isArray(response) ? response : (response.data ?? []);
+    },
+
+    async listPaginated(options?: { type?: string; search?: string; page?: number; limit?: number }) {
+        const params = new URLSearchParams();
+        if (options?.type) params.append('type', options.type);
+        if (options?.search) params.append('search', options.search);
+        if (options?.page) params.append('page', options.page.toString());
+        if (options?.limit) params.append('limit', options.limit.toString());
+        
+        const queryString = params.toString();
+        const url = `/api/products${queryString ? '?' + queryString : ''}`;
+        
+        return apiFetch(url);
     },
 
     async get(id: string) {
-        return apiFetch(`/products/${id}`);
+        return apiFetch(`/api/products/${id}`);
     },
 
     async create(data: Partial<Product> & { formulaLines?: any[] }) {
@@ -54,7 +83,7 @@ export const productsService = {
     },
 
     async delete(id: string) {
-        return apiFetch(`/products/${id}`, {
+        return apiFetch(`/api/products/${id}`, {
             method: 'DELETE',
         });
     },

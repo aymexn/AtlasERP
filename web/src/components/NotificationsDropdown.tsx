@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { apiFetch } from '@/lib/api';
@@ -62,6 +62,11 @@ const priorityConfig = {
 };
 
 export default function NotificationsDropdown() {
+    // Short-circuit routing on intensive creation forms to avoid thread blocking
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/new')) {
+        return null; // Instantly kill and skip background polling execution loops
+    }
+
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -69,7 +74,18 @@ export default function NotificationsDropdown() {
     const [loading, setLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (force = false) => {
+        // Skip if not forced and user is active on an input to avoid interrupting typing or causing timeouts
+        if (!force && typeof document !== 'undefined' && document.activeElement) {
+            const el = document.activeElement;
+            const isInput = el.tagName === 'INPUT' || 
+                            el.tagName === 'TEXTAREA' || 
+                            el.hasAttribute('contenteditable') || 
+                            el.closest('[contenteditable="true"]');
+            if (isInput) {
+                return;
+            }
+        }
         try {
             const res = await apiFetch('/api/notifications');
             if (res && res.data) {
@@ -82,9 +98,7 @@ export default function NotificationsDropdown() {
     };
 
     useEffect(() => {
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
+        fetchNotifications(true); // Force fetch on mount
     }, []);
 
     useEffect(() => {

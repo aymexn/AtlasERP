@@ -27,23 +27,23 @@ export declare class AnalyticsController {
         };
     } & {
         id: string;
-        reference: string;
-        status: import(".prisma/client").$Enums.InvoiceStatus;
-        notes: string | null;
         createdAt: Date;
-        updatedAt: Date;
+        status: import(".prisma/client").$Enums.InvoiceStatus;
         companyId: string;
-        date: Date;
-        salesOrderId: string | null;
-        customerId: string;
+        notes: string | null;
+        updatedAt: Date;
         dueDate: Date | null;
-        lastReminderSent: Date | null;
-        reminderCount: number;
+        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         totalAmountHt: import("@prisma/client/runtime/library").Decimal;
         totalAmountTva: import("@prisma/client/runtime/library").Decimal;
-        totalAmountStamp: import("@prisma/client/runtime/library").Decimal;
-        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         amountPaid: import("@prisma/client/runtime/library").Decimal;
+        salesOrderId: string | null;
+        customerId: string;
+        reference: string;
+        date: Date;
+        lastReminderSent: Date | null;
+        reminderCount: number;
+        totalAmountStamp: import("@prisma/client/runtime/library").Decimal;
         amountRemaining: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     })[]>;
@@ -64,29 +64,29 @@ export declare class AnalyticsController {
     }[]>;
     getRecentTransactions(req: any, limit?: number): Promise<({
         product: {
-            unit: string;
             name: string;
+            unit: import(".prisma/client").$Enums.ProductUnit;
         };
     } & {
         id: string;
-        reference: string;
-        unit: string;
         createdAt: Date;
         companyId: string;
+        createdBy: string | null;
+        reason: string | null;
+        salesOrderId: string | null;
+        reference: string;
+        date: Date;
         productId: string;
-        variantId: string | null;
-        uomId: string | null;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string;
+        uomId: string | null;
         type: import(".prisma/client").$Enums.MovementType;
+        variantId: string | null;
+        movementType: string;
         unitCost: import("@prisma/client/runtime/library").Decimal;
         totalCost: import("@prisma/client/runtime/library").Decimal;
-        movementType: string;
-        reason: string | null;
-        date: Date;
-        createdBy: string | null;
         warehouseFromId: string | null;
         warehouseToId: string | null;
-        salesOrderId: string | null;
     })[]>;
     calculateAbc(req: any, body: {
         startDate: string;
@@ -118,11 +118,11 @@ export declare class AnalyticsController {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
-        productId: string;
+        updatedAt: Date;
         periodStart: Date;
         periodEnd: Date;
+        productId: string;
         classification: string;
         annualRevenue: import("@prisma/client/runtime/library").Decimal;
         annualUnitsSold: number;
@@ -160,21 +160,21 @@ export declare class AnalyticsController {
         } & {
             id: string;
             createdAt: Date;
-            updatedAt: Date;
             companyId: string;
+            updatedAt: Date;
+            category: string;
+            reason: string | null;
             productId: string;
-            warehouseId: string | null;
             quantity: import("@prisma/client/runtime/library").Decimal;
             stockValue: import("@prisma/client/runtime/library").Decimal;
-            reason: string | null;
-            category: string;
-            actionDate: Date | null;
+            warehouseId: string | null;
             lastSaleDate: Date | null;
             daysWithoutSale: number;
             lastPurchaseDate: Date | null;
             daysSincePurchase: number;
             actionRecommended: string | null;
             actionTaken: string | null;
+            actionDate: Date | null;
             actionBy: string | null;
             identifiedAt: Date;
         })[];
@@ -193,21 +193,21 @@ export declare class AnalyticsController {
     }): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        updatedAt: Date;
+        category: string;
+        reason: string | null;
         productId: string;
-        warehouseId: string | null;
         quantity: import("@prisma/client/runtime/library").Decimal;
         stockValue: import("@prisma/client/runtime/library").Decimal;
-        reason: string | null;
-        category: string;
-        actionDate: Date | null;
+        warehouseId: string | null;
         lastSaleDate: Date | null;
         daysWithoutSale: number;
         lastPurchaseDate: Date | null;
         daysSincePurchase: number;
         actionRecommended: string | null;
         actionTaken: string | null;
+        actionDate: Date | null;
         actionBy: string | null;
         identifiedAt: Date;
     }>;
@@ -218,15 +218,15 @@ export declare class AnalyticsController {
     }): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
+        updatedAt: Date;
+        reorderPoint: import("@prisma/client/runtime/library").Decimal;
         productId: string;
         warehouseId: string | null;
-        reorderPoint: import("@prisma/client/runtime/library").Decimal;
-        leadTimeDays: number | null;
         safetyStock: import("@prisma/client/runtime/library").Decimal;
         reorderQuantity: import("@prisma/client/runtime/library").Decimal;
         maximumStock: import("@prisma/client/runtime/library").Decimal | null;
+        leadTimeDays: number | null;
         averageDailyDemand: import("@prisma/client/runtime/library").Decimal | null;
         demandVariability: import("@prisma/client/runtime/library").Decimal | null;
         serviceLevel: import("@prisma/client/runtime/library").Decimal;
@@ -238,18 +238,18 @@ export declare class AnalyticsController {
     }>;
     getSupplierRankings(req: any, startDate: string, endDate: string): Promise<({
         supplier: {
-            name: string;
             email: string;
+            name: string;
             phone: string;
         };
     } & {
         id: string;
-        notes: string | null;
         createdAt: Date;
         companyId: string;
-        supplierId: string;
+        notes: string | null;
         periodStart: Date;
         periodEnd: Date;
+        supplierId: string;
         totalOrders: number;
         onTimeDeliveries: number;
         lateDeliveries: number;

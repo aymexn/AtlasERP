@@ -10,8 +10,8 @@ export declare class InventoryService {
         availableQuantity: number;
         product: {
             id: string;
-            unit: string;
             name: string;
+            unit: import(".prisma/client").$Enums.ProductUnit;
             sku: string;
             minStock: import("@prisma/client/runtime/library").Decimal;
             standardCost: import("@prisma/client/runtime/library").Decimal;
@@ -20,8 +20,8 @@ export declare class InventoryService {
             };
         };
         id: string;
-        updatedAt: Date;
         companyId: string;
+        updatedAt: Date;
         productId: string;
         variantId: string | null;
         warehouseId: string;
@@ -32,8 +32,8 @@ export declare class InventoryService {
         reservedQuantity: number;
         availableQuantity: number;
         id: string;
-        unit: string;
         name: string;
+        unit: import(".prisma/client").$Enums.ProductUnit;
         sku: string;
         minStock: import("@prisma/client/runtime/library").Decimal;
         purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
@@ -52,8 +52,8 @@ export declare class InventoryService {
     }>;
     getLowStockAlerts(companyId: string): Promise<{
         id: string;
-        unit: string;
         name: string;
+        unit: import(".prisma/client").$Enums.ProductUnit;
         sku: string;
         minStock: import("@prisma/client/runtime/library").Decimal;
         stockQuantity: import("@prisma/client/runtime/library").Decimal;

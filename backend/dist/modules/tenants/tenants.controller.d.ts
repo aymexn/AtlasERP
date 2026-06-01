@@ -6,15 +6,15 @@ export declare class TenantsController {
     create(dto: CreateTenantDto, req: any): Promise<{
         id: string;
         createdAt: Date;
+        email: string | null;
         name: string;
-        slug: string;
         address: string | null;
+        phone: string | null;
+        slug: string;
         ai: string | null;
         allowNegativeStock: boolean;
-        email: string | null;
         logoUrl: string | null;
         nif: string | null;
-        phone: string | null;
         rc: string | null;
         rib: string | null;
         website: string | null;
@@ -22,15 +22,15 @@ export declare class TenantsController {
     getMyTenant(req: any): Promise<{
         id: string;
         createdAt: Date;
+        email: string | null;
         name: string;
-        slug: string;
         address: string | null;
+        phone: string | null;
+        slug: string;
         ai: string | null;
         allowNegativeStock: boolean;
-        email: string | null;
         logoUrl: string | null;
         nif: string | null;
-        phone: string | null;
         rc: string | null;
         rib: string | null;
         website: string | null;
@@ -38,15 +38,15 @@ export declare class TenantsController {
     updateMyTenant(dto: any, req: any): Promise<{
         id: string;
         createdAt: Date;
+        email: string | null;
         name: string;
-        slug: string;
         address: string | null;
+        phone: string | null;
+        slug: string;
         ai: string | null;
         allowNegativeStock: boolean;
-        email: string | null;
         logoUrl: string | null;
         nif: string | null;
-        phone: string | null;
         rc: string | null;
         rib: string | null;
         website: string | null;

@@ -20,7 +20,7 @@ export function useKeyboardShortcuts() {
                     searchInput.focus();
                 } else {
                     // Fallback: navigate to products list which has a search bar
-                    router.push('/products');
+                    router.push('/catalogue/products');
                 }
             }
 

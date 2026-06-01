@@ -5,11 +5,11 @@ export declare class WarehousesService {
     listWarehouses(companyId: string): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
+        updatedAt: Date;
         location: string | null;
+        code: string | null;
+        isActive: boolean;
     }[]>;
 }

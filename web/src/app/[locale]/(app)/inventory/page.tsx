@@ -171,7 +171,7 @@ export default function InventoryRootPage() {
                     <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-white">
                         <div>
                             <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('stock.alerts')}</h3>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2">Actions prioritaires requises</p>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2">{t('stock.priority_actions')}</p>
                         </div>
                         <div className="h-12 w-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center animate-pulse border border-rose-100">
                             <AlertCircle size={24} strokeWidth={2.5} />

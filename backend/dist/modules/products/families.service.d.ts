@@ -11,15 +11,15 @@ export declare class FamiliesService {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     })[]>;
     create(companyId: string, dto: CreateFamilyDto): Promise<{
         parent: {
@@ -29,15 +29,15 @@ export declare class FamiliesService {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     }>;
     update(id: string, companyId: string, dto: UpdateFamilyDto): Promise<{
         parent: {
@@ -47,27 +47,27 @@ export declare class FamiliesService {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     }>;
     remove(id: string, companyId: string): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     }>;
 }

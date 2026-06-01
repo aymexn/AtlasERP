@@ -76,27 +76,9 @@ body {
   background: var(--muted-foreground);
 }
 
-.dark {
-  --background: #0b0f19;
-  --foreground: #f8fafc;
-  
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  
-  --success: #3b82f6;
-  --success-foreground: #ffffff;
-  
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  
-  --danger: #e11d48;
-  --danger-foreground: #ffffff;
-  
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  
-  --border: #334155;
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
+.currency-amount, .financial-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
+
 

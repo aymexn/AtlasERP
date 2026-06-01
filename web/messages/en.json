@@ -1,13 +1,66 @@
 {
+    "page_titles": {
+        "dashboard": "Dashboard",
+        "customers": "Customer Management",
+        "sales_orders": "Sales Orders",
+        "suppliers": "Supplier Management",
+        "purchase_orders": "Purchase Orders",
+        "receptions": "Stock Receptions",
+        "products": "Product Catalogue",
+        "families": "Product Families",
+        "inventory": "Inventory Management",
+        "manufacturing": "Manufacturing Orders",
+        "invoices": "Invoices",
+        "aged_receivables": "Aged Receivables",
+        "forecast": "Cash Flow Forecast",
+        "expenses": "Expense Management",
+        "analytics": "Statistics & Reports",
+        "abc": "ABC Analysis",
+        "dead_stock": "Dead Stock",
+        "employees": "Employee Management",
+        "leaves": "Leave Requests",
+        "payroll": "Payroll Management",
+        "recruitment": "Recruitment & Job Openings",
+        "performance": "Performance Tracking",
+        "settings": "System Settings",
+        "collaboration": "Collaborative Space",
+        "ai": "Atlas Intelligence"
+    },
+    "chat": {
+        "title": "Decision Support AI Assistant",
+        "subtitle": "Your operational intelligence copilot",
+        "input_placeholder": "Write a message or ask a question...",
+        "listening_placeholder": "Voice listening active...",
+        "voice_tooltip": "Voice input",
+        "suggestions_title": "Suggested questions:",
+        "new_session": "New Session",
+        "loading": "Assistant is analyzing organization data...",
+        "thinking": "Thinking...",
+        "status_online": "Virtual ERP Assistant • Online",
+        "welcome_message": "I am connected to your company's real-time feeds (treasury, orders, stocks, and manufacturing). Select a macro-analysis below or ask me your questions.",
+        "error_connecting": "❌ Sorry, an error occurred while connecting to the AI engine. Please try again.",
+        "voice_sample": "Analyze Cash Flow",
+        "attach_sample": "Attach the current manufacturing order file [OF-2026-0042]",
+        "suggestions": {
+            "cash_flow": "Analyze Cash Flow",
+            "stock_shortage": "Check Stock Shortages",
+            "client_performance": "Client Performance",
+            "overdue_invoices": "Overdue Invoices",
+            "active_mos": "Active Manufacturing Orders"
+        },
+        "attach_tooltip": "Attach MO sheet"
+    },
     "login": {
-        "title": "Welcome Back",
-        "subtitle": "Sign in to AtlasERP to manage your operations.",
+        "title": "Sign In",
+        "subtitle": "Access your AtlasERP workspace",
         "email": "Email Address",
         "password": "Password",
         "button": "Sign In",
         "authenticating": "Authenticating...",
         "no_account": "Don't have an account?",
-        "register": "Request Access"
+        "register": "Create account",
+        "error_title": "Login Error",
+        "invalid_credentials": "Invalid email or password."
     },
     "common": {
         "title": "Atlas",
@@ -89,7 +142,17 @@
         "create_mo": "Manufacturing",
         "new_customer": "Customer",
         "inventory_check": "Inventory",
-        "finance_report": "Treasury"
+        "finance_report": "Treasury",
+        "products": {
+            "title": "Product Catalog",
+            "new_product": "New Article",
+            "name": "Designation",
+            "sku": "SKU",
+            "type": "Type",
+            "price_ht": "Price HT",
+            "stock": "Available Stock",
+            "unit": "Unit"
+        }
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -101,6 +164,7 @@
             "production": "Operations & Stock",
             "finance": "Financial Management",
             "analytics": "Analytics",
+            "ai": "AI Intelligence",
             "hr": "Human Resources",
             "collaboration": "Collaboration & Projects"
         },
@@ -126,6 +190,11 @@
             "analytics_overview": "Overview",
             "abc_analysis": "ABC Analysis",
             "dead_stock": "Dead Stock",
+            "ai_assistant": "AI Assistant",
+            "ai_insights": "Insights & Predictions",
+            "ai_recommendations": "Smart Recommendations",
+            "ai_analytics": "Advanced Analytics",
+            "ai_automations": "Smart Automations",
             "hr_employees": "Employees",
             "hr_leaves": "Leaves",
             "hr_payroll": "Payroll",
@@ -137,7 +206,7 @@
         }
     },
     "dashboard": {
-        "title": "Operational Cockpit",
+        "title": "Dashboard",
         "company_overview": "Organization Overview",
         "production_overview": "Production Overview",
         "financial_fortress": "Financial Fortress",
@@ -181,6 +250,68 @@
         "chart": {
             "procurement": "Purchases / Expenses",
             "revenue": "Revenue"
+        },
+        "actions": {
+            "recalculate": "RECALCULATE DATA"
+        },
+        "sections": {
+            "today_overview": "TODAY'S OVERVIEW"
+        },
+        "metrics": {
+            "monthly_goal": "MONTHLY GOAL",
+            "monthly_revenue": "MONTHLY REVENUE",
+            "cash_on_hand": "CASH ON HAND",
+            "company_health": "COMPANY HEALTH",
+            "stable_month": "→ Stable this month",
+            "achieved": "Achieved",
+            "remaining": "Remaining",
+            "in_cash": "cash in hand",
+            "out_of_stock": "out of stock items",
+            "optimal_level": "Optimal level",
+            "action_required": "Action required",
+            "orders_this_month": "order(s) this month",
+            "active_customers_label": "{count} active customer(s)",
+            "month_over_month": "Month over Month",
+            "vs_last_month": "{percent}% vs last month",
+            "stable_vs_last_month": "Stable vs last month",
+            "plus_100_vs_last_month": "+100% vs last month",
+            "insufficient_history": "Insufficient history",
+            "insufficient_history_desc": "Not enough historical data yet. Check back after a few months of activity.",
+            "articles_in_alert": "{count} Items in alert",
+            "all_stocks_optimal": "All stock levels are optimal.",
+            "orders_count": "{count} Orders",
+            "recovery_rate_label": "Recovery rate",
+            "view_profile": "View Profile",
+            "view_all": "View all",
+            "no_activity": "No recent activity detected",
+            "top_suppliers_volume": "Top Suppliers (Volume)",
+            "cash_tooltip": "Available liquidity compared to yesterday",
+            "stock_tooltip": "Out of stock items requiring replenishment",
+            "sales_tooltip": "Active sales orders",
+            "customers_tooltip": "New customers added this month",
+            "cash_increase_vs_yesterday": "↗ +15.0% vs yesterday",
+            "total_active_label": "Total Active",
+            "new_this_month_label": "New this month",
+            "top_customer_label": "🏆 Top Customer",
+            "last_order_label": "Last order",
+            "collected_cash": "Collected",
+            "customers_and_sales": "Customers & Sales"
+        },
+        "quick_actions": {
+            "title": "Quick Actions",
+            "sale": "Sale",
+            "purchase": "Purchase",
+            "manufacturing": "Manufacturing",
+            "invoice": "Invoice",
+            "customer": "Customer",
+            "stock": "Stock",
+            "tasks": "Tasks"
+        },
+        "gauge": {
+            "excellent": "EXCELLENT",
+            "good": "GOOD",
+            "warning": "WARNING",
+            "critical": "CRITICAL"
         }
     },
     "finances": {
@@ -422,7 +553,10 @@
             "low_stock": "Low Stock",
             "out_of_stock": "Out of Stock",
             "all_products": "All products",
-            "min": "Min Threshold"
+            "min": "Min Threshold",
+            "export_pdf": "Export Inventory (PDF)",
+            "cost_undefined": "Cost undefined",
+            "priority_actions": "Priority actions required"
         },
         "movements": {
             "title": "Historical Movements",
@@ -573,36 +707,54 @@
             "cancelled": "Cancelled"
         },
         "orders": {
-            "title": "Purchase Management",
-            "subtitle": "Manage supplier purchase orders",
+            "title": "Purchase Orders",
+            "subtitle": "Manage your procurements and orders",
             "add": "New PO",
-            "add_subtitle": "Industrial purchase commitment",
-            "kpi": {
-                "active_orders": "Open Orders",
-                "total_cost": "Financial Commitment HT",
-                "received": "Received & Closed",
-                "pending": "Partially received"
-            },
-            "sections": {
-                "items": "Ordered Items"
+            "add_subtitle": "Create a purchase commitment",
+            "list": "Order Registry",
+            "tabs": {
+                "general": "General Info",
+                "items": "Items",
+                "summary": "Validation"
             },
             "form": {
-                "supplier": "Supplier *",
+                "supplier": "Select Supplier",
                 "order_date": "Order Date",
-                "expected_date": "Expected Delivery",
-                "items_title": "Order Items",
-                "add_line": "Add Line",
-                "product_placeholder": "Select a product...",
-                "notes": "Notes",
-                "summary_title": "Financial Summary",
-                "save": "Save Order"
+                "expected_date": "Expected Delivery Date",
+                "notes": "Internal Instructions & Notes",
+                "items_title": "Item Details",
+                "add_line": "Add Item",
+                "product_placeholder": "Search for an item...",
+                "summary_title": "Summary & Validation",
+                "save": "Save Purchase Order",
+                "financial_summary": "Financial Summary",
+                "direct_stock": "Direct Stock Entry",
+                "direct_stock_desc": "Mark as received and feed inventory",
+                "stock_feed_title": "Real Stock Feeding",
+                "stock_feed_desc": "Validation will automatically create a reception and stock movements.",
+                "order_mode_title": "Order Mode (Draft/Sent)",
+                "order_mode_desc": "The order will be created without impacting stock immediately.",
+                "progression": "Progression",
+                "no_nif": "No NIF",
+                "no_rc": "No RC",
+                "notes_placeholder": "Add any specific instructions or terms...",
+                "steps": {
+                    "supplier": "Step 1: Supplier Info",
+                    "items": "Step 2: Product Lines",
+                    "summary": "Step 3: Fees & Validation"
+                },
+                "tabs": {
+                    "general": "General Info",
+                    "items": "Items",
+                    "summary": "Validation"
+                }
             },
             "errors": {
                 "no_supplier": "Please select a supplier",
-                "invalid_lines": "Please complete all lines correctly"
+                "invalid_lines": "Please check items and quantities"
             },
             "success": {
-                "created": "PO created successfully"
+                "created": "Purchase Order created successfully"
             }
         },
         "suppliers": {
@@ -699,43 +851,6 @@
                 "validate": "Validate Reception"
             }
         },
-        "orders": {
-            "title": "Purchase Orders",
-            "subtitle": "Manage your procurements and orders",
-            "add": "New PO",
-            "add_subtitle": "Create a purchase commitment",
-            "list": "Order Registry",
-            "form": {
-                "supplier": "Select Supplier",
-                "order_date": "Order Date",
-                "expected_date": "Expected Delivery Date",
-                "notes": "Internal Instructions & Notes",
-                "items_title": "Item Details",
-                "add_line": "Add Item",
-                "product_placeholder": "Search for an item...",
-                "summary_title": "Summary & Validation",
-                "save": "Save Purchase Order",
-                "financial_summary": "Financial Summary",
-                "direct_stock": "Direct Stock Entry",
-                "direct_stock_desc": "Mark as received and feed inventory",
-                "stock_feed_title": "Real Stock Feeding",
-                "stock_feed_desc": "Validation will automatically create a reception and stock movements.",
-                "order_mode_title": "Order Mode (Draft/Sent)",
-                "order_mode_desc": "The order will be created without impacting stock immediately.",
-                "tabs": {
-                    "general": "General Info",
-                    "items": "Items",
-                    "summary": "Validation"
-                }
-            },
-            "errors": {
-                "no_supplier": "Please select a supplier",
-                "invalid_lines": "Please check items and quantities"
-            },
-            "success": {
-                "created": "Purchase Order created successfully"
-            }
-        },
         "reference": "PO Reference",
         "supplier": "Supplier Partner",
         "order_date": "Emission Date",
@@ -802,6 +917,31 @@
             "toast": {
                 "shipped": "Products shipped, stock updated",
                 "invoiced": "Invoice generated successfully"
+            },
+            "steps": {
+                "info": "Step 1: Customer Details",
+                "lines": "Step 2: Product Lines",
+                "summary": "Step 3: Costs and Validation"
+            },
+            "due_date": "Due Date",
+            "notes_placeholder": "Delivery instructions, observations...",
+            "continue_lines": "Continue → Product Lines",
+            "continue_summary": "Continue → Fees & Validation",
+            "save_draft": "Save Draft",
+            "validate_order": "Validate Order",
+            "due": "Due",
+            "status_invoiced_no_action": "SO Invoiced — no action available",
+            "status_cancelled_no_action": "SO Cancelled — no action available",
+            "summary": {
+                "title": "Order Summary",
+                "subtotal": "Subtotal HT ({count} lines)",
+                "discount": "Global Discount ({pct}%)",
+                "shipping": "Shipping Cost"
+            },
+            "actions": {
+                "validate": "Confirm SO",
+                "ship": "Ship SO",
+                "invoice": "Invoice SO"
             }
         },
         "customers": {
@@ -891,7 +1031,6 @@
             }
         }
     },
-
     "settings": {
         "title": "Organization Settings",
         "subtitle": "Fiscal and structural data configuration",
@@ -929,17 +1068,6 @@
             "en": "English",
             "ar": "Arabic"
         }
-    },
-    "login": {
-        "title": "Sign In",
-        "subtitle": "Access your AtlasERP workspace",
-        "email": "Email Address",
-        "password": "Password",
-        "button": "Sign In",
-        "authenticating": "Authenticating...",
-        "no_account": "Don't have an account?",
-        "register": "Create account",
-        "error_title": "Login Error"
     },
     "register": {
         "title": "Create Account",

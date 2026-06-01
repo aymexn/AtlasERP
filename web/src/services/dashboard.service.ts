@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { formatCurrency } from '@/lib/format';
 
 export class DashboardService {
 
@@ -155,6 +156,7 @@ export class DashboardService {
       select: {
         id: true,
         name: true,
+        sku: true,
         stockQuantity: true,
         reorderPoint: true
       }
@@ -167,6 +169,7 @@ export class DashboardService {
     }).map(p => ({
       id: p.id,
       name: p.name,
+      sku: p.sku,
       stockQuantity: Number(p.stockQuantity || 0),
       reorderPoint: Number(p.reorderPoint || 10)
     }));
@@ -488,6 +491,7 @@ export class DashboardService {
           select: {
             id: true,
             name: true,
+            sku: true,
             stockQuantity: true,
             reorderPoint: true,
             updatedAt: true
@@ -509,7 +513,7 @@ export class DashboardService {
           id: `order-${order.id}`,
           timestamp: order.createdAt,
           user: 'Utilisateur',
-          action: `BC-${order.reference} créé`,
+          action: `${order.reference} créé`,
           type: 'order',
           icon: '🟢',
           link: `/sales/orders/${order.id}`,
@@ -524,7 +528,7 @@ export class DashboardService {
           id: `payment-${payment.id}`,
           timestamp: payment.createdAt,
           user: 'Comptable',
-          action: `Paiement reçu : ${new Intl.NumberFormat('fr-DZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(payment.amount))} DA`,
+          action: `Paiement reçu : ${formatCurrency(payment.amount)}`,
           type: 'payment',
           icon: '💰',
           link: `/invoices`,
@@ -558,6 +562,7 @@ export class DashboardService {
           icon: '🔴',
           link: `/inventory/products-stock`,
           product: product.name,
+          sku: product.sku,
           stock: `${Number(product.stockQuantity)} / ${Number(product.reorderPoint)}`
         });
       });
@@ -659,50 +664,29 @@ export class DashboardService {
    * KPI Ventes (Bons de Commande Client)
    */
   async getSalesOrderKpis(companyId: string) {
-    const kpis = await this.getKpis(companyId);
+    // Always compute directly — the cached getKpis() path reads wrong buckets
+    // BC ouverts = orders not yet invoiced or cancelled (active pipeline)
+    const OPEN_STATUSES = ['DRAFT', 'CONFIRMED', 'VALIDATED', 'PREPARING', 'SHIPPED'] as const;
+    // CA engagé = committed revenue = validated/preparing/shipped but NOT yet invoiced
+    const COMMITTED_STATUSES = ['VALIDATED', 'PREPARING', 'SHIPPED'] as const;
 
-    if (kpis['sales_stats']) {
-      return {
-        openOrders: kpis['sales_stats'].metadata?.activeOrders || 0,
-        committedRevenue: kpis['sales_stats'].value || 0,
-        totalSalesOrders: kpis['total_sales']?.value || 0,
-        stockAlerts: kpis['stock_alerts']?.value || 0
-      };
-    }
+    const [openOrders, committedAgg, totalSalesOrders, products] = await Promise.all([
+      prisma.salesOrder.count({
+        where: { companyId, status: { in: OPEN_STATUSES as any } }
+      }),
+      prisma.salesOrder.aggregate({
+        where: { companyId, status: { in: COMMITTED_STATUSES as any } },
+        _sum: { totalAmountTtc: true }
+      }),
+      prisma.salesOrder.count({
+        where: { companyId, status: { not: 'CANCELLED' } }
+      }),
+      prisma.product.findMany({
+        where: { companyId, isActive: true },
+        select: { stockQuantity: true, reorderPoint: true }
+      })
+    ]);
 
-    // FALLBACK
-    const openOrders = await prisma.salesOrder.count({
-      where: {
-        companyId,
-        status: { in: ['DRAFT', 'CONFIRMED', 'VALIDATED', 'PREPARING'] }
-      }
-    });
-
-    const committedRevenue = await prisma.salesOrder.aggregate({
-      where: {
-        companyId,
-        status: { in: ['DRAFT', 'CONFIRMED', 'VALIDATED', 'PREPARING'] }
-      },
-      _sum: { totalAmountTtc: true }
-    });
-
-    const totalSalesOrders = await prisma.salesOrder.count({
-      where: {
-        companyId,
-        status: { not: 'CANCELLED' }
-      }
-    });
-
-    const products = await prisma.product.findMany({
-      where: {
-        companyId,
-        isActive: true
-      },
-      select: {
-        stockQuantity: true,
-        reorderPoint: true
-      }
-    });
     const stockAlerts = products.filter(p => {
       const stock = Number(p.stockQuantity || 0);
       const reorder = Number(p.reorderPoint || 10);
@@ -711,11 +695,12 @@ export class DashboardService {
 
     return {
       openOrders,
-      committedRevenue: Number(committedRevenue._sum.totalAmountTtc || 0),
+      committedRevenue: Number(committedAgg._sum.totalAmountTtc || 0),
       totalSalesOrders,
       stockAlerts
     };
   }
+
 
   private async getTotalCosts(companyId: string): Promise<number> {
     const [purchases, expenses] = await Promise.all([

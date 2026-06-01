@@ -8,5 +8,5 @@ export function formatCurrency(
     _locale?: string,
     _currency?: string
 ): string {
-    return unifiedFormatCurrency(amount);
+    return unifiedFormatCurrency(amount, _locale);
 }

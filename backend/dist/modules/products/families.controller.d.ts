@@ -11,15 +11,15 @@ export declare class FamiliesController {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     }>;
     findAll(req: any): Promise<({
         parent: {
@@ -29,28 +29,28 @@ export declare class FamiliesController {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     })[]>;
     remove(id: string, req: any): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     }>;
     update(id: string, dto: UpdateFamilyDto, req: any): Promise<{
         parent: {
@@ -60,14 +60,14 @@ export declare class FamiliesController {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         companyId: string;
         name: string;
-        isActive: boolean;
-        code: string | null;
         description: string | null;
-        sortOrder: number;
+        updatedAt: Date;
+        code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
+        sortOrder: number;
     }>;
 }

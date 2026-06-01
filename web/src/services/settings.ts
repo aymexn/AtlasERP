@@ -15,10 +15,10 @@ export interface CompanySettings {
 
 export const settingsService = {
     getCompany: async () => {
-        return apiFetch('/tenants/me');
+        return apiFetch('/api/tenants/me');
     },
     updateCompany: async (data: CompanySettings) => {
-        return apiFetch('/tenants/me', {
+        return apiFetch('/api/tenants/me', {
             method: 'POST',
             body: JSON.stringify(data)
         });
