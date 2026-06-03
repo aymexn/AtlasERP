@@ -4,27 +4,27 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     findAll(): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         status: import(".prisma/client").$Enums.UserStatus;
+        createdAt: Date;
         roles: ({
             role: {
                 id: string;
-                createdAt: Date;
                 name: string;
+                createdAt: Date;
                 description: string | null;
-                updatedAt: Date;
                 displayName: string;
                 isSystemRole: boolean;
+                updatedAt: Date;
             };
         } & {
             id: string;
-            userId: string;
-            isActive: boolean;
-            roleId: string;
             assignedAt: Date;
             assignedBy: string | null;
             expiresAt: Date | null;
+            isActive: boolean;
+            userId: string;
+            roleId: string;
         })[];
     }[]>;
     invite(body: {
@@ -32,13 +32,14 @@ export declare class UsersController {
         roleId: string;
     }, req: any): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         invitationToken: string | null;
+        name: string | null;
         passwordHash: string | null;
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
+        createdAt: Date;
         invitationExpires: Date | null;
         companyRoleId: string | null;
     }>;

@@ -14,8 +14,8 @@ export declare class RbacController {
     getAllPermissions(): Promise<{
         id: string;
         createdAt: Date;
-        description: string | null;
         action: string;
+        description: string | null;
         module: string;
         resource: string;
     }[]>;
@@ -24,8 +24,8 @@ export declare class RbacController {
             permission: {
                 id: string;
                 createdAt: Date;
-                description: string | null;
                 action: string;
+                description: string | null;
                 module: string;
                 resource: string;
             };
@@ -38,12 +38,12 @@ export declare class RbacController {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         name: string;
+        createdAt: Date;
         description: string | null;
-        updatedAt: Date;
         displayName: string;
         isSystemRole: boolean;
+        updatedAt: Date;
     })[]>;
     updateRolePermissions(roleId: string, permissionIds: string | string[], req: any): Promise<{
         id: string;
@@ -57,20 +57,20 @@ export declare class RbacController {
     removePermissionFromRole(roleId: string, permissionId: string, req: any): Promise<import(".prisma/client").Prisma.BatchPayload>;
     assignRole(userId: string, roleId: string, expiresAt: string, req: any): Promise<{
         id: string;
-        userId: string;
-        isActive: boolean;
-        roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
+        isActive: boolean;
+        userId: string;
+        roleId: string;
     }>;
     revokeRole(userId: string, roleId: string, req: any): Promise<{
         id: string;
-        userId: string;
-        isActive: boolean;
-        roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
+        isActive: boolean;
+        userId: string;
+        roleId: string;
     }>;
 }

@@ -6,12 +6,12 @@ export declare class StockTurnoverService {
     constructor(prisma: PrismaService);
     calculateTurnover(companyId: string, productId: string, warehouseId: string | null, startDate: Date, endDate: Date): Promise<{
         id: string;
-        createdAt: Date;
         companyId: string;
-        periodStart: Date;
-        periodEnd: Date;
+        createdAt: Date;
         productId: string;
         warehouseId: string | null;
+        periodStart: Date;
+        periodEnd: Date;
         beginningInventory: Decimal;
         endingInventory: Decimal;
         averageInventory: Decimal;
@@ -31,12 +31,12 @@ export declare class StockTurnoverService {
         };
     } & {
         id: string;
-        createdAt: Date;
         companyId: string;
-        periodStart: Date;
-        periodEnd: Date;
+        createdAt: Date;
         productId: string;
         warehouseId: string | null;
+        periodStart: Date;
+        periodEnd: Date;
         beginningInventory: Decimal;
         endingInventory: Decimal;
         averageInventory: Decimal;

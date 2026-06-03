@@ -4,12 +4,12 @@ export declare class WarehousesService {
     constructor(prisma: PrismaService);
     listWarehouses(companyId: string): Promise<{
         id: string;
-        createdAt: Date;
-        companyId: string;
         name: string;
-        updatedAt: Date;
-        location: string | null;
-        code: string | null;
+        companyId: string;
+        createdAt: Date;
         isActive: boolean;
+        updatedAt: Date;
+        code: string | null;
+        location: string | null;
     }[]>;
 }

@@ -5,24 +5,24 @@ export declare class UomController {
     findAll(req: any): Promise<{
         symbol: string;
         id: string;
-        companyId: string;
         name: string;
+        companyId: string;
         isActive: boolean;
         type: string;
     }[]>;
     create(req: any, data: any): Promise<{
         symbol: string;
         id: string;
-        companyId: string;
         name: string;
+        companyId: string;
         isActive: boolean;
         type: string;
     }>;
     findOne(id: string, req: any): Promise<{
         symbol: string;
         id: string;
-        companyId: string;
         name: string;
+        companyId: string;
         isActive: boolean;
         type: string;
     }>;
@@ -31,8 +31,8 @@ export declare class UomController {
         uom: {
             symbol: string;
             id: string;
-            companyId: string;
             name: string;
+            companyId: string;
             isActive: boolean;
             type: string;
         };

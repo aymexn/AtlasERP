@@ -10,19 +10,19 @@ export declare class PerformanceService {
         };
     } & {
         id: string;
-        createdAt: Date;
+        name: string | null;
         status: import(".prisma/client").$Enums.AppraisalStatus;
         companyId: string;
-        name: string | null;
+        createdAt: Date;
         startDate: Date | null;
         endDate: Date | null;
     })[]>;
     createCycle(companyId: string, data: any): Promise<{
         id: string;
-        createdAt: Date;
+        name: string | null;
         status: import(".prisma/client").$Enums.AppraisalStatus;
         companyId: string;
-        name: string | null;
+        createdAt: Date;
         startDate: Date | null;
         endDate: Date | null;
     }>;
@@ -30,11 +30,16 @@ export declare class PerformanceService {
     getReviews(cycleId: string): Promise<({
         employee: {
             id: string;
-            createdAt: Date;
-            userId: string | null;
             email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
             companyId: string;
+            createdAt: Date;
+            userId: string | null;
+            address: string | null;
+            phone: string | null;
+            updatedAt: Date;
+            taxId: string | null;
+            notes: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -43,10 +48,7 @@ export declare class PerformanceService {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
-            address: string | null;
-            phone: string | null;
             socialSecurityNumber: string | null;
-            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -57,16 +59,19 @@ export declare class PerformanceService {
             department: string | null;
             position: string | null;
             managerId: string | null;
-            notes: string | null;
-            updatedAt: Date;
         };
         reviewer: {
             id: string;
-            createdAt: Date;
-            userId: string | null;
             email: string | null;
             status: import(".prisma/client").$Enums.EmployeeStatus;
             companyId: string;
+            createdAt: Date;
+            userId: string | null;
+            address: string | null;
+            phone: string | null;
+            updatedAt: Date;
+            taxId: string | null;
+            notes: string | null;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -75,10 +80,7 @@ export declare class PerformanceService {
             nationality: string | null;
             gender: string | null;
             maritalStatus: string | null;
-            address: string | null;
-            phone: string | null;
             socialSecurityNumber: string | null;
-            taxId: string | null;
             emergencyContactName: string | null;
             emergencyContactPhone: string | null;
             emergencyContactRelationship: string | null;
@@ -89,26 +91,24 @@ export declare class PerformanceService {
             department: string | null;
             position: string | null;
             managerId: string | null;
-            notes: string | null;
-            updatedAt: Date;
         };
         objectives: {
             id: string;
             createdAt: Date;
             description: string;
-            reviewId: string;
-            weight: import("@prisma/client/runtime/library").Decimal | null;
             target: string | null;
+            managerComment: string | null;
+            weight: import("@prisma/client/runtime/library").Decimal | null;
             achievementPercent: import("@prisma/client/runtime/library").Decimal | null;
             employeeComment: string | null;
-            managerComment: string | null;
+            reviewId: string;
         }[];
     } & {
         id: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.ReviewStatus;
-        cycleId: string;
+        createdAt: Date;
         employeeId: string;
+        cycleId: string;
         reviewerId: string;
         selfReview: import("@prisma/client/runtime/library").JsonValue | null;
         managerReview: import("@prisma/client/runtime/library").JsonValue | null;
@@ -121,10 +121,10 @@ export declare class PerformanceService {
     })[]>;
     updateSelfReview(reviewId: string, data: any): Promise<{
         id: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.ReviewStatus;
-        cycleId: string;
+        createdAt: Date;
         employeeId: string;
+        cycleId: string;
         reviewerId: string;
         selfReview: import("@prisma/client/runtime/library").JsonValue | null;
         managerReview: import("@prisma/client/runtime/library").JsonValue | null;
@@ -137,10 +137,10 @@ export declare class PerformanceService {
     }>;
     updateManagerReview(reviewId: string, data: any): Promise<{
         id: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.ReviewStatus;
-        cycleId: string;
+        createdAt: Date;
         employeeId: string;
+        cycleId: string;
         reviewerId: string;
         selfReview: import("@prisma/client/runtime/library").JsonValue | null;
         managerReview: import("@prisma/client/runtime/library").JsonValue | null;
@@ -155,29 +155,29 @@ export declare class PerformanceService {
         id: string;
         createdAt: Date;
         description: string;
-        reviewId: string;
-        weight: import("@prisma/client/runtime/library").Decimal | null;
         target: string | null;
+        managerComment: string | null;
+        weight: import("@prisma/client/runtime/library").Decimal | null;
         achievementPercent: import("@prisma/client/runtime/library").Decimal | null;
         employeeComment: string | null;
-        managerComment: string | null;
+        reviewId: string;
     }>;
     getEmployeeHistory(employeeId: string): Promise<({
         cycle: {
             id: string;
-            createdAt: Date;
+            name: string | null;
             status: import(".prisma/client").$Enums.AppraisalStatus;
             companyId: string;
-            name: string | null;
+            createdAt: Date;
             startDate: Date | null;
             endDate: Date | null;
         };
     } & {
         id: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.ReviewStatus;
-        cycleId: string;
+        createdAt: Date;
         employeeId: string;
+        cycleId: string;
         reviewerId: string;
         selfReview: import("@prisma/client/runtime/library").JsonValue | null;
         managerReview: import("@prisma/client/runtime/library").JsonValue | null;
