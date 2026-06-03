@@ -596,6 +596,7 @@
         "stock_status_desc": "Niveaux, valeurs et alertes de stock",
         "movements_desc": "Historique complet des entrées et sorties",
         "analytics_overview": "Analytique",
+        "analytics_desc": "Rotation, couverture, alertes et tendances",
         "analytics_coming_soon": "Bientôt disponible",
         "all_clear": "Aucune alerte de stock active",
         "stats": {

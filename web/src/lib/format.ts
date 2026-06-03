@@ -49,19 +49,92 @@ export function formatCurrency(amount: number | string | any, locale?: string): 
         maximumFractionDigits: 2,
     }).format(num);
 
-    const suffix = activeLocale === 'ar' ? ' د.ج' : ' DA';
-    // Normalize spacing to standard space for consistency
-    return formatted.replace(/[\u202f\u00a0]/g, ' ') + suffix;
+    const suffix = activeLocale === 'ar' ? '\u00a0د.ج' : '\u00a0DA';
+    // Normalize spacing to non-breaking space for consistency
+    return formatted.replace(/[\u202f\u00a0]/g, '\u00a0') + suffix;
 }
 
 /**
- * Formats a number with standard thousand separators.
+ * Formats a numeric value into a standardized price string (DA) using non-breaking spaces.
  */
-export function formatNumber(amount: number | string | any): string {
-    const value = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
-    if (isNaN(value)) return '0';
+export function formatPrice(
+    amount: any,
+    currency: string = 'DA'
+): string {
+    if (amount === null || amount === undefined) return '—';
+    
+    // Handle Prisma Decimal objects or strings
+    let num: number;
+    if (amount && typeof amount === 'object' && 'toString' in amount) {
+        num = parseFloat(amount.toString());
+    } else if (typeof amount === 'string') {
+        num = parseFloat(amount);
+    } else {
+        num = Number(amount);
+    }
 
-    return new Intl.NumberFormat('fr-FR').format(value);
+    if (isNaN(num)) return '—';
+
+    const formatted = new Intl.NumberFormat('fr-DZ', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(num);
+    
+    return `${formatted.replace(/[\u202f\u00a0]/g, '\u00a0')}\u00a0${currency}`;
+}
+
+/**
+ * Formats a number with Algerian standard thousand separators using non-breaking spaces.
+ */
+export function formatNumber(value: any): string {
+    if (value === null || value === undefined) return '—';
+    
+    let num: number;
+    if (value && typeof value === 'object' && 'toString' in value) {
+        num = parseFloat(value.toString());
+    } else if (typeof value === 'string') {
+        num = parseFloat(value);
+    } else {
+        num = Number(value);
+    }
+
+    if (isNaN(num)) return '0';
+
+    const formatted = new Intl.NumberFormat('fr-DZ', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    }).format(num);
+
+    return formatted.replace(/[\u202f\u00a0]/g, '\u00a0');
+}
+
+/**
+ * Formats stock quantities with unit suffixes and non-breaking spaces.
+ */
+export function formatStock(
+    quantity: any,
+    unit: string = ''
+): string {
+    if (quantity === null || quantity === undefined) return '—';
+    
+    let num: number;
+    if (quantity && typeof quantity === 'object' && 'toString' in quantity) {
+        num = parseFloat(quantity.toString());
+    } else if (typeof quantity === 'string') {
+        num = parseFloat(quantity);
+    } else {
+        num = Number(quantity);
+    }
+
+    if (isNaN(num)) return '—';
+
+    const formatted = new Intl.NumberFormat('fr-DZ', {
+        minimumFractionDigits: Number.isInteger(num) ? 0 : 1,
+        maximumFractionDigits: Number.isInteger(num) ? 0 : 1,
+    }).format(num);
+
+    const normalizedNum = formatted.replace(/[\u202f\u00a0]/g, '\u00a0');
+    return unit ? `${normalizedNum}\u00a0${unit}` : normalizedNum;
 }
 
 /**

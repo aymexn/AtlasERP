@@ -95,7 +95,7 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
     }
   }, [bomCost, canHaveFormula, setValue]);
 
-  // Set default units based on type
+  // Set default units based on type and handle pricing resets
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === 'articleType') {
@@ -103,6 +103,10 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
         if (type === 'RAW_MATERIAL') setValue('unit', 'KG');
         else if (type === 'PACKAGING' || type === 'FINISHED_PRODUCT') setValue('unit', 'PCS');
         else if (type === 'SERVICE') setValue('unit', 'U');
+
+        if (type !== 'FINISHED_PRODUCT') {
+          setValue('salePriceHt', 0);
+        }
       }
     });
     return () => subscription.unsubscribe();
@@ -146,7 +150,7 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
             sku: product.sku,
             familyId: product.familyId,
             articleType: product.articleType as any,
-            salePriceHt: Number(product.salePriceHt),
+            salePriceHt: product.articleType === 'FINISHED_PRODUCT' ? Number(product.salePriceHt) : 0,
             taxRate: Number(product.taxRate),
             purchasePriceHt: Number(product.purchasePriceHt),
             standardCost: Number(product.standardCost),
@@ -378,27 +382,27 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
 
               {activeTab === 'pricing' && (
                 <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
-                   <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-6">
                       
-                      {/* Left Side: Basic Cost */}
+                      {/* Left Side: Pricing Costs */}
                       <div className="space-y-6">
-                        {isInternalOnly ? (
-                           <div className="space-y-2">
-                              <FieldLabel label="Prix d'Achat HT" />
-                              <div className="relative">
-                                <input 
-                                    type="number" 
-                                    step="0.01" 
-                                    {...register('purchasePriceHt', { valueAsNumber: true })} 
-                                    className="form-input text-blue-600 font-black pl-12" 
-                                />
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <Calculator size={16} />
-                                </div>
-                              </div>
-                              <p className="text-[10px] text-slate-400 italic">Dernier prix d'acquisition négocié.</p>
+                        <div className="space-y-2">
+                           <FieldLabel label="Prix d'Achat HT" />
+                           <div className="relative">
+                             <input 
+                                 type="number" 
+                                 step="0.01" 
+                                 {...register('purchasePriceHt', { valueAsNumber: true })} 
+                                 className="form-input text-blue-600 font-black pl-12" 
+                             />
+                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                 <Calculator size={16} />
+                             </div>
                            </div>
-                        ) : (
+                           <p className="text-[10px] text-slate-400 italic">Dernier prix d'acquisition négocié.</p>
+                        </div>
+
+                        {canHaveFormula && (
                            <div className="space-y-2">
                               <FieldLabel label="Coût de Revient (BOM)" />
                               <div className="relative group">
@@ -418,7 +422,7 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                            </div>
                         )}
 
-                        {!isInternalOnly && (
+                        {articleType === 'FINISHED_PRODUCT' ? (
                           <div className="space-y-2">
                                <FieldLabel label="Prix de Vente HT" />
                                <div className="relative">
@@ -433,12 +437,28 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                                  </div>
                                </div>
                           </div>
+                        ) : (
+                          <div className="space-y-2">
+                               <FieldLabel label="Prix de Vente HT" />
+                               <div className="relative">
+                                 <input 
+                                    type="text" 
+                                    disabled
+                                    value="—"
+                                    className="form-input bg-slate-50 text-slate-400 pl-12 font-black cursor-not-allowed"
+                                 />
+                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <Tag size={16} />
+                                 </div>
+                               </div>
+                               <p className="text-[10px] text-slate-450 italic mt-1">Le prix de vente est limité aux produits finis.</p>
+                          </div>
                         )}
                       </div>
 
-                      {/* Right Side: Indicators */}
+                      {/* Right Side: Indicators / TVA */}
                       <div className="space-y-6">
-                         {!isInternalOnly ? (
+                         {articleType === 'FINISHED_PRODUCT' ? (
                            <>
                               <div className="p-6 bg-slate-950 rounded-3xl text-white shadow-xl">
                                   <div className="flex items-center justify-between mb-4">
@@ -469,16 +489,18 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                                         <ShieldCheck size={32} className="text-blue-500" />
                                     </div>
                                     <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-relaxed">
-                                        Consommation <br/>Interne Uniquement
+                                        Configuration Tarifaire Restreinte
                                     </p>
-                                    <p className="text-[9px] text-slate-400 font-bold mt-2">Cet article ne sera pas disponible à la vente directe.</p>
+                                    <p className="text-[10px] text-slate-400 mt-2 font-medium">
+                                        Seuls les articles destinés à la vente bénéficient du calcul automatique de marge et de TVA.
+                                    </p>
                                 </div>
                             </div>
                          )}
                       </div>
 
                       {/* TTC Banner */}
-                      {!isInternalOnly && (
+                      {articleType === 'FINISHED_PRODUCT' && (
                          <div className="col-span-2 p-6 bg-blue-600 rounded-3xl shadow-xl shadow-blue-100 flex items-center justify-between text-white animate-in slide-in-from-bottom-2 duration-500">
                             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">PRIX PUBLIC TTC</span>
                             <span className="text-3xl font-black">
@@ -486,7 +508,7 @@ export function ProductModal({ isOpen, onClose, onSuccess, product, families, al
                             </span>
                          </div>
                       )}
-                   </div>
+                    </div>
                 </div>
               )}
 

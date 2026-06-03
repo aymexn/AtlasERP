@@ -534,6 +534,7 @@
         "stock_status_desc": "Stock levels, values and alerts",
         "movements_desc": "Complete history of inflows and outflows",
         "analytics_overview": "Analytics",
+        "analytics_desc": "Turnover, coverage, alerts, and trends",
         "analytics_coming_soon": "Coming soon",
         "all_clear": "No active stock alerts",
         "stats": {

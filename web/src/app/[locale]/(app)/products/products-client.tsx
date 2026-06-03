@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatStock } from '@/lib/formatters';
 import { productsService, Product } from '@/services/products';
 import {
     Plus,
@@ -399,20 +399,26 @@ export default function ProductsClient() {
                             },
                             {
                                 header: 'Prix HT',
-                                accessor: (p) => (
-                                    <span className="font-black text-slate-900">
-                                        {formatCurrency(Number(p.salePriceHt || 0), locale)}
-                                    </span>
-                                )
+                                className: 'whitespace-nowrap min-w-[120px]',
+                                accessor: (p) => {
+                                    const typeVal = p.type || p.articleType || 'FINISHED_GOOD';
+                                    const isFinished = typeVal === 'FINISHED_GOOD' || typeVal === 'FINISHED_PRODUCT';
+                                    return (
+                                        <span className="font-black text-slate-900 whitespace-nowrap">
+                                            {isFinished ? formatCurrency(Number(p.salePriceHt || 0), locale) : '—'}
+                                        </span>
+                                    );
+                                }
                             },
                             {
                                 header: t('fields.stock'),
+                                className: 'whitespace-nowrap min-w-[120px]',
                                 accessor: (p) => {
                                     const available = Number(p.stockQuantity) - Number(p.stockReserved || 0);
                                     return (
-                                        <div className="flex flex-col gap-1">
-                                            <span className={`font-black ${available <= 0 ? 'text-rose-600' : available < (p.minStock || 0) ? 'text-orange-500' : 'text-emerald-600'}`}>
-                                                {available}
+                                        <div className="flex flex-col gap-1 whitespace-nowrap">
+                                            <span className={`font-black whitespace-nowrap ${available <= 0 ? 'text-rose-600' : available < (p.minStock || 0) ? 'text-orange-500' : 'text-emerald-600'}`}>
+                                                {formatStock(available, p.unit || 'PCS')}
                                             </span>
                                             {available <= 0 ? (
                                                 <span className="w-fit bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">Rupture</span>

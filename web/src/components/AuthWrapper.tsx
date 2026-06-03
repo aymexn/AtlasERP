@@ -41,6 +41,12 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
             return;
         }
 
+        // Short-circuit: do not fetch from database on every pathname change if user is already verified
+        if (user && !pathname.includes('/tenant')) {
+            setPhase('ok');
+            return;
+        }
+
         try {
             const tenant = await apiFetch('/tenants/me');
             if (tenant?.user) {
@@ -70,7 +76,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
                 setPhase('error');
             }
         }
-    }, [router, pathname, locale, phase]);
+    }, [router, pathname, locale, phase, user, setUser]);
 
     // ── Listen to recovery events from api.ts ─────────────────────────────────
     useEffect(() => {

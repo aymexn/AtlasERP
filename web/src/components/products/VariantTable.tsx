@@ -9,7 +9,7 @@ interface VariantTableProps {
   productId?: string;
 }
 
-export const VariantTable: React.FC<VariantTableProps> = ({ productId }) => {
+export const VariantTable: React.FC<VariantTableProps> = React.memo(({ productId }) => {
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMatrixUI, setShowMatrixUI] = useState(false);
@@ -248,4 +248,4 @@ export const VariantTable: React.FC<VariantTableProps> = ({ productId }) => {
       )}
     </div>
   );
-};
+});

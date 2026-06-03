@@ -1,10 +1,20 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
 
-const nextConfig: NextConfig = {
-  allowedDevOrigins: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+const nextConfig: any = {
+  experimental: {
+    // Explicitly unblock local loops and network IPs to stop browser panics
+    allowedDevOrigins: [
+      'localhost:3001',
+      '127.0.0.1:3001',
+      '172.23.80.1:3001'
+    ],
+  },
+  devIndicators: {
+    appIsrStatus: false,
+  }
 };
 
-export default withNextIntl(nextConfig);
+export default withNextIntl(nextConfig as NextConfig);

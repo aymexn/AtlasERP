@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { token, password } = body;
+    const { token, name, password } = body;
 
     if (!token || !password) {
       return NextResponse.json({ error: 'Token and password are required' }, { status: 400 });
@@ -23,11 +23,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 400 });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 12);
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
+        name: name || user.name,
         passwordHash,
         status: 'ACTIVE',
         invitationToken: null,

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatStock } from '@/lib/format';
 import { productsService, Product } from '@/services/products';
 import {
     Plus,
@@ -218,26 +218,32 @@ export default function ProductsClient() {
                                 },
                                 {
                                     header: 'Prix HT',
-                                    accessor: (p) => (
-                                        <span className="font-black text-slate-900 text-sm">
-                                            {formatCurrency(Number(p.salePriceHt || 0))}
-                                        </span>
-                                    )
+                                    className: 'whitespace-nowrap min-w-[120px]',
+                                    accessor: (p) => {
+                                        const typeVal = p.type || p.articleType || 'FINISHED_GOOD';
+                                        const isFinished = typeVal === 'FINISHED_GOOD' || typeVal === 'FINISHED_PRODUCT';
+                                        return (
+                                            <span className="font-black text-slate-900 text-sm whitespace-nowrap">
+                                                {isFinished ? formatCurrency(Number(p.salePriceHt || 0)) : '—'}
+                                            </span>
+                                        );
+                                    }
                                 },
                                 {
                                     header: 'Stock disponible',
+                                    className: 'whitespace-nowrap min-w-[120px]',
                                     accessor: (p) => {
                                         const available = Number(p.stockQuantity || 0) - Number(p.stockReserved || 0);
                                         const threshold = Number(p.minStock || p.alertThreshold || 0);
                                         const isLow = available <= threshold;
                                         
                                         return (
-                                            <div className="flex flex-col gap-1">
-                                                <span className={`font-black text-sm ${isLow ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                                    {available.toFixed(1)} {p.unit || 'UNIT'}
+                                            <div className="flex flex-col gap-1 whitespace-nowrap">
+                                                <span className={`font-black text-sm ${isLow ? 'text-rose-600' : 'text-emerald-600'} whitespace-nowrap`}>
+                                                    {formatStock(available, p.unit || 'PCS')}
                                                 </span>
                                                 {isLow && (
-                                                    <span className="w-fit bg-rose-50 text-[8px] text-rose-600 border border-rose-100 px-1.5 py-0.5 rounded font-black uppercase tracking-wide">
+                                                    <span className="w-fit bg-rose-50 text-[8px] text-rose-600 border border-rose-100 px-1.5 py-0.5 rounded font-black uppercase tracking-wide whitespace-nowrap">
                                                         Stock Bas
                                                     </span>
                                                 )}

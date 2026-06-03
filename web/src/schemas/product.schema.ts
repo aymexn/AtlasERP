@@ -40,10 +40,10 @@ export const productFormSchema = z.object({
   })).default([])
   
 }).superRefine((data, ctx) => {
-  const isSold = ['FINISHED_PRODUCT', 'SEMI_FINISHED', 'SERVICE'].includes(data.articleType);
+  const isFinished = data.articleType === 'FINISHED_PRODUCT';
 
-  // Business Rule: Sold products MUST have a valid sale price
-  if (isSold) {
+  // Business Rule: Finished products MUST have a valid sale price
+  if (isFinished) {
     if (data.salePriceHt <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -51,10 +51,16 @@ export const productFormSchema = z.object({
         path: ['salePriceHt']
       });
     }
+  } else {
+    // Business Rule: Non-finished products cannot have a sale price
+    if (data.salePriceHt > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Seuls les produits finis peuvent avoir un prix de vente.",
+        path: ['salePriceHt']
+      });
+    }
   }
-  
-  // Note: For RAW_MATERIAL, PACKAGING, and CONSUMABLE, we no longer enforce 0 price/tax
-  // as per user request to loosen validation and avoid blocking manual creation.
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;

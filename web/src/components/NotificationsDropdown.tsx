@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { apiFetch } from '@/lib/api';
-import { useRouter } from '@/navigation';
+import { useRouter, usePathname } from '@/navigation';
 import {
     Bell,
     X,
@@ -62,17 +62,15 @@ const priorityConfig = {
 };
 
 export default function NotificationsDropdown() {
-    // Short-circuit routing on intensive creation forms to avoid thread blocking
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/new')) {
-        return null; // Instantly kill and skip background polling execution loops
-    }
-
+    const pathname = usePathname();
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const isFormRoute = pathname.includes('/new') || pathname.includes('/edit');
 
     const fetchNotifications = async (force = false) => {
         // Skip if not forced and user is active on an input to avoid interrupting typing or causing timeouts
@@ -98,7 +96,7 @@ export default function NotificationsDropdown() {
     };
 
     useEffect(() => {
-        fetchNotifications(true); // Force fetch on mount
+        // Disabled automatic fetching on mount to keep the layout silent
     }, []);
 
     useEffect(() => {
@@ -110,6 +108,10 @@ export default function NotificationsDropdown() {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    if (isFormRoute) {
+        return null;
+    }
 
     const markAllRead = async () => {
         setLoading(true);
@@ -152,7 +154,13 @@ export default function NotificationsDropdown() {
         <div className="relative" ref={dropdownRef}>
             <button
                 id="notifications-bell"
-                onClick={() => setOpen(prev => !prev)}
+                onClick={() => {
+                    const nextOpen = !open;
+                    setOpen(nextOpen);
+                    if (nextOpen) {
+                        fetchNotifications(true);
+                    }
+                }}
                 className="relative p-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
                 aria-label="Notifications"
             >

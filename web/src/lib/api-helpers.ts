@@ -52,3 +52,15 @@ export async function getUserId(): Promise<string | null> {
         return null;
     }
 }
+
+import { Role } from '@prisma/client';
+export function mapAppRoleToEnumRole(roleName: string): Role {
+    const normalized = roleName.trim().toLowerCase();
+    if (normalized === 'admin' || normalized === 'administrator') return 'ADMIN';
+    if (normalized === 'manager') return 'MANAGER';
+    if (normalized === 'commercial' || normalized === 'sales') return 'COMMERCIAL';
+    if (normalized === 'accountant' || normalized === 'finance') return 'ACCOUNTANT';
+    if (normalized === 'magasinier' || normalized === 'warehouse_manager' || normalized === 'warehouse') return 'WAREHOUSE_MANAGER';
+    return 'USER';
+}
+

@@ -63,6 +63,12 @@ export async function POST(request: Request) {
         const resolvedArticleType = productData.articleType || 'FINISHED_PRODUCT';
         const resolvedType = productData.type || (resolvedArticleType === 'FINISHED_PRODUCT' ? 'FINISHED_GOOD' : (resolvedArticleType === 'SEMI_FINISHED' ? 'SEMI_FINISHED' : 'RAW_MATERIAL'));
 
+        if (resolvedType !== 'FINISHED_GOOD' && priceHT > 0) {
+            return NextResponse.json({ 
+                error: 'Seuls les produits finis peuvent avoir un prix de vente.' 
+            }, { status: 400 });
+        }
+
         const result = await prisma.$transaction(async (tx: any) => {
             const product = await tx.product.create({
                 data: {

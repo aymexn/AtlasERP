@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Permission {
   id: string;
@@ -31,16 +32,24 @@ interface PermissionContextType {
 const PermissionContext = createContext<PermissionContextType | undefined>(undefined);
 
 let cachedPermissionsData: any = null;
+let cachedUserId: string | null = null;
 let inFlightPermissionsPromise: Promise<any> | null = null;
-const LOCAL_STORAGE_KEY = 'atlas_permissions_cache';
+const LOCAL_STORAGE_KEY = 'atlas_permissions';
 
 export function PermissionProvider({ children }: { children: React.ReactNode }) {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [grouped, setGrouped] = useState<GroupedPermissions>({});
   const [roles, setRoles] = useState<{ id: string, name: string, displayName: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const userId = user?.id;
 
   const loadPermissions = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     const token = typeof window !== 'undefined' ? localStorage.getItem('atlas_token') : null;
     if (!token) {
       if (typeof window !== 'undefined') {
@@ -51,6 +60,7 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
         }
       }
       cachedPermissionsData = null;
+      cachedUserId = null;
       inFlightPermissionsPromise = null;
       setPermissions([]);
       setGrouped({});
@@ -59,8 +69,8 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       return;
     }
 
-    // 1. Memory cache check
-    if (cachedPermissionsData) {
+    // 1. Memory cache check (staleTime: Infinity concept)
+    if (cachedPermissionsData && cachedUserId === userId) {
       setPermissions(cachedPermissionsData.permissions || []);
       setGrouped(cachedPermissionsData.grouped || {});
       setRoles(cachedPermissionsData.roles || []);
@@ -68,20 +78,20 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       return;
     }
 
-    // 2. localStorage check
+    // 2. localStorage check (2 hours cache threshold)
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          cachedPermissionsData = parsed;
-          setPermissions(parsed.permissions || []);
-          setGrouped(parsed.grouped || {});
-          setRoles(parsed.roles || []);
-          setLoading(false);
-
-          // If on a page editing or creating something (/new), skip background recheck
-          if (window.location.pathname.includes('/new')) {
+          const twoHours = 1000 * 60 * 60 * 2;
+          if (parsed.userId === userId && (Date.now() - parsed.ts) < twoHours) {
+            cachedPermissionsData = parsed.data;
+            cachedUserId = userId;
+            setPermissions(parsed.data.permissions || []);
+            setGrouped(parsed.data.grouped || {});
+            setRoles(parsed.data.roles || []);
+            setLoading(false);
             return;
           }
         }
@@ -90,8 +100,9 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       }
     }
 
-    // 3. Short-circuit on '/new' routes if no cache exists, to avoid blocking thread
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/new')) {
+    // 3. Short-circuit on '/new' and '/edit' routes if no cache exists, to avoid blocking thread
+    if (typeof window !== 'undefined' && 
+        (window.location.pathname.includes('/new') || window.location.pathname.includes('/edit'))) {
       setLoading(false);
       return;
     }
@@ -103,10 +114,15 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       }
       const data = await inFlightPermissionsPromise;
       cachedPermissionsData = data;
+      cachedUserId = userId;
 
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+            data,
+            userId,
+            ts: Date.now()
+          }));
         } catch {
           // ignore
         }
@@ -125,7 +141,7 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     loadPermissions();
-  }, []);
+  }, [userId]);
 
   const hasPermission = (module: string, resource: string, action: string): boolean => {
     return grouped[module]?.[resource]?.includes(action) || false;

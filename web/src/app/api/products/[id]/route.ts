@@ -87,7 +87,7 @@ export async function PUT(
         // Verify product ownership
         const existingProduct = await prisma.product.findUnique({
             where: { id: productId },
-            select: { companyId: true, name: true, stockQuantity: true }
+            select: { companyId: true, name: true, stockQuantity: true, articleType: true, type: true }
         });
 
         if (!existingProduct) {
@@ -101,6 +101,15 @@ export async function PUT(
         const priceHT = productData.priceHT !== undefined ? parseFloat(productData.priceHT) : parseFloat(productData.salePriceHt);
         const costPrice = productData.costPrice !== undefined ? parseFloat(productData.costPrice) : parseFloat(productData.standardCost);
         const alertThreshold = productData.alertThreshold !== undefined ? parseFloat(productData.alertThreshold) : parseFloat(productData.minStock);
+
+        const resolvedArticleType = productData.articleType || existingProduct.articleType;
+        const resolvedType = productData.type || (resolvedArticleType === 'FINISHED_PRODUCT' ? 'FINISHED_GOOD' : (resolvedArticleType === 'SEMI_FINISHED' ? 'SEMI_FINISHED' : 'RAW_MATERIAL'));
+
+        if (resolvedType !== 'FINISHED_GOOD' && priceHT > 0) {
+            return NextResponse.json({ 
+                error: 'Seuls les produits finis peuvent avoir un prix de vente.' 
+            }, { status: 400 });
+        }
 
         const result = await prisma.$transaction(async (tx: any) => {
             // Stock adjustment log
@@ -138,8 +147,8 @@ export async function PUT(
                     familyId: productData.familyId || null,
                     unit: productData.unit,
                     articleType: productData.articleType,
-                    type: productData.type || (productData.articleType === 'FINISHED_PRODUCT' ? 'FINISHED_GOOD' : (productData.articleType === 'SEMI_FINISHED' ? 'SEMI_FINISHED' : (productData.articleType ? 'RAW_MATERIAL' : undefined))),
-                    salePriceHt: !isNaN(priceHT) ? priceHT : undefined,
+                    type: resolvedType,
+                    salePriceHt: resolvedType === 'FINISHED_GOOD' ? (!isNaN(priceHT) ? priceHT : undefined) : null,
                     purchasePriceHt: !isNaN(costPrice) ? costPrice : undefined,
                     standardCost: !isNaN(costPrice) ? costPrice : undefined,
                     minStock: !isNaN(alertThreshold) ? alertThreshold : undefined,

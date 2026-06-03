@@ -18,6 +18,10 @@ import {
 import { PageHeader } from '@/components/ui/page-header';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
+let cachedCompanyData: any = null;
+let inFlightCompanyPromise: Promise<any> | null = null;
+const LOCAL_STORAGE_KEY = 'atlas_company_settings';
+
 export default function SettingsPage() {
     const t = useTranslations('settings');
     const ct = useTranslations('common');
@@ -42,25 +46,83 @@ export default function SettingsPage() {
     }, []);
 
     const loadSettings = async () => {
+        // 1. Memory cache check
+        if (cachedCompanyData) {
+            setFormData({
+                name: cachedCompanyData.name || '',
+                nif: cachedCompanyData.nif || '',
+                rc: cachedCompanyData.rc || '',
+                ai: cachedCompanyData.ai || '',
+                rib: cachedCompanyData.rib || '',
+                address: cachedCompanyData.address || '',
+                phone: cachedCompanyData.phone || '',
+                email: cachedCompanyData.email || '',
+                website: cachedCompanyData.website || '',
+                logoUrl: cachedCompanyData.logoUrl || ''
+            });
+            setLoading(false);
+            return;
+        }
+
+        // 2. localStorage check
+        if (typeof window !== 'undefined') {
+            try {
+                const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    cachedCompanyData = parsed;
+                    setFormData({
+                        name: parsed.name || '',
+                        nif: parsed.nif || '',
+                        rc: parsed.rc || '',
+                        ai: parsed.ai || '',
+                        rib: parsed.rib || '',
+                        address: parsed.address || '',
+                        phone: parsed.phone || '',
+                        email: parsed.email || '',
+                        website: parsed.website || '',
+                        logoUrl: parsed.logoUrl || ''
+                    });
+                    setLoading(false);
+                    return;
+                }
+            } catch (e) {
+                console.error('[SettingsPage] Local storage load failed:', e);
+            }
+        }
+
+        // 3. Network Fetch (deduplicated)
         try {
             setLoading(true);
-            const data = await apiFetch('/api/tenants/me');
-            if (data) {
-                setFormData({
-                    name: data.name || '',
-                    nif: data.nif || '',
-                    rc: data.rc || '',
-                    ai: data.ai || '',
-                    rib: data.rib || '',
-                    address: data.address || '',
-                    phone: data.phone || '',
-                    email: data.email || '',
-                    website: data.website || '',
-                    logoUrl: data.logoUrl || ''
-                });
+            if (!inFlightCompanyPromise) {
+                inFlightCompanyPromise = apiFetch('/api/tenants/me');
             }
+            const data = await inFlightCompanyPromise;
+            cachedCompanyData = data;
+
+            if (typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+                } catch {
+                    // ignore
+                }
+            }
+
+            setFormData({
+                name: data.name || '',
+                nif: data.nif || '',
+                rc: data.rc || '',
+                ai: data.ai || '',
+                rib: data.rib || '',
+                address: data.address || '',
+                phone: data.phone || '',
+                email: data.email || '',
+                website: data.website || '',
+                logoUrl: data.logoUrl || ''
+            });
         } catch (err) {
             toast.error(ct('error'));
+            inFlightCompanyPromise = null;
         } finally {
             setLoading(false);
         }
@@ -70,10 +132,21 @@ export default function SettingsPage() {
         e.preventDefault();
         setSaving(true);
         try {
-            await apiFetch('/api/tenants/me', {
+            const result = await apiFetch('/api/tenants/me', {
                 method: 'POST',
                 body: JSON.stringify(formData)
             });
+
+            // Update cache after successful save
+            cachedCompanyData = result;
+            if (typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(result));
+                } catch {
+                    // ignore
+                }
+            }
+
             toast.success(ct('save_success'));
         } catch (err) {
             toast.error(ct('error'));

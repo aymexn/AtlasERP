@@ -23,9 +23,10 @@ import {
 import { useEffect, useState } from 'react';
 import { inventoryService, InventorySummary } from '@/services/inventory';
 
-import { formatCurrency, formatNumber } from '@/lib/format';
+import { formatCurrency, formatNumber, formatStock } from '@/lib/format';
 import { toast } from 'sonner';
 import { KpiCard } from '@/components/ui/kpi-card';
+import { apiFetch } from '@/lib/api';
 
 export default function InventoryRootPage() {
     const t = useTranslations('inventory');
@@ -40,11 +41,21 @@ export default function InventoryRootPage() {
         const loadDashboard = async () => {
             try {
                 const [summary, lowStock] = await Promise.all([
-                    inventoryService.getProductsStockDashboard(),
-                    inventoryService.getLowStockAlerts()
+                    apiFetch('/api/inventory/kpis'),
+                    apiFetch('/api/inventory/alerts')
                 ]);
-                setStats(summary);
-                setAlerts(lowStock);
+                setStats({
+                    totalStockValue: summary.totalStockValue,
+                    totalItems: summary.trackedProducts,
+                    lowStockAlerts: summary.alertCount,
+                    outOfStock: summary.outOfStockCount
+                });
+                setAlerts(
+                    (lowStock || []).map((a: any) => ({
+                        ...a,
+                        minStock: a.reorderPoint
+                    }))
+                );
             } catch (err) {
                 console.error('Failed to load inventory dashboard', err);
             } finally {
@@ -93,7 +104,7 @@ export default function InventoryRootPage() {
                         <p className="text-slate-500 font-medium text-sm leading-relaxed">{t('stock_status_desc')}</p>
                         <div className="pt-6">
                             <Link 
-                                href="/inventory/products-stock" 
+                                href="/inventory/stock-status" 
                                 className="inline-flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest group/link"
                             >
                                 {ct('consult')}
@@ -122,15 +133,24 @@ export default function InventoryRootPage() {
                     </div>
                 </div>
 
-                <div className="group bg-slate-50 rounded-[3rem] border border-dashed border-slate-200 p-10 flex flex-col items-center justify-center text-center space-y-6">
-                    <div className="h-20 w-20 bg-white rounded-4xl flex items-center justify-center text-slate-200 shadow-sm">
-                        <Activity size={32} />
+                <Link 
+                    href={"/inventory/analytics" as any}
+                    className="group bg-white rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-blue-100/50 transition-all relative overflow-hidden flex flex-col justify-between"
+                >
+                    <div className="p-10 space-y-2">
+                        <div className="h-14 w-14 bg-slate-50 rounded-3xl flex items-center justify-center text-primary shadow-sm mb-6 border border-slate-100 transition-transform group-hover:scale-110 group-hover:bg-primary group-hover:text-white group-hover:rotate-6 duration-500">
+                            <Activity size={28} />
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('analytics_overview')}</h3>
+                        <p className="text-slate-500 font-medium text-sm leading-relaxed">{t('analytics_desc')}</p>
+                        <div className="pt-6">
+                            <span className="inline-flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest group/link">
+                                {ct('consult')}
+                                <ArrowRight size={16} className="transition-transform group-hover/link:translate-x-1" />
+                            </span>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">{t('analytics_overview')}</h3>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2">{t('analytics_coming_soon')}</p>
-                    </div>
-                </div>
+                </Link>
             </div>
 
             {/* Stats Overview */}
@@ -180,7 +200,7 @@ export default function InventoryRootPage() {
                     <div className="flex-1 p-10">
                         {alerts.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {alerts.slice(0, 4).map((alert: any, idx: number) => (
+                                {alerts.map((alert: any, idx: number) => (
                                     <div key={idx} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-primary transition-all duration-500">
                                         <div className="flex items-center gap-5">
                                             <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm group-hover:rotate-12 transition-transform duration-500">
@@ -191,9 +211,13 @@ export default function InventoryRootPage() {
                                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">{alert.sku}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xl font-black text-rose-600 tracking-tighter">{alert.stockQuantity} <span className="text-[10px] uppercase opacity-50">{alert.unit}</span></p>
-                                            <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-1">Min: {alert.minStock}</p>
+                                        <div className="text-right whitespace-nowrap font-mono tabular-nums">
+                                            <p className="text-xl font-black text-rose-600 tracking-tighter">
+                                                {formatStock(alert.stockQuantity)} <span className="text-[10px] uppercase opacity-50">{alert.unit}</span>
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-1">
+                                                Min: {formatStock(alert.minStock)}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}

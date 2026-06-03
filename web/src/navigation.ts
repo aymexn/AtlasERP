@@ -15,7 +15,7 @@ export const routing = defineRouting({
         '/product-families': '/product-families',
         '/inventory': '/inventory',
         '/inventory/movements': '/inventory/movements',
-        '/inventory/products-stock': '/inventory/products-stock',
+        '/inventory/stock-status': '/inventory/stock-status',
         '/manufacturing': '/manufacturing',
         '/manufacturing/orders': '/manufacturing/orders',
         '/purchases/orders': '/purchases/orders',

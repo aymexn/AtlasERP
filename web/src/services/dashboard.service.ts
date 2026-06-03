@@ -560,7 +560,7 @@ export class DashboardService {
           action: `${product.name} en rupture`,
           type: 'stock',
           icon: '🔴',
-          link: `/inventory/products-stock`,
+          link: `/inventory/stock-status`,
           product: product.name,
           sku: product.sku,
           stock: `${Number(product.stockQuantity)} / ${Number(product.reorderPoint)}`

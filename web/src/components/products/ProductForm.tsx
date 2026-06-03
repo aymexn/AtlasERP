@@ -89,7 +89,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
   // Initialize values if modifying existing product
   const initialProductId = initialProduct?.id;
   useEffect(() => {
-    if (initialProduct) {
+    if (initialProduct?.id) {
       const activeFormula = (initialProduct as any).bomsAsFinishedProduct?.[0];
       const existingLines = activeFormula?.components?.map((c: any) => ({
         componentId: c.componentProductId,
@@ -100,13 +100,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
         unitCost: c.unitCost !== null && c.unitCost !== undefined ? Number(c.unitCost) : Number(c.component?.standardCost || c.component?.purchasePriceHt || 0)
       })) || [];
 
+      const initialArticleType = (initialProduct.articleType || 'FINISHED_PRODUCT') as any;
       reset({
         name: initialProduct.name,
         secondaryName: initialProduct.secondaryName || '',
         sku: initialProduct.sku,
         familyId: initialProduct.familyId,
-        articleType: (initialProduct.articleType || 'FINISHED_PRODUCT') as any,
-        salePriceHt: Number(initialProduct.salePriceHt || 0),
+        articleType: initialArticleType,
+        salePriceHt: initialArticleType === 'FINISHED_PRODUCT' ? Number(initialProduct.salePriceHt || 0) : 0,
         taxRate: Number(initialProduct.taxRate || 0.19),
         purchasePriceHt: Number(initialProduct.purchasePriceHt || 0),
         standardCost: Number(initialProduct.standardCost || 0),
@@ -119,39 +120,48 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialProductId, reset]);
+  }, [initialProduct?.id, reset]);
 
-  // Validation SKU Uniqueness (debounce/check on blur or SKU change with 1000ms delay)
+  // Validation SKU Uniqueness (debounce/check on SKU change with 1500ms delay + abort controller)
   useEffect(() => {
-    if (!skuValue) {
+    if (!skuValue || skuValue.length < 2) {
       setSkuError(null);
       return;
     }
 
-    const delayDebounceFn = setTimeout(async () => {
-      // Don't check if SKU is unchanged from the initial product SKU
-      if (initialProduct && skuValue.trim() === initialProduct.sku.trim()) {
-        setSkuError(null);
-        return;
-      }
+    // Don't check if SKU is unchanged from the initial product SKU
+    if (initialProduct && skuValue.trim() === initialProduct.sku.trim()) {
+      setSkuError(null);
+      return;
+    }
 
+    const controller = new AbortController();
+
+    const timer = setTimeout(async () => {
       setSkuChecking(true);
       try {
-        const res = await fetch(`/api/products/check-sku?sku=${encodeURIComponent(skuValue)}`);
+        const res = await fetch(`/api/products/check-sku?sku=${encodeURIComponent(skuValue)}`, {
+          signal: controller.signal
+        });
         const data = await res.json();
         if (data.exists) {
           setSkuError("Cette référence (SKU) est déjà utilisée.");
         } else {
           setSkuError(null);
         }
-      } catch (err) {
-        console.error('SKU validation failed', err);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error('SKU validation failed', err);
+        }
       } finally {
         setSkuChecking(false);
       }
-    }, 1500); // 1500ms debounce guard
+    }, 2000); // 2000ms strict delay
 
-    return () => clearTimeout(delayDebounceFn);
+    return () => {
+      clearTimeout(timer);      // Annule le timer si nouvelle frappe
+      controller.abort();       // Annule la requête HTTP en vol
+    };
   }, [skuValue, initialProduct]);
 
   // Visibility logic
@@ -166,7 +176,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
     }, 0);
   }, [formulaLines]);
 
-  // Set default units based on type
+  // Set default units based on type and handle pricing resets
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === 'articleType') {
@@ -174,6 +184,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
         if (type === 'RAW_MATERIAL') setValue('unit', 'KG');
         else if (type === 'PACKAGING' || type === 'FINISHED_PRODUCT') setValue('unit', 'PCS');
         else if (type === 'SERVICE') setValue('unit', 'UNIT');
+
+        if (type !== 'FINISHED_PRODUCT') {
+          setValue('salePriceHt', 0);
+        }
       }
     });
     return () => subscription.unsubscribe();
@@ -462,40 +476,59 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
                 <div className="space-y-6 animate-in slide-in-from-right-3 duration-300">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                     <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest px-1">
-                          Prix de vente HT (DA)
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          {...register('salePriceHt', { valueAsNumber: true })}
-                          placeholder="0.00"
-                          className="form-input text-lg font-black"
-                        />
-                        {errors.salePriceHt && (
-                          <p className="text-[10px] text-rose-500 font-bold px-1">
-                            {errors.salePriceHt.message}
-                          </p>
-                        )}
-                      </div>
+                      {articleType === 'FINISHED_PRODUCT' ? (
+                        <>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest px-1">
+                              Prix de vente HT (DA)
+                            </label>
+                            <input
+                              type="number"
+                              step="any"
+                              {...register('salePriceHt', { valueAsNumber: true })}
+                              placeholder="0.00"
+                              className="form-input text-lg font-black"
+                            />
+                            {errors.salePriceHt && (
+                              <p className="text-[10px] text-rose-500 font-bold px-1">
+                                {errors.salePriceHt.message}
+                              </p>
+                            )}
+                          </div>
 
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest px-1">
-                          Taux de TVA
-                        </label>
-                        <select
-                          {...register('taxRate', { valueAsNumber: true })}
-                          className="form-select"
-                        >
-                          <option value={0.19}>19% (Standard)</option>
-                          <option value={0.09}>9% (Réduit)</option>
-                          <option value={0.07}>7%</option>
-                          <option value={0.10}>10%</option>
-                          <option value={0.25}>25%</option>
-                          <option value={0}>0% (Exonéré)</option>
-                        </select>
-                      </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest px-1">
+                              Taux de TVA
+                            </label>
+                            <select
+                              {...register('taxRate', { valueAsNumber: true })}
+                              className="form-select"
+                            >
+                              <option value={0.19}>19% (Standard)</option>
+                              <option value={0.09}>9% (Réduit)</option>
+                              <option value={0.07}>7%</option>
+                              <option value={0.10}>10%</option>
+                              <option value={0.25}>25%</option>
+                              <option value={0}>0% (Exonéré)</option>
+                            </select>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest px-1">
+                            Prix de vente HT (DA)
+                          </label>
+                          <input
+                            type="text"
+                            disabled
+                            value="—"
+                            className="form-input bg-slate-50 text-slate-400 font-black cursor-not-allowed"
+                          />
+                          <p className="text-[9px] text-slate-400 font-bold mt-1">
+                            Les prix de vente ne sont pas configurables pour ce type d'article.
+                          </p>
+                        </div>
+                      )}
 
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest px-1">
@@ -525,25 +558,42 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
                       </div>
                     </div>
 
-                    {/* Profit Gauge */}
+                    {/* Right Side: Margin Gauge and TTC Banner */}
                     <div className="space-y-6">
-                      <MarginGauge
-                        salePriceHt={Number(salePriceHt || 0)}
-                        costPrice={Number(marginCost || 0)}
-                      />
+                      {articleType === 'FINISHED_PRODUCT' ? (
+                        <>
+                          <MarginGauge
+                            salePriceHt={Number(salePriceHt || 0)}
+                            costPrice={Number(marginCost || 0)}
+                          />
 
-                      {/* Dynamic TTC Display Banner */}
-                      <div className="p-6 bg-blue-600 rounded-3xl text-white shadow-xl shadow-blue-100 flex items-center justify-between">
-                        <div>
-                          <span className="text-[9px] font-black uppercase tracking-widest opacity-75">
-                            PRIX TTC CLIENT
-                          </span>
-                          <p className="text-[9px] text-white/60 font-bold mt-0.5 uppercase">
-                            TVA incluse
-                          </p>
+                          <div className="p-6 bg-blue-600 rounded-3xl text-white shadow-xl shadow-blue-100 flex items-center justify-between">
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest opacity-75">
+                                PRIX TTC CLIENT
+                              </span>
+                              <p className="text-[9px] text-white/60 font-bold mt-0.5 uppercase">
+                                TVA incluse
+                              </p>
+                            </div>
+                            <span className="text-3xl font-black">{formatCurrency(priceTtc)}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-100 rounded-3xl p-8 text-center bg-slate-50/50">
+                          <div>
+                            <div className="h-16 w-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-4">
+                              <BarChart3 size={32} className="text-blue-500" />
+                            </div>
+                            <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-relaxed">
+                              Tarification Restreinte
+                            </p>
+                            <p className="text-[10px] text-slate-400 mt-2 font-medium">
+                              Seuls les produits finis disposent de calculs de marge brute et de prix TTC client.
+                            </p>
+                          </div>
                         </div>
-                        <span className="text-3xl font-black">{formatCurrency(priceTtc)}</span>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -676,7 +726,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
               <div className="flex justify-between items-center py-2 border-b border-slate-100">
                 <span className="text-[10px] font-black text-slate-400 uppercase">Prix HT</span>
                 <span className="text-xs font-black text-slate-900">
-                  {formatCurrency(Number(salePriceHt || 0))}
+                  {articleType === 'FINISHED_PRODUCT' ? formatCurrency(Number(salePriceHt || 0)) : '—'}
                 </span>
               </div>
 
@@ -689,29 +739,35 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialProduct }) => {
 
               <div className="flex justify-between items-center py-2 border-b border-slate-100">
                 <span className="text-[10px] font-black text-slate-400 uppercase">Marge brute</span>
-                <span className={`text-xs font-black ${
-                  salePriceHt > 0 && ((salePriceHt - marginCost) / salePriceHt * 100) >= 30
-                    ? 'text-emerald-600'
-                    : (salePriceHt > 0 && ((salePriceHt - marginCost) / salePriceHt * 100) >= 10)
-                      ? 'text-amber-600'
-                      : 'text-rose-600'
-                }`}>
-                  {salePriceHt > 0 ? `${(((salePriceHt - marginCost) / salePriceHt) * 100).toFixed(1)}%` : '0.0%'}
-                  <span className="text-[9px] font-bold text-slate-400 ml-1">
-                    ({formatCurrency(salePriceHt - marginCost)})
+                {articleType === 'FINISHED_PRODUCT' ? (
+                  <span className={`text-xs font-black ${
+                    salePriceHt > 0 && ((salePriceHt - marginCost) / salePriceHt * 100) >= 30
+                      ? 'text-emerald-600'
+                      : (salePriceHt > 0 && ((salePriceHt - marginCost) / salePriceHt * 100) >= 10)
+                        ? 'text-amber-600'
+                        : 'text-rose-600'
+                  }`}>
+                    {salePriceHt > 0 ? `${(((salePriceHt - marginCost) / salePriceHt) * 100).toFixed(1)}%` : '0.0%'}
+                    <span className="text-[9px] font-bold text-slate-400 ml-1">
+                      ({formatCurrency(salePriceHt - marginCost)})
+                    </span>
                   </span>
-                </span>
+                ) : (
+                  <span className="text-xs font-black text-slate-900">—</span>
+                )}
               </div>
 
               <div className="flex justify-between items-center py-2 border-b border-slate-100">
                 <span className="text-[10px] font-black text-slate-400 uppercase">TVA</span>
-                <span className="text-xs font-bold text-slate-500">{(taxRate * 100).toFixed(0)}%</span>
+                <span className="text-xs font-bold text-slate-500">
+                  {articleType === 'FINISHED_PRODUCT' ? `${(taxRate * 100).toFixed(0)}%` : '—'}
+                </span>
               </div>
 
               <div className="flex justify-between items-center py-2">
                 <span className="text-[10px] font-black text-slate-400 uppercase">Prix TTC</span>
                 <span className="text-sm font-black text-blue-600">
-                  {formatCurrency(priceTtc)}
+                  {articleType === 'FINISHED_PRODUCT' ? formatCurrency(priceTtc) : '—'}
                 </span>
               </div>
             </div>

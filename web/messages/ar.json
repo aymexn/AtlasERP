@@ -434,6 +434,7 @@
         "stock_status_desc": "مستويات المخزون والتنبيهات",
         "movements_desc": "السجل الكامل للحركات",
         "analytics_overview": "التحليلات",
+        "analytics_desc": "الدوران، التغطية، التنبيهات والاتجاهات",
         "analytics_coming_soon": "قريباً",
         "all_clear": "لا توجد تنبيهات مخزون نشطة",
         "stats": {

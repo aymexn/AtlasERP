@@ -10,7 +10,7 @@ interface BOMTableProps {
   excludeId?: string;
 }
 
-export const BOMTable: React.FC<BOMTableProps> = ({ excludeId }) => {
+export const BOMTable: React.FC<BOMTableProps> = React.memo(({ excludeId }) => {
   const locale = useLocale();
   const { register, control, watch, setValue } = useFormContext();
   
@@ -273,4 +273,4 @@ export const BOMTable: React.FC<BOMTableProps> = ({ excludeId }) => {
       )}
     </div>
   );
-};
+});

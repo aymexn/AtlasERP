@@ -292,8 +292,9 @@ model StockMovementPattern {
 model User {
   id             String               @id @default(uuid()) @db.Uuid
   email          String               @unique
+  name           String?
   passwordHash   String?              @map("password_hash")
-  role           Role                 @default(EMPLOYEE)
+  role           Role                 @default(USER)
   status         UserStatus           @default(ACTIVE)
   companyId      String               @map("company_id") @db.Uuid
   createdAt      DateTime             @default(now()) @map("created_at")
@@ -1204,6 +1205,10 @@ enum Role {
   ADMIN
   MANAGER
   EMPLOYEE
+  COMMERCIAL
+  ACCOUNTANT
+  WAREHOUSE_MANAGER
+  USER
 }
 
 enum UserStatus {

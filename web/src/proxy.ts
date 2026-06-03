@@ -49,6 +49,48 @@ export default async function middleware(request: NextRequest) {
                 const loginUrl = new URL(`/${locale}/login`, request.url);
                 return NextResponse.redirect(loginUrl);
             }
+        } else {
+            // Decode token to extract role & enforce RBAC restrictions
+            try {
+                const base64Payload = atlasToken.split('.')[1];
+                if (base64Payload) {
+                    const base64 = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = atob(base64);
+                    const payload = JSON.parse(jsonPayload);
+                    const userRole = payload.role as string;
+                    
+                    const locale = locales.includes(segments[0] as any) ? segments[0] : 'fr';
+
+                    // --- Logique de restriction par rôle ---
+                    // Routes ADMIN seulement
+                    if (pathname.includes('/admin') && userRole !== 'ADMIN') {
+                        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+                    }
+
+                    // Routes MANAGER seulement (inclut aussi ADMIN)
+                    if (pathname.includes('/manager') && !['ADMIN', 'MANAGER'].includes(userRole)) {
+                        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+                    }
+
+                    // Routes COMMERCIAL seulement
+                    if (pathname.includes('/sales') && !['ADMIN', 'MANAGER', 'COMMERCIAL'].includes(userRole)) {
+                        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+                    }
+
+                    // Routes ACCOUNTANT seulement
+                    if (pathname.includes('/finance') && !['ADMIN', 'MANAGER', 'ACCOUNTANT'].includes(userRole)) {
+                        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+                    }
+
+                    // Routes WAREHOUSE_MANAGER / inventory / manufacturing
+                    if ((pathname.includes('/inventory') || pathname.includes('/manufacturing')) && 
+                        !['ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'MAGASINIER'].includes(userRole)) {
+                        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+                    }
+                }
+            } catch (error) {
+                console.error('Middleware token verification error:', error);
+            }
         }
     }
 

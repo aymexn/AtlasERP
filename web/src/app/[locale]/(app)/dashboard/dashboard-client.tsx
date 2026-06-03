@@ -214,7 +214,7 @@ export default function DashboardClient() {
                 { label: t('quick_actions.manufacturing'), icon: Factory, href: '/manufacturing/orders', color: 'bg-emerald-500' },
                 { label: t('quick_actions.invoice'), icon: FileText, href: '/invoices', color: 'bg-rose-500' },
                 { label: t('quick_actions.customer'), icon: UserPlus, href: '/sales/customers', color: 'bg-indigo-500' },
-                { label: t('quick_actions.stock'), icon: BarChart3, href: '/inventory/products-stock', color: 'bg-slate-800' },
+                { label: t('quick_actions.stock'), icon: BarChart3, href: '/inventory/stock-status', color: 'bg-slate-800' },
                 { label: t('quick_actions.tasks'), icon: Calendar, href: '/collaboration/projects', color: 'bg-violet-500' },
             ].map((action, i) => (
                 <Link 

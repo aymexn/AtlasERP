@@ -11,15 +11,15 @@ foreach ($port in $ports) {
     $connections = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
     if ($connections) {
         foreach ($conn in $connections) {
-            $pid = $conn.OwningProcess
-            if ($pid) {
-                $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+            $targetPid = $conn.OwningProcess
+            if ($targetPid) {
+                $proc = Get-Process -Id $targetPid -ErrorAction SilentlyContinue
                 if ($proc) {
                     if ($proc.Name -eq "EonVPNRoutingService") {
                         Write-Warning "Port 3000 is occupied by EonVPN Routing Service (system service). You need to run PowerShell as Administrator and run: Stop-Service EonVPNRoutingService"
                     } else {
-                        Write-Host "Killing process $($proc.Name) (PID: $pid) on port $port..." -ForegroundColor Red
-                        Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+                        Write-Host "Killing process $($proc.Name) (PID: $targetPid) on port $port..." -ForegroundColor Red
+                        Stop-Process -Id $targetPid -Force -ErrorAction SilentlyContinue
                     }
                 }
             }
