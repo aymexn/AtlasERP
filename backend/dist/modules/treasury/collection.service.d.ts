@@ -14,34 +14,34 @@ export declare class CollectionService {
     }[]>;
     logActivity(companyId: string, data: any): Promise<{
         id: string;
+        createdAt: Date;
         status: string;
         companyId: string;
-        createdAt: Date;
-        type: string;
-        updatedAt: Date;
         notes: string | null;
+        updatedAt: Date;
         customerId: string;
-        invoiceId: string | null;
+        type: string;
         actionDate: Date;
+        invoiceId: string | null;
         followUpDate: Date | null;
     }>;
     getActivities(companyId: string, customerId: string): Promise<({
         invoice: {
             id: string;
+            createdAt: Date;
             status: import(".prisma/client").$Enums.InvoiceStatus;
             companyId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            reference: string;
-            date: Date;
-            salesOrderId: string | null;
             notes: string | null;
-            customerId: string;
+            updatedAt: Date;
             dueDate: Date | null;
+            totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
             totalAmountHt: import("@prisma/client/runtime/library").Decimal;
             totalAmountTva: import("@prisma/client/runtime/library").Decimal;
-            totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
             amountPaid: import("@prisma/client/runtime/library").Decimal;
+            salesOrderId: string | null;
+            customerId: string;
+            reference: string;
+            date: Date;
             lastReminderSent: Date | null;
             reminderCount: number;
             totalAmountStamp: import("@prisma/client/runtime/library").Decimal;
@@ -50,15 +50,15 @@ export declare class CollectionService {
         };
     } & {
         id: string;
+        createdAt: Date;
         status: string;
         companyId: string;
-        createdAt: Date;
-        type: string;
-        updatedAt: Date;
         notes: string | null;
+        updatedAt: Date;
         customerId: string;
-        invoiceId: string | null;
+        type: string;
         actionDate: Date;
+        invoiceId: string | null;
         followUpDate: Date | null;
     })[]>;
 }

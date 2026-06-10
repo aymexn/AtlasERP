@@ -7,7 +7,8 @@ import {
     Plus, Search, Edit2, Users, UserPlus, UserCheck,
     Clock, Filter, Loader2, Building2, Mail, Phone,
     Calendar, Briefcase, ChevronRight, X, Save,
-    AlertCircle, CheckCircle2, MapPin, CreditCard
+    AlertCircle, CheckCircle2, MapPin, CreditCard,
+    Trash2, Download, FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -46,6 +47,19 @@ export default function EmployeesClient() {
     const [form, setForm] = useState({ ...EMPTY_FORM });
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null);
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [employeeToDelete, setEmployeeToDelete] = useState<any | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    const [showFiche, setShowFiche] = useState(false);
+    const [ficheEmployee, setFicheEmployee] = useState<any | null>(null);
+    const [ficheTab, setFicheTab] = useState<'info' | 'payroll' | 'leaves'>('info');
+    const [employeePayslips, setEmployeePayslips] = useState<any[]>([]);
+    const [employeeLeaves, setEmployeeLeaves] = useState<any[]>([]);
+    const [employeeBalances, setEmployeeBalances] = useState<any[]>([]);
+    const [loadingFicheData, setLoadingFicheData] = useState(false);
 
     useEffect(() => { loadEmployees(); }, []);
 
@@ -64,11 +78,115 @@ export default function EmployeesClient() {
         }
     };
 
+    const handleDeleteClick = (employee: any) => {
+        setEmployeeToDelete(employee);
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!employeeToDelete) return;
+        setDeleting(true);
+        try {
+            await hrService.deleteEmployee(employeeToDelete.id);
+            setToast({ type: 'success', message: 'Employé supprimé avec succès' });
+            setShowDeleteConfirm(false);
+            setEmployeeToDelete(null);
+            await loadEmployees();
+        } catch (err: any) {
+            console.error(err);
+            setToast({ type: 'error', message: "Impossible de supprimer cet employé car des bulletins de paie ou congés lui sont associés." });
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const handleViewFiche = async (employee: any) => {
+        setFicheEmployee(employee);
+        setFicheTab('info');
+        setShowFiche(true);
+        setLoadingFicheData(true);
+        try {
+            const [payslipsData, leavesData, balancesData] = await Promise.all([
+                hrService.getEmployeePayslips(employee.id).catch(() => []),
+                hrService.listLeaveRequests({ employeeId: employee.id }).catch(() => []),
+                hrService.getLeaveBalance(employee.id).catch(() => []),
+            ]);
+            setEmployeePayslips(payslipsData || []);
+            setEmployeeLeaves(leavesData || []);
+            setEmployeeBalances(balancesData || []);
+        } catch (err) {
+            console.error('Failed to load employee details data', err);
+        } finally {
+            setLoadingFicheData(false);
+        }
+    };
+
+    const handleDownloadPayslip = async (payslip: any) => {
+        try {
+            const filename = `bulletin_${ficheEmployee.lastName}_${format(new Date(payslip.periodStart), 'yyyy_MM')}.pdf`;
+            await hrService.downloadPayslip(payslip.payrollRunId, filename);
+        } catch (err) {
+            console.error('Failed to download payslip', err);
+            setToast({ type: 'error', message: 'Erreur lors du téléchargement du bulletin' });
+        }
+    };
+
+    const handleEditClick = (employee: any) => {
+        const activeContract = employee.contracts?.[0] || {};
+        
+        let addressVal = employee.address || '';
+        let cityVal = employee.city || '';
+        if (employee.address && employee.address.includes(',')) {
+            const parts = employee.address.split(',');
+            addressVal = parts[0].trim();
+            cityVal = parts.slice(1).join(',').trim();
+        }
+
+        setForm({
+            firstName: employee.firstName || '',
+            lastName: employee.lastName || '',
+            email: employee.email || '',
+            phone: employee.phone || '',
+            position: employee.position || '',
+            department: employee.department || '',
+            hireDate: employee.hireDate ? new Date(employee.hireDate).toISOString().split('T')[0] : '',
+            employmentType: employee.employmentType || 'full_time',
+            baseSalary: activeContract.salaryBaseAmount !== undefined ? String(activeContract.salaryBaseAmount) : '',
+            currency: employee.currency || 'DA',
+            salaryType: employee.salaryType || 'monthly',
+            address: addressVal,
+            city: cityVal,
+            nationality: employee.nationality || 'Algérienne',
+            gender: employee.gender || 'M',
+            socialSecurityNumber: employee.socialSecurityNumber || '',
+            taxId: employee.taxId || '',
+            bankName: employee.bankName || '',
+            bankAccountIban: employee.bankAccountIban || '',
+            emergencyContactName: employee.emergencyContactName || '',
+            emergencyContactPhone: employee.emergencyContactPhone || '',
+            contractType: activeContract.contractType || 'CDI',
+            contractStartDate: activeContract.startDate ? new Date(activeContract.startDate).toISOString().split('T')[0] : (employee.hireDate ? new Date(employee.hireDate).toISOString().split('T')[0] : ''),
+            contractEndDate: activeContract.endDate ? new Date(activeContract.endDate).toISOString().split('T')[0] : '',
+            weeklyHours: activeContract.workingHoursPerWeek !== undefined ? String(activeContract.workingHoursPerWeek) : '40',
+            probationMonths: activeContract.probationMonths !== undefined ? String(activeContract.probationMonths) : '3',
+        });
+        setSelectedEmployee(employee);
+        setFormTab('personal');
+        setShowModal(true);
+    };
+
+    const handleAddNewClick = () => {
+        setForm({ ...EMPTY_FORM });
+        setSelectedEmployee(null);
+        setFormTab('personal');
+        setShowModal(true);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         try {
-            await hrService.createEmployee({
+            const payload = {
                 firstName: form.firstName, lastName: form.lastName,
                 email: form.email, phone: form.phone,
                 position: form.position, department: form.department,
@@ -89,14 +207,22 @@ export default function EmployeesClient() {
                     salaryBaseAmount: form.baseSalary ? parseFloat(form.baseSalary) : 0,
                     probationMonths: form.probationMonths ? parseInt(form.probationMonths) : null,
                 }
-            });
-            setToast({ type: 'success', message: 'Employé créé avec succès' });
+            };
+
+            if (selectedEmployee) {
+                await hrService.updateEmployee(selectedEmployee.id, payload);
+                setToast({ type: 'success', message: 'Employé modifié avec succès' });
+            } else {
+                await hrService.createEmployee(payload);
+                setToast({ type: 'success', message: 'Employé créé avec succès' });
+            }
             setShowModal(false);
             setForm({ ...EMPTY_FORM });
+            setSelectedEmployee(null);
             setFormTab('personal');
             await loadEmployees();
         } catch {
-            setToast({ type: 'error', message: "Erreur lors de la création de l'employé" });
+            setToast({ type: 'error', message: selectedEmployee ? "Erreur lors de la modification de l'employé" : "Erreur lors de la création de l'employé" });
         } finally {
             setSaving(false);
         }
@@ -140,7 +266,7 @@ export default function EmployeesClient() {
                     <p className="text-muted-foreground font-medium">{t('subtitle')}</p>
                 </div>
                 <button
-                    onClick={() => setShowModal(true)}
+                    onClick={handleAddNewClick}
                     className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold shadow-xl transition-all active:scale-95"
                 >
                     <UserPlus size={20} /> {t('employees.add')}
@@ -258,11 +384,14 @@ export default function EmployeesClient() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-xl border border-transparent hover:border-blue-100 shadow-sm transition-all">
+                                            <button onClick={() => handleEditClick(e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-xl border border-transparent hover:border-blue-100 shadow-sm transition-all" title="Modifier">
                                                 <Edit2 size={15} />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl border border-transparent hover:border-slate-100 shadow-sm transition-all">
+                                            <button onClick={() => handleViewFiche(e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-xl border border-transparent hover:border-blue-100 shadow-sm transition-all" title="Voir la fiche">
                                                 <ChevronRight size={15} />
+                                            </button>
+                                            <button onClick={() => handleDeleteClick(e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-xl border border-transparent hover:border-rose-100 shadow-sm transition-all" title="Supprimer">
+                                                <Trash2 size={15} />
                                             </button>
                                         </div>
                                     </td>
@@ -285,7 +414,7 @@ export default function EmployeesClient() {
                                     <UserPlus size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="font-black text-slate-900">Nouvel Employé</h2>
+                                    <h2 className="font-black text-slate-900">{selectedEmployee ? 'Modifier l\'Employé' : 'Nouvel Employé'}</h2>
                                     <p className="text-[11px] text-slate-400 font-medium">Remplissez les informations de base et le contrat</p>
                                 </div>
                             </div>
@@ -333,7 +462,7 @@ export default function EmployeesClient() {
                                             { value: 'intern', label: 'Stagiaire' },
                                         ]}
                                     />
-                                    <InputField label="Salaire de base" type="number" value={form.baseSalary} onChange={v => setForm({ ...form, baseSalary: v })} />
+                                    <InputField label="Salaire de base *" type="number" value={form.baseSalary} onChange={v => setForm({ ...form, baseSalary: v })} required />
                                     <SelectField label="Périodicité" value={form.salaryType} onChange={v => setForm({ ...form, salaryType: v })}
                                         options={[
                                             { value: 'monthly', label: 'Mensuel' },
@@ -400,7 +529,7 @@ export default function EmployeesClient() {
                                         className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all text-sm disabled:opacity-60"
                                     >
                                         {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                        Créer l'employé
+                                        {selectedEmployee ? 'Enregistrer' : 'Créer l\'employé'}
                                     </button>
                                 )}
                             </div>
@@ -408,6 +537,283 @@ export default function EmployeesClient() {
                     </div>
                 </div>
             )}
+
+            {/* Fiche Employé Modal */}
+            {showFiche && ficheEmployee && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowFiche(false)} />
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden scale-in duration-300">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 w-14 rounded-full bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-lg shadow-md shrink-0">
+                                    {ficheEmployee.firstName[0]}{ficheEmployee.lastName[0]}
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-xl font-black text-slate-900">{ficheEmployee.firstName} {ficheEmployee.lastName}</h2>
+                                        <span className={`text-[9px] font-black px-2.5 py-0.5 rounded-lg border uppercase tracking-widest ${STATUS_STYLES[ficheEmployee.status] || 'bg-gray-50 text-gray-700 border-gray-100'}`}>
+                                            {ficheEmployee.status.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                        {ficheEmployee.position || '—'} • {ficheEmployee.department || '—'}
+                                    </p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowFiche(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="bg-slate-50 px-6 py-3 flex gap-1 border-b border-slate-100">
+                            {(['info', 'payroll', 'leaves'] as const).map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setFicheTab(tab)}
+                                    className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${ficheTab === tab ? 'bg-white shadow text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    {tab === 'info' ? 'Informations' : tab === 'payroll' ? 'Paie & Bulletins' : 'Congés & Absences'}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-6 min-h-[300px]">
+                            {loadingFicheData ? (
+                                <div className="flex flex-col items-center justify-center py-20 gap-3">
+                                    <Loader2 className="animate-spin text-blue-600" size={30} />
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Chargement des données...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {ficheTab === 'info' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {/* Personnal section */}
+                                            <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                                                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Détails Personnels</h3>
+                                                <div className="space-y-3">
+                                                    <InfoRow label="Email" value={ficheEmployee.email} />
+                                                    <InfoRow label="Téléphone" value={ficheEmployee.phone} />
+                                                    <InfoRow label="Genre" value={ficheEmployee.gender === 'M' ? 'Masculin' : 'Féminin'} />
+                                                    <InfoRow label="Nationalité" value={ficheEmployee.nationality} />
+                                                    <InfoRow label="N° Sécurité Sociale" value={ficheEmployee.socialSecurityNumber} />
+                                                    <InfoRow label="Adresse" value={ficheEmployee.address} />
+                                                </div>
+                                            </div>
+
+                                            {/* Professional & Bank section */}
+                                            <div className="space-y-6">
+                                                <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                                                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Contrat & Poste</h3>
+                                                    <div className="space-y-3">
+                                                        <InfoRow label="Date d'embauche" value={ficheEmployee.hireDate ? format(new Date(ficheEmployee.hireDate), 'dd MMMM yyyy', { locale: fr }) : '—'} />
+                                                        <InfoRow label="Type d'emploi" value={ficheEmployee.employmentType === 'full_time' ? 'Temps plein' : 'Temps partiel'} />
+                                                        {ficheEmployee.contracts?.[0] && (
+                                                            <>
+                                                                <InfoRow label="Type de contrat" value={ficheEmployee.contracts[0].contractType} />
+                                                                <InfoRow label="Salaire de base" value={ficheEmployee.contracts[0].salaryBaseAmount ? `${parseFloat(String(ficheEmployee.contracts[0].salaryBaseAmount)).toLocaleString()} DA` : '—'} />
+                                                                <InfoRow label="Heures de travail / Semaine" value={ficheEmployee.contracts[0].workingHoursPerWeek ? `${ficheEmployee.contracts[0].workingHoursPerWeek}h` : '—'} />
+                                                                <InfoRow label="Début du contrat" value={format(new Date(ficheEmployee.contracts[0].startDate), 'dd/MM/yyyy')} />
+                                                                {ficheEmployee.contracts[0].endDate && (
+                                                                    <InfoRow label="Fin du contrat" value={format(new Date(ficheEmployee.contracts[0].endDate), 'dd/MM/yyyy')} />
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                                                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Coordonnées Bancaires</h3>
+                                                    <div className="space-y-3">
+                                                        <InfoRow label="Banque" value={ficheEmployee.bankName} />
+                                                        <InfoRow label="IBAN / RIB" value={ficheEmployee.bankAccountIban} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {ficheTab === 'payroll' && (
+                                        <div className="space-y-6 animate-in fade-in duration-300">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h3 className="font-black text-slate-900">Bulletins de Paie</h3>
+                                                    <p className="text-xs text-slate-400 font-medium mt-0.5">Historique des bulletins générés pour cet employé</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead>
+                                                        <tr className="bg-slate-50/50">
+                                                            <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Période</th>
+                                                            <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date Génération</th>
+                                                            <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-50">
+                                                        {employeePayslips.length === 0 ? (
+                                                            <tr>
+                                                                <td colSpan={3} className="py-12 text-center">
+                                                                    <FileText size={28} className="mx-auto text-slate-200 mb-2" />
+                                                                    <p className="text-slate-400 font-bold text-xs uppercase">Aucun bulletin disponible</p>
+                                                                </td>
+                                                            </tr>
+                                                        ) : (
+                                                            employeePayslips.map(payslip => (
+                                                                <tr key={payslip.id} className="hover:bg-slate-50/30 transition-colors">
+                                                                    <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                                                                        {format(new Date(payslip.periodStart), 'MMMM yyyy', { locale: fr })}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 text-xs text-slate-500 font-medium">
+                                                                        {format(new Date(payslip.generatedAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 text-right">
+                                                                        <button
+                                                                            onClick={() => handleDownloadPayslip(payslip)}
+                                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-black transition-all"
+                                                                        >
+                                                                            <Download size={13} /> Télécharger PDF
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {ficheTab === 'leaves' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-300">
+                                            {/* Leave Balance List */}
+                                            <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 md:col-span-1">
+                                                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Solde de Congés</h3>
+                                                {employeeBalances.length === 0 ? (
+                                                    <p className="text-xs text-slate-400 font-bold uppercase">Aucun solde défini</p>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        {employeeBalances.map(bal => {
+                                                            const avail = parseFloat(String(bal.totalEntitled || 0)) - parseFloat(String(bal.usedDays || 0)) - parseFloat(String(bal.pendingDays || 0));
+                                                            return (
+                                                                <div key={bal.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                                                    <p className="text-xs font-bold text-slate-800">{bal.leaveType?.name}</p>
+                                                                    <div className="flex justify-between items-baseline mt-2">
+                                                                        <p className="text-lg font-black text-blue-600">{avail} <span className="text-[10px] text-slate-400 font-bold">restants</span></p>
+                                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">sur {bal.totalEntitled}</p>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Leave Request List */}
+                                            <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 md:col-span-2">
+                                                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Historique des Congés</h3>
+                                                <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                                                    <table className="w-full text-left border-collapse">
+                                                        <thead>
+                                                            <tr className="bg-slate-50/50">
+                                                                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type & Dates</th>
+                                                                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jours</th>
+                                                                <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-50">
+                                                            {employeeLeaves.length === 0 ? (
+                                                                <tr>
+                                                                    <td colSpan={3} className="py-12 text-center">
+                                                                        <Calendar size={28} className="mx-auto text-slate-200 mb-2" />
+                                                                        <p className="text-slate-400 font-bold text-xs uppercase">Aucune demande</p>
+                                                                    </td>
+                                                                </tr>
+                                                            ) : (
+                                                                employeeLeaves.map(leave => (
+                                                                    <tr key={leave.id} className="hover:bg-slate-50/30 transition-colors">
+                                                                        <td className="px-4 py-3">
+                                                                            <p className="text-xs font-bold text-slate-800">{leave.leaveType?.name}</p>
+                                                                            <p className="text-[10px] text-slate-400 font-medium">
+                                                                                Du {format(new Date(leave.startDate), 'dd/MM/yyyy')} au {format(new Date(leave.endDate), 'dd/MM/yyyy')}
+                                                                            </p>
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-xs font-bold text-slate-700">
+                                                                            {leave.totalDays}j
+                                                                        </td>
+                                                                        <td className="px-4 py-3">
+                                                                            <span className={`text-[8px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${
+                                                                                leave.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                                                                leave.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                                                                                'bg-amber-50 text-amber-700 border-amber-100'
+                                                                            }`}>
+                                                                                {leave.status}
+                                                                            </span>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 scale-in duration-300">
+                        <div className="flex items-center gap-3 mb-4 text-rose-600">
+                            <div className="h-10 w-10 bg-rose-50 rounded-2xl flex items-center justify-center">
+                                <AlertCircle size={20} />
+                            </div>
+                            <h3 className="text-lg font-black text-slate-900">Confirmer la suppression</h3>
+                        </div>
+                        <p className="text-slate-500 text-sm mb-6 font-medium">
+                            Êtes-vous sûr de vouloir supprimer l'employé <strong className="text-slate-800">{employeeToDelete?.firstName} {employeeToDelete?.lastName}</strong> ? Cette action est irréversible.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                type="button"
+                                disabled={deleting}
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-100 rounded-xl text-sm"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="button"
+                                disabled={deleting}
+                                onClick={handleConfirmDelete}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 text-sm disabled:opacity-60"
+                            >
+                                {deleting ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function InfoRow({ label, value }: { label: string; value: any }) {
+    return (
+        <div className="flex justify-between items-baseline py-1.5 border-b border-slate-50">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
+            <span className="text-sm font-black text-slate-800 text-right">{value || '—'}</span>
         </div>
     );
 }

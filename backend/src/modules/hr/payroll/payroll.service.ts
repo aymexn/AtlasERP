@@ -2,12 +2,16 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { PayrollStatus } from '@prisma/client';
 import { NotificationService } from '../../notifications/notifications.service';
+import { PdfService } from '../../../common/services/pdf.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PayrollService {
   constructor(
     private prisma: PrismaService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private pdfService: PdfService
   ) {}
 
   async createPeriod(companyId: string, data: any) {
@@ -17,8 +21,6 @@ export class PayrollService {
         periodStart: new Date(data.periodStart),
         periodEnd: new Date(data.periodEnd),
         paymentDate: new Date(data.paymentDate),
-        // periodName is a virtual label stored in notes if schema has it
-        ...(data.periodName ? { notes: data.periodName } : {}),
       },
     });
   }
@@ -43,7 +45,7 @@ export class PayrollService {
 
     for (const employee of employees) {
       const contract = employee.contracts[0];
-      if (!contract) continue;
+      if (!contract || Number(contract.salaryBaseAmount) <= 0) continue;
 
       let gross = Number(contract.salaryBaseAmount);
       const earnings = [];
@@ -194,13 +196,28 @@ export class PayrollService {
   async generatePayslip(runId: string) {
     const run = await this.prisma.payrollRun.findUnique({
       where: { id: runId },
-      include: { employee: true, payrollPeriod: true },
+      include: {
+        employee: {
+          include: { company: true }
+        },
+        payrollPeriod: true
+      },
     });
     if (!run) throw new NotFoundException('Payroll run not found');
 
-    // In a real app, use a PDF library here (like PDFKit or Puppeteer)
-    // For now, we'll just create the record.
     const filePath = `/uploads/payslips/payslip_${run.id}.pdf`;
+    const fullDir = path.join(__dirname, '..', '..', '..', '..', 'uploads', 'payslips');
+    if (!fs.existsSync(fullDir)) {
+      fs.mkdirSync(fullDir, { recursive: true });
+    }
+    const fullPath = path.join(fullDir, `payslip_${run.id}.pdf`);
+
+    const writeStream = fs.createWriteStream(fullPath);
+    await this.pdfService.generatePayslipPdf(run, writeStream);
+    await new Promise<void>((resolve, reject) => {
+      writeStream.on('finish', () => resolve());
+      writeStream.on('error', reject);
+    });
 
     return this.prisma.payslip.upsert({
       where: { payrollRunId: run.id },
@@ -216,5 +233,62 @@ export class PayrollService {
         filePath,
       },
     });
+  }
+
+  async generateAllPayslips(companyId: string, periodId: string) {
+    const runs = await this.prisma.payrollRun.findMany({
+      where: {
+        payrollPeriodId: periodId,
+        payrollPeriod: { companyId },
+      },
+      include: {
+        employee: {
+          include: { company: true }
+        },
+        payrollPeriod: true,
+      },
+    });
+
+    const payslips = [];
+    const fullDir = path.join(__dirname, '..', '..', '..', '..', 'uploads', 'payslips');
+    if (!fs.existsSync(fullDir)) {
+      fs.mkdirSync(fullDir, { recursive: true });
+    }
+
+    for (const run of runs) {
+      const filePath = `/uploads/payslips/payslip_${run.id}.pdf`;
+      const fullPath = path.join(fullDir, `payslip_${run.id}.pdf`);
+
+      const writeStream = fs.createWriteStream(fullPath);
+      await this.pdfService.generatePayslipPdf(run, writeStream);
+      await new Promise<void>((resolve, reject) => {
+        writeStream.on('finish', () => resolve());
+        writeStream.on('error', reject);
+      });
+
+      await this.prisma.payslip.upsert({
+        where: { payrollRunId: run.id },
+        update: {
+          filePath,
+          generatedAt: new Date(),
+        },
+        create: {
+          payrollRunId: run.id,
+          employeeId: run.employeeId,
+          periodStart: run.payrollPeriod.periodStart,
+          periodEnd: run.payrollPeriod.periodEnd,
+          filePath,
+        },
+      });
+
+      payslips.push({
+        employeeId: run.employeeId,
+        employeeName: `${run.employee.firstName} ${run.employee.lastName}`,
+        url: filePath,
+        runId: run.id,
+      });
+    }
+
+    return { payslips };
   }
 }

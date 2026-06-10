@@ -28,8 +28,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
                 'StockMovement', 'Customer', 'SalesOrder', 'Invoice', 'Payment', 'Expense',
                 'AuditLog', 'ManufacturingOrder', 'Supplier', 'PurchaseOrder', 'StockReception',
                 'CollectionActivity', 'Employee', 'HrDocument', 'PayrollPeriod',
-                'PayrollRun', 'Project', 'CalendarEvent', 'CollaborationDocument', 'ApprovalRequest',
-                'ActivityFeed', 'Notification', 'User'
+                'Project', 'CalendarEvent', 'CollaborationDocument',
+                'ActivityFeed', 'User'
             ];
 
             if (tenantId && params.model && TENANT_MODELS.includes(params.model)) {

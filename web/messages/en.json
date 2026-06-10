@@ -60,7 +60,8 @@
         "no_account": "Don't have an account?",
         "register": "Create account",
         "error_title": "Login Error",
-        "invalid_credentials": "Invalid email or password."
+        "invalid_credentials": "Invalid email or password.",
+        "forgot_password": "Forgot password?"
     },
     "common": {
         "title": "Atlas",
@@ -1079,7 +1080,22 @@
         "registering": "Creating account...",
         "have_account": "Already have an account?",
         "login": "Sign in",
-        "error_title": "Error"
+        "error_title": "Error",
+        "section1_title": "Company Information",
+        "section2_title": "Administrator Account",
+        "companyName": "Company Name",
+        "nif": "NIF — Tax Identification Number (15 digits)",
+        "nis": "NIS — Statistical Identification Number (15 digits)",
+        "rc": "RC — Commercial Register (00/00-0000000B15)",
+        "ai": "AI — Tax Article (optional)",
+        "companyEmail": "Company Email Address",
+        "companyPhone": "Company Phone Number (optional)",
+        "adminName": "Full Name",
+        "adminEmail": "Admin Email (login identifier)",
+        "adminPhone": "Mobile Phone Number",
+        "confirmPassword": "Confirm Password",
+        "legal_note": "By registering, you accept our Terms of Service and confirm your compliance with Law No. 18-07 on personal data protection.",
+        "success_message": "Account created, please sign in"
     },
     "tenant": {
         "title": "Set Up Your Organization",

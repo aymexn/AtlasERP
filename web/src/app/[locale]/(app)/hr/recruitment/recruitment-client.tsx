@@ -20,6 +20,7 @@ const STAGES = [
 ];
 
 const JOB_EMPTY = { title: '', department: '', location: '', employmentType: 'FULL_TIME', description: '' };
+const CANDIDATE_EMPTY = { firstName: '', lastName: '', email: '', phone: '', jobPostingId: '', notes: '' };
 
 export default function RecruitmentClient() {
     const t = useTranslations('hr');
@@ -34,6 +35,10 @@ export default function RecruitmentClient() {
     const [saving, setSaving] = useState(false);
     const [movingId, setMovingId] = useState<string | null>(null);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+    const [showCandidateModal, setShowCandidateModal] = useState(false);
+    const [targetStageId, setTargetStageId] = useState<string>('APPLIED');
+    const [candidateForm, setCandidateForm] = useState({ ...CANDIDATE_EMPTY });
 
     useEffect(() => { loadData(); }, []);
     useEffect(() => {
@@ -62,18 +67,61 @@ export default function RecruitmentClient() {
         } finally { setSaving(false); }
     };
 
-    const handleAdvanceStage = async (appId: string, currentStage: string) => {
-        const idx = STAGES.findIndex(s => s.id === currentStage);
-        if (idx >= STAGES.length - 1) return;
-        const nextStage = STAGES[idx + 1].id;
+    const handleStageChange = async (appId: string, newStage: string) => {
+        if (newStage === 'HIRED') {
+            await handleHire(appId);
+            return;
+        }
         setMovingId(appId);
         try {
-            await hrService.updateApplicationStage(appId, nextStage);
-            setToast({ type: 'success', message: `Candidat avancé vers "${STAGES[idx + 1].label}"` });
+            await hrService.updateApplicationStage(appId, newStage);
+            const stageLabel = STAGES.find(s => s.id === newStage)?.label || newStage;
+            setToast({ type: 'success', message: `Statut mis à jour : "${stageLabel}"` });
             await loadData();
         } catch {
-            setToast({ type: 'error', message: 'Erreur lors du déplacement' });
+            setToast({ type: 'error', message: 'Erreur lors du changement de statut' });
         } finally { setMovingId(null); }
+    };
+
+    const handleAddCandidateClick = (stageId: string) => {
+        setTargetStageId(stageId);
+        setCandidateForm({
+            ...CANDIDATE_EMPTY,
+            jobPostingId: jobs.length > 0 ? jobs[0].id : ''
+        });
+        setShowCandidateModal(true);
+    };
+
+    const handleCreateCandidate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const candidate = await hrService.createCandidate({
+                firstName: candidateForm.firstName,
+                lastName: candidateForm.lastName,
+                email: candidateForm.email,
+                phone: candidateForm.phone,
+                source: 'Manuel'
+            });
+            
+            const app = await hrService.applyToJob(
+                candidateForm.jobPostingId,
+                candidate.id,
+                candidateForm.notes
+            );
+
+            if (targetStageId !== 'APPLIED') {
+                await hrService.updateApplicationStage(app.id, targetStageId);
+            }
+
+            setToast({ type: 'success', message: 'Candidat ajouté avec succès' });
+            setShowCandidateModal(false);
+            setCandidateForm({ ...CANDIDATE_EMPTY });
+            await loadData();
+        } catch (err: any) {
+            console.error(err);
+            setToast({ type: 'error', message: "Erreur lors de l'ajout du candidat" });
+        } finally { setSaving(false); }
     };
 
     const handleHire = async (appId: string) => {
@@ -146,9 +194,20 @@ export default function RecruitmentClient() {
                                     <div className={`h-2.5 w-2.5 rounded-full ${stage.color}`} />
                                     <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">{stage.label}</h3>
                                 </div>
-                                <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-2 py-0.5 rounded-full">
-                                    {applications.filter(a => a.stage === stage.id).length}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    {stage.id !== 'HIRED' && (
+                                        <button
+                                            onClick={() => handleAddCandidateClick(stage.id)}
+                                            className="p-1 hover:bg-slate-200 text-slate-500 rounded-lg transition-all"
+                                            title="Ajouter un candidat dans cette colonne"
+                                        >
+                                            <Plus size={14} />
+                                        </button>
+                                    )}
+                                    <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                        {applications.filter(a => a.stage === stage.id).length}
+                                    </span>
+                                </div>
                             </div>
 
                             <div className={`flex-1 min-h-[400px] space-y-3 p-3 rounded-3xl border-2 border-dashed ${stage.light}`}>
@@ -184,21 +243,24 @@ export default function RecruitmentClient() {
                                                 <Clock size={11} />
                                                 {app.applicationDate ? format(new Date(app.applicationDate), 'dd MMM', { locale: fr }) : '—'}
                                             </span>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {stage.id === 'HIRED' ? (
                                                     <span className="text-[10px] font-black text-emerald-600 flex items-center gap-1">
                                                         <CheckCircle2 size={12} /> Recruté
                                                     </span>
                                                 ) : (
                                                     <>
-                                                        <button
+                                                        <select
                                                             disabled={movingId === app.id}
-                                                            onClick={() => handleAdvanceStage(app.id, stage.id)}
-                                                            className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-lg hover:bg-blue-100 transition-all flex items-center gap-1 disabled:opacity-50"
+                                                            value={stage.id}
+                                                            onChange={(e) => handleStageChange(app.id, e.target.value)}
+                                                            className="bg-slate-50 border border-slate-200 text-slate-700 text-[10px] font-black rounded-lg px-2 py-1 outline-none focus:border-blue-300 transition-all"
                                                         >
-                                                            {movingId === app.id ? <Loader2 size={11} className="animate-spin" /> : <ArrowRight size={11} />}
-                                                            Avancer
-                                                        </button>
+                                                            {STAGES.map(s => (
+                                                                <option key={s.id} value={s.id}>{s.label}</option>
+                                                            ))}
+                                                            <option value="REJECTED">Refusé</option>
+                                                        </select>
                                                         {stage.id === 'OFFER' && (
                                                             <button
                                                                 disabled={movingId === app.id}
@@ -317,6 +379,80 @@ export default function RecruitmentClient() {
                                 <button type="submit" disabled={saving}
                                     className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 text-sm disabled:opacity-60">
                                     {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Publier
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Candidate Modal */}
+            {showCandidateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCandidateModal(false)} />
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col scale-in duration-300">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600"><UserPlus size={20} /></div>
+                                <div>
+                                    <h2 className="font-black text-slate-900">Ajouter un Candidat</h2>
+                                    <p className="text-[11px] text-slate-400 font-medium">Colonne : {STAGES.find(s => s.id === targetStageId)?.label}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowCandidateModal(false)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl"><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleCreateCandidate} className="flex-1 overflow-y-auto p-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Prénom *</label>
+                                    <input type="text" required value={candidateForm.firstName}
+                                        onChange={e => setCandidateForm({ ...candidateForm, firstName: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-300 text-sm font-medium" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nom *</label>
+                                    <input type="text" required value={candidateForm.lastName}
+                                        onChange={e => setCandidateForm({ ...candidateForm, lastName: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-300 text-sm font-medium" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Email *</label>
+                                    <input type="email" required value={candidateForm.email}
+                                        onChange={e => setCandidateForm({ ...candidateForm, email: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-300 text-sm font-medium" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Téléphone</label>
+                                    <input type="text" value={candidateForm.phone}
+                                        onChange={e => setCandidateForm({ ...candidateForm, phone: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-300 text-sm font-medium" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Offre d'emploi *</label>
+                                <select required value={candidateForm.jobPostingId} onChange={e => setCandidateForm({ ...candidateForm, jobPostingId: e.target.value })}
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-300 text-sm font-medium">
+                                    <option value="" disabled>Sélectionner une offre</option>
+                                    {jobs.map(job => (
+                                        <option key={job.id} value={job.id}>{job.title} ({job.department || '—'})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Notes d'application</label>
+                                <textarea rows={4} value={candidateForm.notes}
+                                    onChange={e => setCandidateForm({ ...candidateForm, notes: e.target.value })}
+                                    placeholder="Notes complémentaires (motivation, expérience, etc.)"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-300 text-sm font-medium resize-none" />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button type="button" onClick={() => setShowCandidateModal(false)}
+                                    className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-100 rounded-xl text-sm">Annuler</button>
+                                <button type="submit" disabled={saving || !candidateForm.jobPostingId}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 text-sm disabled:opacity-60">
+                                    {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Ajouter
                                 </button>
                             </div>
                         </form>

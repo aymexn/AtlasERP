@@ -43,6 +43,9 @@ let EmployeesController = class EmployeesController {
     async removeDocument(req, documentId) {
         return this.employeesService.removeDocument(req.user.companyId, documentId);
     }
+    async remove(req, id) {
+        return this.employeesService.remove(req.user.companyId, id);
+    }
 };
 exports.EmployeesController = EmployeesController;
 __decorate([
@@ -111,6 +114,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], EmployeesController.prototype, "removeDocument", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, rbac_decorator_1.CheckPermission)('hr', 'employees', 'delete'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], EmployeesController.prototype, "remove", null);
 exports.EmployeesController = EmployeesController = __decorate([
     (0, common_1.Controller)('hr/employees'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),

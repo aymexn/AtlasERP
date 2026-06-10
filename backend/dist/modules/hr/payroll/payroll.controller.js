@@ -33,6 +33,9 @@ let PayrollController = class PayrollController {
     async calculatePayroll(req, id) {
         return this.payrollService.calculatePayroll(req.user.companyId, id);
     }
+    async generateAllPayslips(req, id) {
+        return this.payrollService.generateAllPayslips(req.user.companyId, id);
+    }
     async getPayrollRuns(id) {
         return this.payrollService.getPayrollRuns(id);
     }
@@ -78,6 +81,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "calculatePayroll", null);
+__decorate([
+    (0, common_1.Post)('periods/:id/generate-all-payslips'),
+    (0, rbac_decorator_1.CheckPermission)('hr', 'payroll', 'approve'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], PayrollController.prototype, "generateAllPayslips", null);
 __decorate([
     (0, common_1.Get)('periods/:id/runs'),
     (0, rbac_decorator_1.CheckPermission)('hr', 'payroll', 'read'),

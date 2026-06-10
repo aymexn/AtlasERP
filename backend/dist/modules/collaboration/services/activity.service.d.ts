@@ -17,22 +17,22 @@ export declare class ActivityService {
     }): Promise<{
         userName: string;
         user: {
+            email: string;
             employee: {
                 firstName: string;
                 lastName: string;
             };
-            email: string;
         };
         id: string;
-        companyId: string;
-        createdAt: Date;
-        userId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        description: string | null;
         resourceType: string;
         resourceId: string;
+        createdAt: Date;
+        userId: string;
+        companyId: string;
         activityType: string;
         resourceTitle: string | null;
+        description: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
         visibility: string;
         departmentId: string | null;
         projectId: string | null;
@@ -40,22 +40,22 @@ export declare class ActivityService {
     getActivityFeed(companyId: string, projectId?: string, limit?: number): Promise<{
         userName: string;
         user: {
+            email: string;
             employee: {
                 firstName: string;
                 lastName: string;
             };
-            email: string;
         };
         id: string;
-        companyId: string;
-        createdAt: Date;
-        userId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        description: string | null;
         resourceType: string;
         resourceId: string;
+        createdAt: Date;
+        userId: string;
+        companyId: string;
         activityType: string;
         resourceTitle: string | null;
+        description: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
         visibility: string;
         departmentId: string | null;
         projectId: string | null;

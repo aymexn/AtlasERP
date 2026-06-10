@@ -50,4 +50,10 @@ export class EmployeesController {
   async removeDocument(@Request() req, @Param('documentId') documentId: string) {
     return this.employeesService.removeDocument(req.user.companyId, documentId);
   }
+
+  @Delete(':id')
+  @CheckPermission('hr', 'employees', 'delete')
+  async remove(@Request() req, @Param('id') id: string) {
+    return this.employeesService.remove(req.user.companyId, id);
+  }
 }

@@ -10,13 +10,13 @@ export declare class FamiliesService {
         };
     } & {
         id: string;
+        createdAt: Date;
         name: string;
         companyId: string;
-        createdAt: Date;
-        isActive: boolean;
         description: string | null;
         updatedAt: Date;
         code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
         sortOrder: number;
@@ -28,13 +28,13 @@ export declare class FamiliesService {
         };
     } & {
         id: string;
+        createdAt: Date;
         name: string;
         companyId: string;
-        createdAt: Date;
-        isActive: boolean;
         description: string | null;
         updatedAt: Date;
         code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
         sortOrder: number;
@@ -46,26 +46,26 @@ export declare class FamiliesService {
         };
     } & {
         id: string;
+        createdAt: Date;
         name: string;
         companyId: string;
-        createdAt: Date;
-        isActive: boolean;
         description: string | null;
         updatedAt: Date;
         code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
         sortOrder: number;
     }>;
     remove(id: string, companyId: string): Promise<{
         id: string;
+        createdAt: Date;
         name: string;
         companyId: string;
-        createdAt: Date;
-        isActive: boolean;
         description: string | null;
         updatedAt: Date;
         code: string | null;
+        isActive: boolean;
         colorBadge: string | null;
         parentId: string | null;
         sortOrder: number;

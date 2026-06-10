@@ -75,6 +75,18 @@ let AuthService = class AuthService {
                     role: 'ADMIN',
                 },
             });
+            const adminRole = await tx.appRole.findUnique({
+                where: { name: 'admin' }
+            });
+            if (adminRole) {
+                await tx.userRole.create({
+                    data: {
+                        userId: newUser.id,
+                        roleId: adminRole.id,
+                        isActive: true,
+                    }
+                });
+            }
             return { user: newUser };
         });
         const payload = {

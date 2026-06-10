@@ -27,6 +27,12 @@ export class LeavesController {
     return this.leavesService.getBalances(employeeId, year ? parseInt(year) : undefined);
   }
 
+  @Post('balance/:employeeId')
+  @CheckPermission('hr', 'leaves', 'manage')
+  async createOrUpdateBalance(@Param('employeeId') employeeId: string, @Body() data: any) {
+    return this.leavesService.createOrUpdateBalance(employeeId, data);
+  }
+
   @Post('requests')
   @CheckPermission('hr', 'leaves', 'create')
   async requestLeave(@Request() req, @Body() data: any) {

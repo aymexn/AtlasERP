@@ -31,6 +31,9 @@ let LeavesController = class LeavesController {
     async getBalances(employeeId, year) {
         return this.leavesService.getBalances(employeeId, year ? parseInt(year) : undefined);
     }
+    async createOrUpdateBalance(employeeId, data) {
+        return this.leavesService.createOrUpdateBalance(employeeId, data);
+    }
     async requestLeave(req, data) {
         const employeeId = data.employeeId || req.user.employeeId;
         return this.leavesService.requestLeave(req.user.companyId, employeeId, data);
@@ -78,6 +81,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], LeavesController.prototype, "getBalances", null);
+__decorate([
+    (0, common_1.Post)('balance/:employeeId'),
+    (0, rbac_decorator_1.CheckPermission)('hr', 'leaves', 'manage'),
+    __param(0, (0, common_1.Param)('employeeId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], LeavesController.prototype, "createOrUpdateBalance", null);
 __decorate([
     (0, common_1.Post)('requests'),
     (0, rbac_decorator_1.CheckPermission)('hr', 'leaves', 'create'),

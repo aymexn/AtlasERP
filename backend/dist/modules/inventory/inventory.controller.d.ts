@@ -7,24 +7,24 @@ export declare class InventoryController {
     constructor(stockMovementService: StockMovementService, inventoryService: InventoryService);
     createMovement(req: any, dto: CreateStockMovementDto): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.MovementType;
-        unit: string;
-        productId: string;
-        variantId: string | null;
-        quantity: import("@prisma/client/runtime/library").Decimal;
-        uomId: string | null;
-        movementType: string;
-        reference: string;
+        companyId: string;
+        createdBy: string | null;
         reason: string | null;
+        salesOrderId: string | null;
+        reference: string;
         date: Date;
+        productId: string;
+        quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string;
+        uomId: string | null;
+        type: import(".prisma/client").$Enums.MovementType;
+        variantId: string | null;
+        movementType: string;
         unitCost: import("@prisma/client/runtime/library").Decimal;
         totalCost: import("@prisma/client/runtime/library").Decimal;
-        createdBy: string | null;
         warehouseFromId: string | null;
         warehouseToId: string | null;
-        salesOrderId: string | null;
     }>;
     listMovements(req: any): Promise<({
         user: {
@@ -42,24 +42,24 @@ export declare class InventoryController {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.MovementType;
-        unit: string;
-        productId: string;
-        variantId: string | null;
-        quantity: import("@prisma/client/runtime/library").Decimal;
-        uomId: string | null;
-        movementType: string;
-        reference: string;
+        companyId: string;
+        createdBy: string | null;
         reason: string | null;
+        salesOrderId: string | null;
+        reference: string;
         date: Date;
+        productId: string;
+        quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string;
+        uomId: string | null;
+        type: import(".prisma/client").$Enums.MovementType;
+        variantId: string | null;
+        movementType: string;
         unitCost: import("@prisma/client/runtime/library").Decimal;
         totalCost: import("@prisma/client/runtime/library").Decimal;
-        createdBy: string | null;
         warehouseFromId: string | null;
         warehouseToId: string | null;
-        salesOrderId: string | null;
     })[]>;
     getStock(req: any, warehouseId?: string): Promise<{
         quantity: number;
@@ -70,10 +70,10 @@ export declare class InventoryController {
         product: {
             id: string;
             name: string;
-            sku: string;
-            standardCost: import("@prisma/client/runtime/library").Decimal;
             unit: import(".prisma/client").$Enums.ProductUnit;
+            sku: string;
             minStock: import("@prisma/client/runtime/library").Decimal;
+            standardCost: import("@prisma/client/runtime/library").Decimal;
             family: {
                 name: string;
             };
@@ -92,12 +92,12 @@ export declare class InventoryController {
         availableQuantity: number;
         id: string;
         name: string;
-        sku: string;
-        standardCost: import("@prisma/client/runtime/library").Decimal;
         unit: import(".prisma/client").$Enums.ProductUnit;
-        purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
+        sku: string;
         minStock: import("@prisma/client/runtime/library").Decimal;
+        purchasePriceHt: import("@prisma/client/runtime/library").Decimal;
         maxStock: import("@prisma/client/runtime/library").Decimal;
+        standardCost: import("@prisma/client/runtime/library").Decimal;
         stockValue: import("@prisma/client/runtime/library").Decimal;
         family: {
             name: string;
@@ -112,10 +112,10 @@ export declare class InventoryController {
     getAlerts(req: any): Promise<{
         id: string;
         name: string;
-        sku: string;
-        stockQuantity: import("@prisma/client/runtime/library").Decimal;
         unit: import(".prisma/client").$Enums.ProductUnit;
+        sku: string;
         minStock: import("@prisma/client/runtime/library").Decimal;
+        stockQuantity: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     getProductHistory(productId: string, req: any): Promise<({
         user: {
@@ -129,23 +129,23 @@ export declare class InventoryController {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.MovementType;
-        unit: string;
-        productId: string;
-        variantId: string | null;
-        quantity: import("@prisma/client/runtime/library").Decimal;
-        uomId: string | null;
-        movementType: string;
-        reference: string;
+        companyId: string;
+        createdBy: string | null;
         reason: string | null;
+        salesOrderId: string | null;
+        reference: string;
         date: Date;
+        productId: string;
+        quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string;
+        uomId: string | null;
+        type: import(".prisma/client").$Enums.MovementType;
+        variantId: string | null;
+        movementType: string;
         unitCost: import("@prisma/client/runtime/library").Decimal;
         totalCost: import("@prisma/client/runtime/library").Decimal;
-        createdBy: string | null;
         warehouseFromId: string | null;
         warehouseToId: string | null;
-        salesOrderId: string | null;
     })[]>;
 }

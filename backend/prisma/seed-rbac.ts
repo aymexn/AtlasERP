@@ -70,12 +70,31 @@ async function main() {
     { module: 'finance', resource: 'transaction', action: 'export', description: 'Export financial data' },
     
     // HR Management
-    { module: 'hr', resource: 'employee', action: 'create', description: 'Create employee records' },
-    { module: 'hr', resource: 'employee', action: 'read', description: 'View employee information' },
-    { module: 'hr', resource: 'employee', action: 'update', description: 'Update employee information' },
-    { module: 'hr', resource: 'employee', action: 'delete', description: 'Delete employee records' },
-    { module: 'hr', resource: 'employee', action: 'approve', description: 'Approve HR requests' },
-    { module: 'hr', resource: 'employee', action: 'export', description: 'Export HR data' },
+    { module: 'hr', resource: 'employees', action: 'create', description: 'Create employee records' },
+    { module: 'hr', resource: 'employees', action: 'read', description: 'View employee information' },
+    { module: 'hr', resource: 'employees', action: 'update', description: 'Update employee information' },
+    { module: 'hr', resource: 'employees', action: 'delete', description: 'Delete employee records' },
+    { module: 'hr', resource: 'employees', action: 'approve', description: 'Approve HR requests' },
+    { module: 'hr', resource: 'employees', action: 'export', description: 'Export HR data' },
+
+    { module: 'hr', resource: 'leaves', action: 'create', description: 'Create leave requests' },
+    { module: 'hr', resource: 'leaves', action: 'read', description: 'View leave requests' },
+    { module: 'hr', resource: 'leaves', action: 'manage', description: 'Manage leave requests' },
+    { module: 'hr', resource: 'leaves', action: 'approve', description: 'Approve leave requests' },
+
+    { module: 'hr', resource: 'payroll', action: 'create', description: 'Create payroll runs' },
+    { module: 'hr', resource: 'payroll', action: 'read', description: 'View payroll runs' },
+    { module: 'hr', resource: 'payroll', action: 'approve', description: 'Approve payroll runs' },
+
+    { module: 'hr', resource: 'recruitment', action: 'create', description: 'Create recruitment postings' },
+    { module: 'hr', resource: 'recruitment', action: 'read', description: 'View recruitment postings' },
+    { module: 'hr', resource: 'recruitment', action: 'update', description: 'Update recruitment postings' },
+    { module: 'hr', resource: 'recruitment', action: 'manage', description: 'Manage recruitment postings' },
+
+    { module: 'hr', resource: 'performance', action: 'create', description: 'Create performance evaluations' },
+    { module: 'hr', resource: 'performance', action: 'read', description: 'View performance evaluations' },
+    { module: 'hr', resource: 'performance', action: 'update', description: 'Update performance evaluations' },
+    { module: 'hr', resource: 'performance', action: 'manage', description: 'Manage performance evaluations' },
     
     // Reports
     { module: 'reports', resource: 'report', action: 'create', description: 'Create custom reports' },

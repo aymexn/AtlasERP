@@ -7,19 +7,19 @@ export declare class PaymentReminderService {
     findOverdueInvoices(companyId: string): Promise<({
         customer: {
             id: string;
+            createdAt: Date;
             email: string | null;
             name: string;
             companyId: string;
-            createdAt: Date;
-            isActive: boolean;
             address: string | null;
             phone: string | null;
-            updatedAt: Date;
-            isBlocked: boolean;
             taxId: string | null;
             notes: string | null;
+            updatedAt: Date;
+            isActive: boolean;
             contact: string | null;
             creditLimit: import("@prisma/client/runtime/library").Decimal;
+            isBlocked: boolean;
             segment: import(".prisma/client").$Enums.CustomerSegment | null;
             customerType: import(".prisma/client").$Enums.CustomerType | null;
             paymentBehavior: import(".prisma/client").$Enums.PaymentBehavior | null;
@@ -29,20 +29,20 @@ export declare class PaymentReminderService {
         };
     } & {
         id: string;
+        createdAt: Date;
         status: import(".prisma/client").$Enums.InvoiceStatus;
         companyId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        reference: string;
-        date: Date;
-        salesOrderId: string | null;
         notes: string | null;
-        customerId: string;
+        updatedAt: Date;
         dueDate: Date | null;
+        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         totalAmountHt: import("@prisma/client/runtime/library").Decimal;
         totalAmountTva: import("@prisma/client/runtime/library").Decimal;
-        totalAmountTtc: import("@prisma/client/runtime/library").Decimal;
         amountPaid: import("@prisma/client/runtime/library").Decimal;
+        salesOrderId: string | null;
+        customerId: string;
+        reference: string;
+        date: Date;
         lastReminderSent: Date | null;
         reminderCount: number;
         totalAmountStamp: import("@prisma/client/runtime/library").Decimal;

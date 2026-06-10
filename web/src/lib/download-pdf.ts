@@ -7,7 +7,11 @@
 import { API_URL } from './api';
 
 export async function downloadPdf(url: string, filename: string): Promise<boolean> {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('atlas_token') : null;
+    let token = typeof window !== 'undefined' ? localStorage.getItem('atlas_token') : null;
+    if (!token && typeof window !== 'undefined') {
+        const match = document.cookie.match(/(?:^|;)\s*atlas_token=([^;]+)/);
+        if (match) token = match[1];
+    }
     
     // Ensure relative URLs hit the correct server
     let targetUrl = url;

@@ -2,12 +2,24 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as fs from 'fs';
 
 // Suppress verbose Prisma query logging regardless of DEBUG env variable
 delete process.env.DEBUG;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'] });
+  // Ensure uploads directory exists
+  const uploadsDir = join(__dirname, '..', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['error', 'warn', 'log'] });
+
+  // Serve static assets
+  app.useStaticAssets(uploadsDir, { prefix: '/uploads' });
 
   // Enable validation globally
   app.useGlobalPipes(new ValidationPipe({

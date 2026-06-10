@@ -60,7 +60,8 @@
         "no_account": "Pas encore de compte ?",
         "register": "Créer un compte",
         "error_title": "Erreur de connexion",
-        "invalid_credentials": "Email ou mot de passe incorrect."
+        "invalid_credentials": "Email ou mot de passe incorrect.",
+        "forgot_password": "Mot de passe oublié ?"
     },
     "common": {
         "title": "Atlas",
@@ -1167,7 +1168,22 @@
         "registering": "Création en cours...",
         "have_account": "Déjà un compte ?",
         "login": "Se connecter",
-        "error_title": "Erreur"
+        "error_title": "Erreur",
+        "section1_title": "Informations de l'Entreprise",
+        "section2_title": "Compte Administrateur",
+        "companyName": "Raison Sociale",
+        "nif": "NIF — Numéro d'Identification Fiscale (15 chiffres)",
+        "nis": "NIS — Numéro d'Identification Statistique (15 chiffres)",
+        "rc": "RC — Registre du Commerce (00/00-0000000B15)",
+        "ai": "AI — Article d'Imposition (facultatif)",
+        "companyEmail": "Email de l'Entreprise",
+        "companyPhone": "Téléphone de l'Entreprise (facultatif)",
+        "adminName": "Nom Complet",
+        "adminEmail": "Email Administrateur (identifiant)",
+        "adminPhone": "Téléphone portable",
+        "confirmPassword": "Confirmer le Mot de Passe",
+        "legal_note": "En vous inscrivant, vous acceptez nos CGU et confirmez votre conformité à la Loi n°18-07 sur la protection des données personnelles.",
+        "success_message": "Compte créé, connectez-vous"
     },
     "tenant": {
         "title": "Configurer votre Organisation",

@@ -22,9 +22,35 @@ let LeavesService = class LeavesService {
         this.eventEmitter = eventEmitter;
     }
     async getLeaveTypes(companyId) {
-        return this.prisma.leaveType.findMany({
+        const existing = await this.prisma.leaveType.findMany({
             where: { companyId, isActive: true },
         });
+        if (existing.length === 0) {
+            const DEFAULT_LEAVE_TYPES = [
+                { name: 'Congé Annuel', code: 'ANNUAL', defaultDays: 30, isPaid: true, color: '#3b82f6' },
+                { name: 'Congé Maladie', code: 'SICK', defaultDays: 15, isPaid: true, color: '#ef4444' },
+                { name: 'Congé Maternité', code: 'MATERNITY', defaultDays: 98, isPaid: true, color: '#ec4899' },
+                { name: 'Congé Paternité', code: 'PATERNITY', defaultDays: 3, isPaid: true, color: '#8b5cf6' },
+                { name: 'Congé Sans Solde', code: 'UNPAID', defaultDays: 0, isPaid: false, color: '#6b7280' },
+                { name: 'Congé Exceptionnel', code: 'EXCEPTIONAL', defaultDays: 3, isPaid: true, color: '#f59e0b' },
+                { name: 'RTT', code: 'RTT', defaultDays: 0, isPaid: true, color: '#10b981' },
+            ];
+            await this.prisma.leaveType.createMany({
+                data: DEFAULT_LEAVE_TYPES.map(type => ({
+                    companyId,
+                    name: type.name,
+                    code: `${type.code}_${companyId}`,
+                    defaultDays: type.defaultDays,
+                    isPaid: type.isPaid,
+                    color: type.color,
+                    isActive: true,
+                })),
+            });
+            return this.prisma.leaveType.findMany({
+                where: { companyId, isActive: true },
+            });
+        }
+        return existing;
     }
     async createLeaveType(companyId, data) {
         return this.prisma.leaveType.create({
@@ -38,6 +64,30 @@ let LeavesService = class LeavesService {
         return this.prisma.leaveBalance.findMany({
             where: { employeeId, periodYear: year },
             include: { leaveType: true },
+        });
+    }
+    async createOrUpdateBalance(employeeId, data) {
+        const { leaveTypeId, periodYear, totalEntitled } = data;
+        return this.prisma.leaveBalance.upsert({
+            where: {
+                employeeId_leaveTypeId_periodYear: {
+                    employeeId,
+                    leaveTypeId,
+                    periodYear: parseInt(periodYear),
+                }
+            },
+            update: {
+                totalEntitled: parseFloat(totalEntitled),
+            },
+            create: {
+                employeeId,
+                leaveTypeId,
+                periodYear: parseInt(periodYear),
+                totalEntitled: parseFloat(totalEntitled),
+                usedDays: 0,
+                pendingDays: 0,
+                carriedFromPrevious: 0,
+            }
         });
     }
     async requestLeave(companyId, employeeId, data) {

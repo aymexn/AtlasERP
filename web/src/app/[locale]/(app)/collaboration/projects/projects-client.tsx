@@ -89,7 +89,7 @@ export default function ProjectsClient() {
                           code: formData.get('code'),
                           description: formData.get('description'),
                           priority: formData.get('priority'),
-                          status: 'PLANNING',
+                          status: 'PLANNED',
                       };
 
                       try {

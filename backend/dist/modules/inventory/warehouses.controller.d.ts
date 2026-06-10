@@ -4,12 +4,12 @@ export declare class WarehousesController {
     constructor(warehousesService: WarehousesService);
     listWarehouses(req: any): Promise<{
         id: string;
+        createdAt: Date;
         name: string;
         companyId: string;
-        createdAt: Date;
-        isActive: boolean;
         updatedAt: Date;
-        code: string | null;
         location: string | null;
+        code: string | null;
+        isActive: boolean;
     }[]>;
 }

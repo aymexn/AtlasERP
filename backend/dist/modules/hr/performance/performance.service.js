@@ -14,6 +14,19 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const notifications_service_1 = require("../../notifications/notifications.service");
+function parseDate(value) {
+    if (!value)
+        return new Date();
+    if (value instanceof Date)
+        return value;
+    if (typeof value === 'string') {
+        if (value.includes('/')) {
+            const [day, month, year] = value.split('/');
+            return new Date(`${year}-${month}-${day}`);
+        }
+    }
+    return new Date(value);
+}
 let PerformanceService = class PerformanceService {
     constructor(prisma, notificationService) {
         this.prisma = prisma;
@@ -26,14 +39,23 @@ let PerformanceService = class PerformanceService {
         });
     }
     async createCycle(companyId, data) {
-        return this.prisma.appraisalCycle.create({
-            data: {
-                ...data,
-                companyId,
-                startDate: new Date(data.startDate),
-                endDate: new Date(data.endDate),
-            },
-        });
+        try {
+            const startDateParsed = parseDate(data.startDate);
+            const endDateParsed = parseDate(data.endDate);
+            return await this.prisma.appraisalCycle.create({
+                data: {
+                    companyId,
+                    name: data.name,
+                    startDate: startDateParsed,
+                    endDate: endDateParsed,
+                    status: data.status || 'PLANNED',
+                },
+            });
+        }
+        catch (error) {
+            console.error('CREATE CYCLE SERVICE ERROR:', error);
+            throw error;
+        }
     }
     async initializeReviews(cycleId) {
         const cycle = await this.prisma.appraisalCycle.findUnique({

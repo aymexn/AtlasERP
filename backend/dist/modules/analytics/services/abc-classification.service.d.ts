@@ -30,9 +30,11 @@ export declare class AbcClassificationService {
         };
     } & {
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         updatedAt: Date;
+        periodStart: Date;
+        periodEnd: Date;
         productId: string;
         classification: string;
         annualRevenue: Decimal;
@@ -43,7 +45,5 @@ export declare class AbcClassificationService {
         stockTurnoverRate: Decimal;
         daysInStock: Decimal;
         classifiedAt: Date;
-        periodStart: Date;
-        periodEnd: Date;
     })[]>;
 }

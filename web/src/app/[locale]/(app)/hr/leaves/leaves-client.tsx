@@ -325,7 +325,9 @@ export default function LeavesClient() {
                                 >
                                     <option value="">Sélectionner un type...</option>
                                     {leaveTypes.map(lt => (
-                                        <option key={lt.id} value={lt.id}>{lt.name} {lt.isPaid ? '(Payé)' : '(Non payé)'}</option>
+                                        <option key={lt.id} value={lt.id}>
+                                            {lt.name} ({lt.defaultDays > 0 ? `${lt.defaultDays} jours/an` : 'Sur demande'})
+                                        </option>
                                     ))}
                                 </select>
                             </div>

@@ -32,6 +32,7 @@ export default function PayrollClient() {
     const [showModal, setShowModal] = useState(false);
     const [calculating, setCalculating] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [generating, setGenerating] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [form, setForm] = useState({
         periodStart: '', periodEnd: '', paymentDate: '', periodName: ''
@@ -89,6 +90,31 @@ export default function PayrollClient() {
         } catch {
             setToast({ type: 'error', message: 'Erreur lors du calcul' });
         } finally { setCalculating(false); }
+    };
+
+    const handleGenerateBulletins = async () => {
+        if (!selectedPeriod) return;
+        setGenerating(true);
+        try {
+            const response = await hrService.generateAllPayslips(selectedPeriod.id);
+            if (response?.payslips && Array.isArray(response.payslips)) {
+                response.payslips.forEach((slip: any) => {
+                    if (slip.url) {
+                        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                        window.open(`${baseUrl}${slip.url}`, '_blank');
+                    }
+                });
+                setToast({ type: 'success', message: `${response.payslips.length} bulletin(s) généré(s) avec succès` });
+            } else {
+                setToast({ type: 'success', message: 'Bulletins générés avec succès' });
+            }
+            await handleSelectPeriod(selectedPeriod);
+        } catch (err) {
+            console.error('Error generating bulk payslips:', err);
+            setToast({ type: 'error', message: 'Erreur lors de la génération des bulletins' });
+        } finally {
+            setGenerating(false);
+        }
     };
 
     const handleDownloadPayslip = async (run: any) => {
@@ -195,8 +221,13 @@ export default function PayrollClient() {
                                             {runs.length > 0 ? 'Recalculer' : 'Calculer la paie'}
                                         </button>
                                         {runs.length > 0 && (
-                                            <button className="flex items-center gap-2 bg-white border border-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-50 active:scale-95">
-                                                <Download size={14} /> {t('payroll.generate_payslips')}
+                                            <button 
+                                                onClick={handleGenerateBulletins}
+                                                disabled={generating}
+                                                className="flex items-center gap-2 bg-white border border-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-50 active:scale-95 disabled:opacity-50"
+                                            >
+                                                {generating ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                                                {t('payroll.generate_payslips')}
                                             </button>
                                         )}
                                     </div>
@@ -228,7 +259,14 @@ export default function PayrollClient() {
                                                                 {run.employee?.firstName?.[0]}{run.employee?.lastName?.[0]}
                                                             </div>
                                                             <div>
-                                                                <p className="font-bold text-slate-900 text-sm">{run.employee?.firstName} {run.employee?.lastName}</p>
+                                                                <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                                                    {run.employee?.firstName} {run.employee?.lastName}
+                                                                    {Number(run.grossSalary || 0) === 0 && (
+                                                                        <span className="bg-amber-50 text-amber-700 border border-amber-100 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">
+                                                                            SALAIRE NON DÉFINI
+                                                                        </span>
+                                                                    )}
+                                                                </p>
                                                                 <p className="text-[10px] font-mono text-slate-400">{run.employee?.employeeCode}</p>
                                                             </div>
                                                         </div>

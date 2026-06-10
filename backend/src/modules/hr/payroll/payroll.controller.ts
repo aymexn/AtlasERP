@@ -32,6 +32,12 @@ export class PayrollController {
     return this.payrollService.calculatePayroll(req.user.companyId, id);
   }
 
+  @Post('periods/:id/generate-all-payslips')
+  @CheckPermission('hr', 'payroll', 'approve')
+  async generateAllPayslips(@Request() req, @Param('id') id: string) {
+    return this.payrollService.generateAllPayslips(req.user.companyId, id);
+  }
+
   @Get('periods/:id/runs')
   @CheckPermission('hr', 'payroll', 'read')
   async getPayrollRuns(@Param('id') id: string) {

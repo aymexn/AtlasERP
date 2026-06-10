@@ -177,6 +177,12 @@ export const hrService = {
         });
     },
 
+    async deleteEmployee(id: string): Promise<any> {
+        return apiFetch(`/hr/employees/${id}`, {
+            method: 'DELETE',
+        });
+    },
+
     // ── Leaves ─────────────────────────────────────────────────────────────
 
     async listLeaveTypes(): Promise<LeaveType[]> {
@@ -263,6 +269,12 @@ export const hrService = {
 
     async generatePayslip(runId: string): Promise<any> {
         return apiFetch(`/hr/payroll/runs/${runId}/payslip`, {
+            method: 'POST',
+        });
+    },
+
+    async generateAllPayslips(periodId: string): Promise<any> {
+        return apiFetch(`/hr/payroll/periods/${periodId}/generate-all-payslips`, {
             method: 'POST',
         });
     },

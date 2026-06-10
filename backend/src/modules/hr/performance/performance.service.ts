@@ -3,6 +3,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AppraisalStatus, ReviewStatus } from '@prisma/client';
 import { NotificationService } from '../../notifications/notifications.service';
 
+function parseDate(value: any): Date {
+  if (!value) return new Date();
+  if (value instanceof Date) return value;
+  if (typeof value === 'string') {
+    if (value.includes('/')) {
+      const [day, month, year] = value.split('/');
+      return new Date(`${year}-${month}-${day}`);
+    }
+  }
+  return new Date(value);
+}
+
 @Injectable()
 export class PerformanceService {
   constructor(
@@ -18,14 +30,23 @@ export class PerformanceService {
   }
 
   async createCycle(companyId: string, data: any) {
-    return this.prisma.appraisalCycle.create({
-      data: {
-        ...data,
-        companyId,
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
-      },
-    });
+    try {
+      const startDateParsed = parseDate(data.startDate);
+      const endDateParsed = parseDate(data.endDate);
+
+      return await this.prisma.appraisalCycle.create({
+        data: {
+          companyId,
+          name: data.name,
+          startDate: startDateParsed,
+          endDate: endDateParsed,
+          status: data.status || 'PLANNED',
+        },
+      });
+    } catch (error) {
+      console.error('CREATE CYCLE SERVICE ERROR:', error);
+      throw error;
+    }
   }
 
   async initializeReviews(cycleId: string) {
