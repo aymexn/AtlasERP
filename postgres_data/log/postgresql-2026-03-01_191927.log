@@ -1,0 +1,70 @@
+2026-03-01 19:19:28 CET LOG:  le système de bases de données a été arrêté à 2026-03-01 19:18:39 CET
+2026-03-01 19:24:28 CET LOG:  début du checkpoint : time
+2026-03-01 19:24:28 CET LOG:  checkpoint terminé : a écrit 3 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.008 s, synchronisation=0.004 s, total=0.113 s; fichiers synchronisés=2, plus long=0.002 s, moyenne=0.002 s; distance=0 kB, estimation=0 kB
+2026-03-01 19:32:06 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:32:06 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:32:06 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:32:06 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:32:50 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:32:50 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:32:50 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:32:50 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:33:40 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:33:40 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:33:41 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:33:41 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:34:10 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:34:10 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:34:10 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:34:10 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:34:50 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:34:50 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:34:50 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:34:50 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:35:30 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:35:30 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:35:30 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:35:30 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:36:21 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:36:21 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:36:22 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:36:22 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:37:23 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2026-03-01 19:37:23 CET DÉTAIL:  La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:37:23 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2026-03-01 19:37:23 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:39:05 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:39:05 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:39:06 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:39:06 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:42:50 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:42:50 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:42:50 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:42:50 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:44:04 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:44:04 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 89 du pg_hba.conf : « host    all             all             ::1/128                 scram-sha-256 »
+2026-03-01 19:44:04 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « atlaserp »
+2026-03-01 19:44:04 CET DÉTAIL:  Le rôle « atlaserp » n'existe pas.
+	La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2026-03-01 19:44:30 CET LOG:  arrêt en cours
+2026-03-01 19:44:30 CET LOG:  début du checkpoint : shutdown immediate
+2026-03-01 19:44:30 CET LOG:  checkpoint terminé : a écrit 0 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.001 s, synchronisation=0.001 s, total=0.035 s; fichiers synchronisés=0, plus long=0.000 s, moyenne=0.000 s; distance=0 kB, estimation=0 kB

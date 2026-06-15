@@ -27,6 +27,7 @@ interface PermissionContextType {
   hasRole: (roleName: string) => boolean;
   loading: boolean;
   refresh: () => Promise<void>;
+  invalidateAndRefresh: () => Promise<void>;
 }
 
 const PermissionContext = createContext<PermissionContextType | undefined>(undefined);
@@ -155,6 +156,47 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
     return roles.some(r => r.name === roleName);
   };
 
+  /**
+   * Forces a full permission refresh by:
+   * 1. Calling POST /api/auth/refresh-permissions (re-issues atlas_token with fresh permissions)
+   * 2. Syncing localStorage atlas_token from the updated cookie
+   * 3. Clearing all permission caches
+   * 4. Re-fetching permissions from /api/permissions/me
+   *
+   * Call this after an admin saves role permission changes.
+   */
+  const invalidateAndRefresh = async () => {
+    try {
+      // 1. Get new JWT with updated permissions from backend
+      await fetch('/api/auth/refresh-permissions', { method: 'POST' });
+
+      // 2. Sync localStorage from the updated cookie
+      if (typeof window !== 'undefined') {
+        const match = document.cookie.match(/(?:^|;)\s*atlas_token=([^;]+)/);
+        if (match) {
+          localStorage.setItem('atlas_token', decodeURIComponent(match[1]));
+        }
+      }
+    } catch (e) {
+      console.warn('[PermissionContext] refresh-permissions call failed:', e);
+    }
+
+    // 3. Clear all caches
+    cachedPermissionsData = null;
+    cachedUserId = null;
+    inFlightPermissionsPromise = null;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+    }
+
+    // 4. Re-fetch with fresh token
+    await loadPermissions();
+  };
+
   return (
     <PermissionContext.Provider value={{
       permissions,
@@ -165,6 +207,7 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       hasRole,
       loading,
       refresh: loadPermissions,
+      invalidateAndRefresh,
     }}>
       {children}
     </PermissionContext.Provider>

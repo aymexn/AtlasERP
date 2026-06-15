@@ -5,9 +5,10 @@ export declare class EmployeesController {
     findAll(req: any, filters: EmployeeFilters): Promise<({
         contracts: {
             id: string;
-            department: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string | null;
             employeeId: string;
             contractType: import(".prisma/client").$Enums.ContractType;
             referenceNumber: string | null;
@@ -19,14 +20,15 @@ export declare class EmployeesController {
             salaryCurrency: string;
             salaryFrequency: string;
             positionTitle: string | null;
-            isActive: boolean;
             signedAt: Date | null;
             legalClauses: string | null;
         }[];
     } & {
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -52,20 +54,20 @@ export declare class EmployeesController {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findOne(req: any, id: string): Promise<{
         user: {
             id: string;
+            role: import(".prisma/client").$Enums.Role;
             email: string;
             status: import(".prisma/client").$Enums.UserStatus;
-            role: import(".prisma/client").$Enums.Role;
         };
         manager: {
             id: string;
-            companyId: string;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -91,13 +93,13 @@ export declare class EmployeesController {
             position: string | null;
             managerId: string | null;
             notes: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         subordinates: {
             id: string;
-            companyId: string;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -123,14 +125,13 @@ export declare class EmployeesController {
             position: string | null;
             managerId: string | null;
             notes: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         }[];
         contracts: {
             id: string;
-            department: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string | null;
             employeeId: string;
             contractType: import(".prisma/client").$Enums.ContractType;
             referenceNumber: string | null;
@@ -142,14 +143,15 @@ export declare class EmployeesController {
             salaryCurrency: string;
             salaryFrequency: string;
             positionTitle: string | null;
-            isActive: boolean;
             signedAt: Date | null;
             legalClauses: string | null;
         }[];
     } & {
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -175,13 +177,13 @@ export declare class EmployeesController {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     create(req: any, data: any): Promise<{
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -207,13 +209,13 @@ export declare class EmployeesController {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(req: any, id: string, data: any): Promise<{
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -239,14 +241,13 @@ export declare class EmployeesController {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     addContract(req: any, id: string, data: any): Promise<{
         id: string;
-        department: string | null;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        department: string | null;
         employeeId: string;
         contractType: import(".prisma/client").$Enums.ContractType;
         referenceNumber: string | null;
@@ -258,14 +259,13 @@ export declare class EmployeesController {
         salaryCurrency: string;
         salaryFrequency: string;
         positionTitle: string | null;
-        isActive: boolean;
         signedAt: Date | null;
         legalClauses: string | null;
     }>;
     addDocument(req: any, id: string, data: any): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         entityType: string;
         entityId: string;
         fileName: string | null;
@@ -275,8 +275,8 @@ export declare class EmployeesController {
     }>;
     removeDocument(req: any, documentId: string): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         entityType: string;
         entityId: string;
         fileName: string | null;
@@ -286,8 +286,10 @@ export declare class EmployeesController {
     }>;
     remove(req: any, id: string): Promise<{
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -313,7 +315,5 @@ export declare class EmployeesController {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }

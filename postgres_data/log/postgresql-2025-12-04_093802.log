@@ -1,0 +1,8 @@
+2025-12-04 09:38:02 CET LOG:  le système de bases de données a été interrompu ; dernier lancement connu à 2025-12-02 10:50:19 CET
+2025-12-04 09:38:02 CET LOG:  le système de bases de données n'a pas été arrêté proprement ; restauration
+	automatique en cours
+2025-12-04 09:38:02 CET LOG:  la ré-exécution commence à 0/1565D78
+2025-12-04 09:38:02 CET LOG:  longueur invalide de l'enregistrement à 0/1565E60 : voulait 24, a eu 0
+2025-12-04 09:38:02 CET LOG:  rejeu exécuté à 0/1565E28 utilisation système : CPU : utilisateur : 0.00 s, système : 0.00 s, temps passé : 0.00 s
+2025-12-04 09:38:02 CET LOG:  début du checkpoint : end-of-recovery immediate wait
+2025-12-04 09:38:02 CET LOG:  checkpoint terminé : a écrit 3 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.003 s, synchronisation=0.003 s, total=0.017 s; fichiers synchronisés=2, plus long=0.002 s, moyenne=0.002 s; distance=0 kB, estimation=0 kB

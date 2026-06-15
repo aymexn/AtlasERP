@@ -39,6 +39,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const path_1 = require("path");
 const fs = __importStar(require("fs"));
+const seed_rbac_1 = require("./seed-rbac");
 delete process.env.DEBUG;
 async function bootstrap() {
     const uploadsDir = (0, path_1.join)(__dirname, '..', 'uploads');
@@ -67,6 +68,13 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api', app, document);
     const port = process.env.PORT || 3000;
+    try {
+        await (0, seed_rbac_1.seedRbac)();
+        console.log('✅ RBAC auto-seed verified');
+    }
+    catch (e) {
+        console.error('⚠️  RBAC auto-seed failed (app continues):', e.message);
+    }
     await app.listen(port, '127.0.0.1');
     console.log(`AtlasERP Backend running on: http://127.0.0.1:${port}`);
     console.log(`Swagger documentation available at: http://127.0.0.1:${port}/api`);

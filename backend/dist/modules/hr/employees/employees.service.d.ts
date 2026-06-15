@@ -13,9 +13,10 @@ export declare class EmployeesService {
     findAll(companyId: string, filters?: EmployeeFilters): Promise<({
         contracts: {
             id: string;
-            department: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string | null;
             employeeId: string;
             contractType: import(".prisma/client").$Enums.ContractType;
             referenceNumber: string | null;
@@ -27,14 +28,15 @@ export declare class EmployeesService {
             salaryCurrency: string;
             salaryFrequency: string;
             positionTitle: string | null;
-            isActive: boolean;
             signedAt: Date | null;
             legalClauses: string | null;
         }[];
     } & {
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -60,20 +62,20 @@ export declare class EmployeesService {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findOne(companyId: string, id: string): Promise<{
         user: {
             id: string;
+            role: import(".prisma/client").$Enums.Role;
             email: string;
             status: import(".prisma/client").$Enums.UserStatus;
-            role: import(".prisma/client").$Enums.Role;
         };
         manager: {
             id: string;
-            companyId: string;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -99,13 +101,13 @@ export declare class EmployeesService {
             position: string | null;
             managerId: string | null;
             notes: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         subordinates: {
             id: string;
-            companyId: string;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -131,14 +133,13 @@ export declare class EmployeesService {
             position: string | null;
             managerId: string | null;
             notes: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         }[];
         contracts: {
             id: string;
-            department: string | null;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string | null;
             employeeId: string;
             contractType: import(".prisma/client").$Enums.ContractType;
             referenceNumber: string | null;
@@ -150,14 +151,15 @@ export declare class EmployeesService {
             salaryCurrency: string;
             salaryFrequency: string;
             positionTitle: string | null;
-            isActive: boolean;
             signedAt: Date | null;
             legalClauses: string | null;
         }[];
     } & {
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -183,13 +185,13 @@ export declare class EmployeesService {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     create(companyId: string, data: any): Promise<{
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -215,13 +217,13 @@ export declare class EmployeesService {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(companyId: string, id: string, data: any): Promise<{
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -247,14 +249,13 @@ export declare class EmployeesService {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     addContract(companyId: string, employeeId: string, data: any): Promise<{
         id: string;
-        department: string | null;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        department: string | null;
         employeeId: string;
         contractType: import(".prisma/client").$Enums.ContractType;
         referenceNumber: string | null;
@@ -266,14 +267,13 @@ export declare class EmployeesService {
         salaryCurrency: string;
         salaryFrequency: string;
         positionTitle: string | null;
-        isActive: boolean;
         signedAt: Date | null;
         legalClauses: string | null;
     }>;
     addDocument(companyId: string, employeeId: string, fileData: any, uploadedBy: string): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         entityType: string;
         entityId: string;
         fileName: string | null;
@@ -283,8 +283,8 @@ export declare class EmployeesService {
     }>;
     removeDocument(companyId: string, documentId: string): Promise<{
         id: string;
-        companyId: string;
         createdAt: Date;
+        companyId: string;
         entityType: string;
         entityId: string;
         fileName: string | null;
@@ -294,8 +294,10 @@ export declare class EmployeesService {
     }>;
     remove(companyId: string, id: string): Promise<{
         id: string;
-        companyId: string;
         userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
         employeeCode: string | null;
         firstName: string;
         lastName: string;
@@ -321,7 +323,5 @@ export declare class EmployeesService {
         position: string | null;
         managerId: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }

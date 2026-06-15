@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/api-helpers';
+import { requirePermission } from '@/lib/require-permission';
 
 export async function GET(request: Request) {
     try {
@@ -8,6 +9,9 @@ export async function GET(request: Request) {
         if (!companyId) {
             return NextResponse.json({ error: 'Non autorisé : Session active introuvable' }, { status: 401 });
         }
+
+        const denied = await requirePermission('users', 'user', 'read', request);
+        if (denied) return denied;
 
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1', 10);

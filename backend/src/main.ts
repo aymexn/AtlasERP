@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as fs from 'fs';
+import { seedRbac } from './seed-rbac';
 
 // Suppress verbose Prisma query logging regardless of DEBUG env variable
 delete process.env.DEBUG;
@@ -48,7 +49,17 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   // Force listening on 127.0.0.1 (IPv4) to avoid Node 18+ DNS resolution conflicts
+
+  // Auto-seed RBAC before starting (upsert — safe to re-run on every boot)
+  try {
+    await seedRbac();
+    console.log('✅ RBAC auto-seed verified');
+  } catch (e) {
+    console.error('⚠️  RBAC auto-seed failed (app continues):', (e as Error).message);
+  }
+
   await app.listen(port, '127.0.0.1');
+
   
   console.log(`AtlasERP Backend running on: http://127.0.0.1:${port}`);
   console.log(`Swagger documentation available at: http://127.0.0.1:${port}/api`);

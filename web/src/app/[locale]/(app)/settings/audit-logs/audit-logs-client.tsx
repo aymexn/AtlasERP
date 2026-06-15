@@ -34,11 +34,8 @@ export default function AuditLogsClient() {
     q: ''
   });
 
-  const forceVisibleInDev = true;
-
   // Wrap permission checks to handle 'AUDIT' module references
   const hasPermission = (module: string, resource: string, action?: string) => {
-    if (forceVisibleInDev) return true;
     if (!action) {
       if (module === 'AUDIT' && resource === 'LOG-READ') return originalHasPermission('audit', 'log', 'read');
       return false;

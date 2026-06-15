@@ -16,11 +16,11 @@ export declare class RbacService {
         permissions: ({
             permission: {
                 id: string;
-                createdAt: Date;
                 description: string | null;
-                action: string;
+                createdAt: Date;
                 module: string;
                 resource: string;
+                action: string;
             };
         } & {
             id: string;
@@ -31,20 +31,20 @@ export declare class RbacService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         name: string;
-        description: string | null;
-        updatedAt: Date;
         displayName: string;
+        description: string | null;
         isSystemRole: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     getAllPermissions(): Promise<{
         id: string;
-        createdAt: Date;
         description: string | null;
-        action: string;
+        createdAt: Date;
         module: string;
         resource: string;
+        action: string;
     }[]>;
     updateRolePermissions(roleId: string, permissionIds: string[], updatedBy: string): Promise<{
         success: boolean;
@@ -60,20 +60,20 @@ export declare class RbacService {
     assignRole(userId: string, roleId: string, assignedBy: string, expiresAt?: Date): Promise<{
         id: string;
         userId: string;
-        isActive: boolean;
         roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
+        isActive: boolean;
     }>;
     revokeRole(userId: string, roleId: string, revokedBy: string): Promise<{
         id: string;
         userId: string;
-        isActive: boolean;
         roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
+        isActive: boolean;
     }>;
     logAccess(data: {
         userId: string;
@@ -86,13 +86,13 @@ export declare class RbacService {
         details?: any;
     }): Promise<{
         id: string;
+        userId: string | null;
+        roleId: string | null;
+        createdAt: Date;
+        permissionId: string | null;
         actionType: string;
         resourceType: string | null;
         resourceId: string | null;
-        createdAt: Date;
-        userId: string | null;
-        roleId: string | null;
-        permissionId: string | null;
         ipAddress: string | null;
         userAgent: string | null;
         details: import("@prisma/client/runtime/library").JsonValue | null;

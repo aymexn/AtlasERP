@@ -1,7 +1,8 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -24,4 +25,15 @@ export class AuthController {
     async login(@Body() dto: LoginDto) {
         return this.authService.login(dto);
     }
+
+    @Post('refresh-permissions')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Re-issue JWT with updated permissions (call after admin changes roles)' })
+    @ApiResponse({ status: 200, description: 'New access token with refreshed permissions.' })
+    async refreshPermissions(@Request() req: any) {
+        return this.authService.refreshPermissions(req.user.id);
+    }
 }
+

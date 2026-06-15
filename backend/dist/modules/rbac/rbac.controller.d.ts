@@ -13,21 +13,21 @@ export declare class RbacController {
     }>;
     getAllPermissions(): Promise<{
         id: string;
-        createdAt: Date;
         description: string | null;
-        action: string;
+        createdAt: Date;
         module: string;
         resource: string;
+        action: string;
     }[]>;
     getAllRoles(): Promise<({
         permissions: ({
             permission: {
                 id: string;
-                createdAt: Date;
                 description: string | null;
-                action: string;
+                createdAt: Date;
                 module: string;
                 resource: string;
+                action: string;
             };
         } & {
             id: string;
@@ -38,12 +38,12 @@ export declare class RbacController {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         name: string;
-        description: string | null;
-        updatedAt: Date;
         displayName: string;
+        description: string | null;
         isSystemRole: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     updateRolePermissions(roleId: string, permissionIds: string | string[], req: any): Promise<{
         id: string;
@@ -58,19 +58,19 @@ export declare class RbacController {
     assignRole(userId: string, roleId: string, expiresAt: string, req: any): Promise<{
         id: string;
         userId: string;
-        isActive: boolean;
         roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
+        isActive: boolean;
     }>;
     revokeRole(userId: string, roleId: string, req: any): Promise<{
         id: string;
         userId: string;
-        isActive: boolean;
         roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
+        isActive: boolean;
     }>;
 }

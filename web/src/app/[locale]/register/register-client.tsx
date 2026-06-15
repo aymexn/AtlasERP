@@ -12,6 +12,7 @@ import * as z from 'zod';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { signIn } from 'next-auth/react';
 
 export function RegisterClient() {
     const t = useTranslations('register');
@@ -106,7 +107,32 @@ export function RegisterClient() {
 
             if (data?.success) {
                 toast.success(t('success_message'));
-                router.push('/login');
+                
+                // 1. Authenticate with NestJS Backend to get jwt atlas_token
+                try {
+                    const loginData = await apiFetch('/auth/login', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            email: values.adminEmail,
+                            password: values.password
+                        })
+                    });
+
+                    if (loginData?.access_token) {
+                        localStorage.setItem('atlas_token', loginData.access_token);
+                        document.cookie = `atlas_token=${loginData.access_token}; path=/; max-age=86400; SameSite=Lax`;
+                    }
+                } catch (loginErr) {
+                    console.error('Auto-login backend authentication failed:', loginErr);
+                }
+
+                // 2. Sync session with NextAuth in Next.js frontend
+                await signIn('credentials', {
+                    email: values.adminEmail,
+                    password: values.password,
+                    redirect: true,
+                    callbackUrl: `/${locale}/dashboard`
+                });
             } else {
                 throw new Error(isRtl ? 'فشل إنشاء الحساب' : 'Échec de l\'inscription');
             }

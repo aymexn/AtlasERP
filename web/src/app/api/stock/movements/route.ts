@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StockMovementService } from '@/lib/services/stock-movement.service';
 import { getTenantId } from '@/lib/api-helpers';
+import { requirePermission } from '@/lib/require-permission';
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,6 +9,9 @@ export async function POST(req: NextRequest) {
     if (!companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const denied = await requirePermission('stock', 'inventory', 'create', req);
+    if (denied) return denied;
     
     const body = await req.json();
     
@@ -36,6 +40,9 @@ export async function GET(req: NextRequest) {
     if (!companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const denied = await requirePermission('stock', 'inventory', 'read', req);
+    if (denied) return denied;
     
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get('productId');

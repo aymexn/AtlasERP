@@ -1,0 +1,19 @@
+2025-12-14 09:42:58 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:42:58 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 09:43:00 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:43:00 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 09:43:00 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:43:00 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 09:43:03 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:43:03 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 09:43:03 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:43:03 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 09:43:04 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:43:04 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 09:43:12 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-12-14 09:43:12 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-12-14 20:32:16 CET ERREUR:  annulation de la requête à la demande de l'utilisateur
+2025-12-14 20:32:16 CET ERREUR:  annulation de la requête à la demande de l'utilisateur
+2025-12-14 20:32:16 CET LOG:  arrêt en cours
+2025-12-14 20:32:16 CET LOG:  début du checkpoint : shutdown immediate
+2025-12-14 20:32:16 CET LOG:  checkpoint terminé : a écrit 0 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.007 s, synchronisation=0.001 s, total=0.020 s; fichiers synchronisés=0, plus long=0.000 s, moyenne=0.000 s; distance=0 kB, estimation=0 kB

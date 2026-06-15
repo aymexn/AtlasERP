@@ -1,0 +1,8 @@
+2026-01-22 09:36:52 CET LOG:  le système de bases de données a été interrompu ; dernier lancement connu à 2026-01-22 09:35:29 CET
+2026-01-22 09:36:53 CET LOG:  le système de bases de données n'a pas été arrêté proprement ; restauration
+	automatique en cours
+2026-01-22 09:36:53 CET LOG:  la ré-exécution commence à 0/1566558
+2026-01-22 09:36:53 CET LOG:  longueur invalide de l'enregistrement à 0/1566590 : voulait 24, a eu 0
+2026-01-22 09:36:53 CET LOG:  rejeu exécuté à 0/1566558 utilisation système : CPU : utilisateur : 0.00 s, système : 0.00 s, temps passé : 0.00 s
+2026-01-22 09:36:53 CET LOG:  début du checkpoint : end-of-recovery immediate wait
+2026-01-22 09:36:53 CET LOG:  checkpoint terminé : a écrit 3 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.003 s, synchronisation=0.002 s, total=0.015 s; fichiers synchronisés=2, plus long=0.001 s, moyenne=0.001 s; distance=0 kB, estimation=0 kB

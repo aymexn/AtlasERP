@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getTenantId } from '@/lib/api-helpers';
 import { cookies } from 'next/headers';
+import { requirePermission } from '@/lib/require-permission';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -13,6 +14,9 @@ export async function GET(request: Request) {
     try {
         const companyId = await getTenantId();
         if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const denied = await requirePermission('suppliers', 'supplier', 'read', request);
+        if (denied) return denied;
 
         const token = await getAuthToken();
 
@@ -37,6 +41,9 @@ export async function POST(request: Request) {
     try {
         const companyId = await getTenantId();
         if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const denied = await requirePermission('suppliers', 'supplier', 'create', request);
+        if (denied) return denied;
 
         const body = await request.json();
         const token = await getAuthToken();

@@ -16,13 +16,10 @@ export default function PermissionsClient() {
   const [permissions, setPermissions] = useState<AppPermission[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const forceVisibleInDev = true;
-
-  // Wrap permission checks to handle 'SETTINGS' module references
+  // Real permission check — no bypass
   const hasPermission = (module: string, resource: string, action?: string) => {
-    if (forceVisibleInDev) return true;
     if (!action) {
-      if (module === 'SETTINGS' && resource === 'READ') return originalHasPermission('settings', 'config', 'read');
+      if (module === 'SETTINGS' && resource === 'READ') return originalHasPermission('roles', 'role', 'read');
       return false;
     }
     return originalHasPermission(module, resource, action);
@@ -30,7 +27,7 @@ export default function PermissionsClient() {
 
   useEffect(() => {
     if (!permissionsLoading) {
-      const authorized = hasPermission('SETTINGS', 'READ');
+      const authorized = originalHasPermission('roles', 'role', 'read');
       if (!authorized) {
         redirect('/dashboard');
       }

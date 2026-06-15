@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/api-helpers';
 import { Prisma } from '@prisma/client';
+import { requirePermission } from '@/lib/require-permission';
 
 export async function GET(request: Request) {
   try {
     const companyId = await getTenantId();
     if (!companyId) return new NextResponse('Unauthorized', { status: 401 });
+
+    const denied = await requirePermission('clients', 'client', 'read', request);
+    if (denied) return denied;
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -159,6 +163,9 @@ export async function POST(request: Request) {
   try {
     const companyId = await getTenantId();
     if (!companyId) return new NextResponse('Unauthorized', { status: 401 });
+
+    const denied = await requirePermission('clients', 'client', 'create', request);
+    if (denied) return denied;
 
     const body = await request.json();
     const { name, email, phone, address, taxId, customerType, creditLimit, notes } = body;

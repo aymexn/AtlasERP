@@ -103,7 +103,9 @@ export default function UsersTable({
                       <div className="font-black text-slate-950 text-sm tracking-tight">{user.email}</div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Mail size={10} className="text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-400">Collaborateur</span>
+                        <span className="text-[10px] font-bold text-slate-400">
+                          {user.roles[0]?.role.displayName ?? 'Collaborateur'}
+                        </span>
                       </div>
                     </div>
                   </div>

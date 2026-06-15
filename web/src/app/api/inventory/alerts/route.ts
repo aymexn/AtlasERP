@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/api-helpers';
+import { requirePermission } from '@/lib/require-permission';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         const companyId = await getTenantId();
         if (!companyId) {
             return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
         }
+
+        const denied = await requirePermission('stock', 'inventory', 'read', request);
+        if (denied) return denied;
 
         const products = await prisma.product.findMany({
             where: {

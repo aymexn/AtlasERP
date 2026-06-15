@@ -13,6 +13,46 @@ export class AuthService {
         private prisma: PrismaService,
     ) { }
 
+    /**
+     * Fetch all active permissions for a user as compact strings.
+     * Returns ["clients:client:read", "sales:order:create", ...]
+     * If ADMIN enum role and no AppRole permissions seeded, returns ALL permissions.
+     */
+    private async buildPermissions(userId: string, userRole: string): Promise<string[]> {
+        const userRoles = await this.prisma.userRole.findMany({
+            where: {
+                userId,
+                isActive: true,
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+            },
+            include: {
+                role: {
+                    include: {
+                        permissions: { include: { permission: true } },
+                    },
+                },
+            },
+        });
+
+        const permissions = [
+            ...new Set(
+                userRoles.flatMap(ur =>
+                    ur.role.permissions.map(
+                        rp => `${rp.permission.module}:${rp.permission.resource}:${rp.permission.action}`
+                    )
+                )
+            ),
+        ];
+
+        // Safety fallback: ADMIN enum with no AppRole assignments gets ALL permissions
+        if (userRole === 'ADMIN' && permissions.length === 0) {
+            const allPerms = await this.prisma.appPermission.findMany();
+            return allPerms.map(p => `${p.module}:${p.resource}:${p.action}`);
+        }
+
+        return permissions;
+    }
+
     async register(dto: RegisterDto) {
         const existing = await this.usersService.findByEmail(dto.email);
         if (existing) {
@@ -58,11 +98,13 @@ export class AuthService {
         });
 
         // Generate token AFTER transaction commits
+        const permissions = await this.buildPermissions(user.id, user.role);
         const payload = {
             sub: user.id,
             email: user.email,
             companyId: user.companyId,
-            role: user.role
+            role: user.role,
+            permissions,
         };
 
         return {
@@ -87,11 +129,13 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
+        const permissions = await this.buildPermissions(user.id, user.role);
         const payload = {
             sub: user.id,
             email: user.email,
             companyId: user.companyId,
-            role: user.role
+            role: user.role,
+            permissions,
         };
 
         return {
@@ -102,6 +146,25 @@ export class AuthService {
                 companyId: user.companyId,
                 role: user.role
             }
+        };
+    }
+
+    /**
+     * Re-issue JWT with fresh permissions (called after admin changes role permissions).
+     * Used by POST /auth/refresh-permissions — requires valid JWT.
+     */
+    async refreshPermissions(userId: string) {
+        const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+        const permissions = await this.buildPermissions(user.id, user.role);
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            companyId: user.companyId,
+            role: user.role,
+            permissions,
+        };
+        return {
+            access_token: this.jwtService.sign(payload),
         };
     }
 }

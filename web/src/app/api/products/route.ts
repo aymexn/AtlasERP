@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/api-helpers';
+import { requirePermission } from '@/lib/require-permission';
 
 function sanitizeDecimals(obj: any): any {
     if (obj === null || obj === undefined) return obj;
@@ -35,6 +36,10 @@ export async function POST(request: Request) {
         if (!companyId) {
             return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
         }
+
+        const denied = await requirePermission('products', 'product', 'create', request);
+        if (denied) return denied;
+
         const body = await request.json();
         console.log("Payload reçu (POST /api/products):", body);
 
@@ -186,6 +191,9 @@ export async function GET(request: Request) {
         if (!companyId) {
             return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
         }
+
+        const denied = await requirePermission('products', 'product', 'read', request);
+        if (denied) return denied;
 
         const { searchParams } = new URL(request.url);
         const search = searchParams.get('search') || '';

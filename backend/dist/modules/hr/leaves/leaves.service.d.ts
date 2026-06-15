@@ -8,8 +8,10 @@ export declare class LeavesService {
     constructor(prisma: PrismaService, notificationService: NotificationService, eventEmitter: EventEmitter2);
     getLeaveTypes(companyId: string): Promise<{
         id: string;
-        companyId: string;
+        isActive: boolean;
         name: string;
+        createdAt: Date;
+        companyId: string;
         code: string | null;
         isPaid: boolean;
         accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -18,13 +20,13 @@ export declare class LeavesService {
         minNoticeDays: number;
         maxConsecutiveDays: number | null;
         color: string | null;
-        isActive: boolean;
-        createdAt: Date;
     }[]>;
     createLeaveType(companyId: string, data: any): Promise<{
         id: string;
-        companyId: string;
+        isActive: boolean;
         name: string;
+        createdAt: Date;
+        companyId: string;
         code: string | null;
         isPaid: boolean;
         accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -33,14 +35,14 @@ export declare class LeavesService {
         minNoticeDays: number;
         maxConsecutiveDays: number | null;
         color: string | null;
-        isActive: boolean;
-        createdAt: Date;
     }>;
     getBalances(employeeId: string, year?: number): Promise<({
         leaveType: {
             id: string;
-            companyId: string;
+            isActive: boolean;
             name: string;
+            createdAt: Date;
+            companyId: string;
             code: string | null;
             isPaid: boolean;
             accrualRate: import("@prisma/client/runtime/library").Decimal;
@@ -49,8 +51,6 @@ export declare class LeavesService {
             minNoticeDays: number;
             maxConsecutiveDays: number | null;
             color: string | null;
-            isActive: boolean;
-            createdAt: Date;
         };
     } & {
         id: string;
@@ -73,28 +73,12 @@ export declare class LeavesService {
         carriedFromPrevious: import("@prisma/client/runtime/library").Decimal;
     }>;
     requestLeave(companyId: string, employeeId: string, data: any): Promise<{
-        leaveType: {
-            id: string;
-            companyId: string;
-            name: string;
-            code: string | null;
-            isPaid: boolean;
-            accrualRate: import("@prisma/client/runtime/library").Decimal;
-            maxCarryOver: import("@prisma/client/runtime/library").Decimal | null;
-            requiresDocument: boolean;
-            minNoticeDays: number;
-            maxConsecutiveDays: number | null;
-            color: string | null;
-            isActive: boolean;
-            createdAt: Date;
-        };
         employee: {
             id: string;
-            companyId: string;
-            createdAt: Date;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            updatedAt: Date;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -115,51 +99,51 @@ export declare class LeavesService {
             bankName: string | null;
             hireDate: Date;
             terminationDate: Date | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
             department: string | null;
             position: string | null;
             managerId: string | null;
             notes: string | null;
         };
+        leaveType: {
+            id: string;
+            isActive: boolean;
+            name: string;
+            createdAt: Date;
+            companyId: string;
+            code: string | null;
+            isPaid: boolean;
+            accrualRate: import("@prisma/client/runtime/library").Decimal;
+            maxCarryOver: import("@prisma/client/runtime/library").Decimal | null;
+            requiresDocument: boolean;
+            minNoticeDays: number;
+            maxConsecutiveDays: number | null;
+            color: string | null;
+        };
     } & {
         id: string;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.LeaveStatus;
         employeeId: string;
-        leaveTypeId: string;
         startDate: Date;
         endDate: Date;
+        documentId: string | null;
+        leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
-        status: import(".prisma/client").$Enums.LeaveStatus;
         managerComment: string | null;
         hrComment: string | null;
         appliedAt: Date;
-        updatedAt: Date;
-        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
     findAll(companyId: string, filters?: any): Promise<({
-        leaveType: {
-            id: string;
-            companyId: string;
-            name: string;
-            code: string | null;
-            isPaid: boolean;
-            accrualRate: import("@prisma/client/runtime/library").Decimal;
-            maxCarryOver: import("@prisma/client/runtime/library").Decimal | null;
-            requiresDocument: boolean;
-            minNoticeDays: number;
-            maxConsecutiveDays: number | null;
-            color: string | null;
-            isActive: boolean;
-            createdAt: Date;
-        };
         employee: {
             id: string;
-            companyId: string;
-            createdAt: Date;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            updatedAt: Date;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -180,53 +164,68 @@ export declare class LeavesService {
             bankName: string | null;
             hireDate: Date;
             terminationDate: Date | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
             department: string | null;
             position: string | null;
             managerId: string | null;
             notes: string | null;
         };
+        leaveType: {
+            id: string;
+            isActive: boolean;
+            name: string;
+            createdAt: Date;
+            companyId: string;
+            code: string | null;
+            isPaid: boolean;
+            accrualRate: import("@prisma/client/runtime/library").Decimal;
+            maxCarryOver: import("@prisma/client/runtime/library").Decimal | null;
+            requiresDocument: boolean;
+            minNoticeDays: number;
+            maxConsecutiveDays: number | null;
+            color: string | null;
+        };
     } & {
         id: string;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.LeaveStatus;
         employeeId: string;
-        leaveTypeId: string;
         startDate: Date;
         endDate: Date;
+        documentId: string | null;
+        leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
-        status: import(".prisma/client").$Enums.LeaveStatus;
         managerComment: string | null;
         hrComment: string | null;
         appliedAt: Date;
-        updatedAt: Date;
-        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     })[]>;
     approveByManager(companyId: string, requestId: string, managerId: string, comment?: string): Promise<{
         id: string;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.LeaveStatus;
         employeeId: string;
-        leaveTypeId: string;
         startDate: Date;
         endDate: Date;
+        documentId: string | null;
+        leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
-        status: import(".prisma/client").$Enums.LeaveStatus;
         managerComment: string | null;
         hrComment: string | null;
         appliedAt: Date;
-        updatedAt: Date;
-        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
     approveByHr(companyId: string, requestId: string, hrId: string, comment?: string): Promise<{
         employee: {
             id: string;
-            companyId: string;
-            createdAt: Date;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            updatedAt: Date;
             userId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
             employeeCode: string | null;
             firstName: string;
             lastName: string;
@@ -247,6 +246,7 @@ export declare class LeavesService {
             bankName: string | null;
             hireDate: Date;
             terminationDate: Date | null;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
             department: string | null;
             position: string | null;
             managerId: string | null;
@@ -254,61 +254,61 @@ export declare class LeavesService {
         };
     } & {
         id: string;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.LeaveStatus;
         employeeId: string;
-        leaveTypeId: string;
         startDate: Date;
         endDate: Date;
+        documentId: string | null;
+        leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
-        status: import(".prisma/client").$Enums.LeaveStatus;
         managerComment: string | null;
         hrComment: string | null;
         appliedAt: Date;
-        updatedAt: Date;
-        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
     reject(companyId: string, requestId: string, rejectedBy: string, comment?: string): Promise<{
         id: string;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.LeaveStatus;
         employeeId: string;
-        leaveTypeId: string;
         startDate: Date;
         endDate: Date;
+        documentId: string | null;
+        leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
-        status: import(".prisma/client").$Enums.LeaveStatus;
         managerComment: string | null;
         hrComment: string | null;
         appliedAt: Date;
-        updatedAt: Date;
-        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     }>;
     getCalendar(companyId: string, start: Date, end: Date): Promise<({
-        leaveType: {
-            name: string;
-            color: string;
-        };
         employee: {
             firstName: string;
             lastName: string;
         };
+        leaveType: {
+            name: string;
+            color: string;
+        };
     } & {
         id: string;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.LeaveStatus;
         employeeId: string;
-        leaveTypeId: string;
         startDate: Date;
         endDate: Date;
+        documentId: string | null;
+        leaveTypeId: string;
         totalDays: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
-        status: import(".prisma/client").$Enums.LeaveStatus;
         managerComment: string | null;
         hrComment: string | null;
         appliedAt: Date;
-        updatedAt: Date;
-        documentId: string | null;
         approvedByManager: string | null;
         approvedByHr: string | null;
     })[]>;

@@ -55,31 +55,24 @@ const Sidebar = () => {
         return originalHasPermission(moduleOrPermission, resource, action);
     };
 
-    const session = { user };
-    const currentAuthRole = user?.role;
-    const userRole = session?.user?.role || currentAuthRole; 
-
-    // Hardcoded bypass shield for local dev and administration access
-    const forceVisibleInDev = true; // FORCE TO TRUE FOR DEMO/PREPARATION MOUNT
-
     const adminSubItems = [
         {
             title: "Utilisateurs et Rôles",
             href: "/settings/users",
             icon: Users,
-            visible: forceVisibleInDev || userRole === 'ADMINISTRATOR' || hasPermission('USERS_VIEW')
+            visible: hasPermission('users', 'user', 'read')
         },
         {
             title: "Permissions d'Accès",
             href: "/settings/permissions",
             icon: Shield,
-            visible: forceVisibleInDev || userRole === 'ADMINISTRATOR' || hasPermission('PERMISSIONS_VIEW')
+            visible: hasPermission('roles', 'role', 'read')
         },
         {
             title: "Journal d'Activité",
             href: "/settings/audit-logs",
             icon: History,
-            visible: forceVisibleInDev || userRole === 'ADMINISTRATOR' || hasPermission('AUDIT_VIEW')
+            visible: hasPermission('audit', 'log', 'read')
         },
         {
             title: "Paramètres Système",
@@ -282,8 +275,8 @@ const Sidebar = () => {
                                         })
                                     ) : (
                                         group.items.map((item) => {
-                                            const isAuthorized = userRole === 'ADMINISTRATOR' || userRole === 'MANAGER';
-                                            if (item.permission && !isAuthorized && !hasPermission(item.permission.module, item.permission.resource, item.permission.action)) {
+                                            // Items with a permission property are guarded; items without are always shown
+                                            if (item.permission && !hasPermission(item.permission.module, item.permission.resource, item.permission.action)) {
                                                 return null;
                                             }
 

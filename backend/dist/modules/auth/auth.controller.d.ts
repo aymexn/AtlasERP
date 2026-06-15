@@ -21,4 +21,7 @@ export declare class AuthController {
             role: import(".prisma/client").$Enums.Role;
         };
     }>;
+    refreshPermissions(req: any): Promise<{
+        access_token: string;
+    }>;
 }

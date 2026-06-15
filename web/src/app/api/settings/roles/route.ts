@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId, getUserId } from '@/lib/api-helpers';
+import { requirePermission } from '@/lib/require-permission';
 
 export async function GET() {
     try {
@@ -8,6 +9,9 @@ export async function GET() {
         if (!companyId) {
             return NextResponse.json({ error: 'Non autorisé : Session active introuvable' }, { status: 401 });
         }
+
+        const denied = await requirePermission('roles', 'role', 'read');
+        if (denied) return denied;
 
         const roles = await prisma.appRole.findMany({
             include: {
@@ -34,6 +38,9 @@ export async function POST(request: Request) {
         if (!companyId || !currentUserId) {
             return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
         }
+
+        const denied = await requirePermission('roles', 'role', 'create', request);
+        if (denied) return denied;
 
         const { name, displayName, description, permissionIds } = await request.json();
 

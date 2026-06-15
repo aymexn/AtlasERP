@@ -75,18 +75,12 @@ export function LoginClient() {
             }
 
             // 2. Sync session with NextAuth in Next.js frontend
-            const signInResult = await signIn('credentials', {
+            await signIn('credentials', {
                 email: values.email,
                 password: values.password,
-                redirect: false
+                redirect: true,
+                callbackUrl: `/${locale}/dashboard`
             });
-
-            if (signInResult?.error) {
-                console.error('NextAuth sync error:', signInResult.error);
-                // We proceed since atlas_token was successfully set, but alert if needed
-            }
-
-            router.push('/dashboard');
         } catch (err: any) {
             console.error('Login error:', err);
             if (err.status === 401) {

@@ -27,11 +27,8 @@ export default function UsersClient() {
   const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const forceVisibleInDev = true;
-
-  // Wrap permission checks to handle 'USER' module references
+  // Real permission check — no bypass
   const hasPermission = (module: string, resource: string, action?: string) => {
-    if (forceVisibleInDev) return true;
     if (!action) {
       if (module === 'USER' && resource === 'READ') return originalHasPermission('users', 'user', 'read');
       return false;
@@ -41,7 +38,7 @@ export default function UsersClient() {
 
   useEffect(() => {
     if (!permissionsLoading) {
-      const authorized = hasPermission('USER', 'READ');
+      const authorized = originalHasPermission('users', 'user', 'read');
       if (!authorized) {
         redirect('/dashboard');
       }

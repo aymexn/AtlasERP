@@ -2,7 +2,32 @@ import { prisma } from '@/lib/prisma';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/format';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SEEDED-COMPANY DETECTION
+// We detect the demo company by name (not hardcoded ID) so the flag survives
+// database resets. When true, queries order/filter on business-date fields
+// (e.g. `date`) instead of `createdAt`, fixing the "il y a 6 min" display.
+// Every other company falls back to the original createdAt behaviour.
+// ─────────────────────────────────────────────────────────────────────────────
+const SEEDED_COMPANY_NAME = 'Cameleon Colors';
+
 export class DashboardService {
+
+  /**
+   * Returns whether the company is the seeded demo company.
+   * Result is fetched fresh each call – light single-row select.
+   */
+  private async useBusinessDates(companyId: string): Promise<boolean> {
+    try {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { name: true },
+      });
+      return company?.name === SEEDED_COMPANY_NAME;
+    } catch {
+      return false;
+    }
+  }
 
   private async getKpis(companyId: string): Promise<Record<string, any>> {
     try {
@@ -58,57 +83,46 @@ export class DashboardService {
     }
 
     // FALLBACK
+    // For the seeded demo company use the business `date` field so month
+    // boundaries reflect the seeded order dates (Dec 2025 – Jun 2026).
+    // For all other companies keep the original createdAt path.
+    const useBizDates = await this.useBusinessDates(companyId);
     const now = new Date();
     const thisMonthStart = startOfMonth(now);
     const lastMonthStart = startOfMonth(subMonths(now, 1));
     const lastMonthEnd = endOfMonth(subMonths(now, 1));
 
+    const dateFilter = useBizDates
+      ? { date: { gte: thisMonthStart } }
+      : { createdAt: { gte: thisMonthStart } };
+    const lastDateFilter = useBizDates
+      ? { date: { gte: lastMonthStart, lte: lastMonthEnd } }
+      : { createdAt: { gte: lastMonthStart, lte: lastMonthEnd } };
+
     const salesThisMonth = await prisma.salesOrder.count({
-      where: {
-        companyId,
-        status: { not: 'CANCELLED' },
-        createdAt: { gte: thisMonthStart }
-      }
+      where: { companyId, status: { not: 'CANCELLED' }, ...dateFilter }
     });
 
     const salesLastMonth = await prisma.salesOrder.count({
-      where: {
-        companyId,
-        status: { not: 'CANCELLED' },
-        createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
-      }
+      where: { companyId, status: { not: 'CANCELLED' }, ...lastDateFilter }
     });
 
     const salesValueThisMonth = await prisma.salesOrder.aggregate({
-      where: {
-        companyId,
-        status: { not: 'CANCELLED' },
-        createdAt: { gte: thisMonthStart }
-      },
+      where: { companyId, status: { not: 'CANCELLED' }, ...dateFilter },
       _sum: { totalAmountTtc: true }
     });
 
     const salesValueLastMonth = await prisma.salesOrder.aggregate({
-      where: {
-        companyId,
-        status: { not: 'CANCELLED' },
-        createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
-      },
+      where: { companyId, status: { not: 'CANCELLED' }, ...lastDateFilter },
       _sum: { totalAmountTtc: true }
     });
 
     const newCustomersThisMonth = await prisma.customer.count({
-      where: {
-        companyId,
-        createdAt: { gte: thisMonthStart }
-      }
+      where: { companyId, createdAt: { gte: thisMonthStart } }
     });
 
     const newCustomersLastMonth = await prisma.customer.count({
-      where: {
-        companyId,
-        createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
-      }
+      where: { companyId, createdAt: { gte: lastMonthStart, lte: lastMonthEnd } }
     });
 
     const currentRevenue = Number(salesValueThisMonth._sum.totalAmountTtc || 0);
@@ -383,6 +397,9 @@ export class DashboardService {
     }
 
     // FALLBACK
+    // Seeded company: use business `date` field for time-based filters so the
+    // chart reflects real order dates (Dec 2025 – Jun 2026) instead of now.
+    const useBizDates = await this.useBusinessDates(companyId);
     const now = new Date();
     const thisMonthStart = startOfMonth(now);
 
@@ -402,9 +419,14 @@ export class DashboardService {
       }
     });
 
+    // For the seeded company the chart should show the 6 months of seeded data
+    // (Dec 2025 – Jun 2026). We keep the rolling-6-months window but order by
+    // the business date field so months with seeded orders are non-zero.
     const last6Months = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
+      const d = useBizDates
+        ? new Date(Date.UTC(2026, 5 - i, 1)) // anchor at Jun 2026
+        : new Date();
+      if (!useBizDates) d.setMonth(d.getMonth() - i);
       return {
         start: startOfMonth(d),
         end: endOfMonth(d),
@@ -414,11 +436,9 @@ export class DashboardService {
 
     const chartData = await Promise.all(last6Months.map(async (month) => {
       const monthRevenue = await prisma.salesOrder.aggregate({
-        where: {
-          companyId,
-          status: { not: 'CANCELLED' },
-          createdAt: { gte: month.start, lte: month.end }
-        },
+        where: useBizDates
+          ? { companyId, status: { not: 'CANCELLED' }, date: { gte: month.start, lte: month.end } }
+          : { companyId, status: { not: 'CANCELLED' }, createdAt: { gte: month.start, lte: month.end } },
         _sum: { totalAmountTtc: true }
       });
 
@@ -458,24 +478,30 @@ export class DashboardService {
 
   async getRecentActivity(companyId: string) {
     try {
+      // ── Conditional ordering ──────────────────────────────────────────────
+      // Seeded company  → order by business date fields so the feed shows
+      //                   real Dec 2025 – Jun 2026 activity, not "6 min ago".
+      // All other companies → keep original createdAt ordering (no change).
+      const useBizDates = await this.useBusinessDates(companyId);
+
       const [orders, payments, newCustomers, allProducts] = await Promise.all([
         // Recent orders
         prisma.salesOrder.findMany({
           where: { companyId },
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: useBizDates ? { date: 'desc' } : { createdAt: 'desc' },
           include: { customer: true }
         }),
-        
+
         // Recent payments
         prisma.payment.findMany({
           where: { companyId },
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: useBizDates ? { date: 'desc' } : { createdAt: 'desc' },
           include: { invoice: { include: { customer: true } } }
         }),
-        
-        // New customers
+
+        // New customers (always by createdAt — no business-date field on Customer)
         prisma.customer.findMany({
           where: { companyId },
           take: 5,
@@ -484,10 +510,7 @@ export class DashboardService {
 
         // Low stock products
         prisma.product.findMany({
-          where: {
-            companyId,
-            isActive: true
-          },
+          where: { companyId, isActive: true },
           select: {
             id: true,
             name: true,
@@ -508,10 +531,12 @@ export class DashboardService {
       const activities: any[] = [];
 
       // Transform orders
+      // Seeded company: expose the business `date` as the activity timestamp
+      // so relative-time helpers display e.g. "il y a 3 mois" not "il y a 6 min".
       orders.forEach(order => {
         activities.push({
           id: `order-${order.id}`,
-          timestamp: order.createdAt,
+          timestamp: useBizDates ? order.date : order.createdAt,
           user: 'Utilisateur',
           action: `${order.reference} créé`,
           type: 'order',
@@ -526,7 +551,7 @@ export class DashboardService {
       payments.forEach(payment => {
         activities.push({
           id: `payment-${payment.id}`,
-          timestamp: payment.createdAt,
+          timestamp: useBizDates ? payment.date : payment.createdAt,
           user: 'Comptable',
           action: `Paiement reçu : ${formatCurrency(payment.amount)}`,
           type: 'payment',

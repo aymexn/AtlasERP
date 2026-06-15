@@ -54,6 +54,30 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
         this.prisma = prisma;
     }
+    async buildPermissions(userId, userRole) {
+        const userRoles = await this.prisma.userRole.findMany({
+            where: {
+                userId,
+                isActive: true,
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+            },
+            include: {
+                role: {
+                    include: {
+                        permissions: { include: { permission: true } },
+                    },
+                },
+            },
+        });
+        const permissions = [
+            ...new Set(userRoles.flatMap(ur => ur.role.permissions.map(rp => `${rp.permission.module}:${rp.permission.resource}:${rp.permission.action}`))),
+        ];
+        if (userRole === 'ADMIN' && permissions.length === 0) {
+            const allPerms = await this.prisma.appPermission.findMany();
+            return allPerms.map(p => `${p.module}:${p.resource}:${p.action}`);
+        }
+        return permissions;
+    }
     async register(dto) {
         const existing = await this.usersService.findByEmail(dto.email);
         if (existing) {
@@ -89,11 +113,13 @@ let AuthService = class AuthService {
             }
             return { user: newUser };
         });
+        const permissions = await this.buildPermissions(user.id, user.role);
         const payload = {
             sub: user.id,
             email: user.email,
             companyId: user.companyId,
-            role: user.role
+            role: user.role,
+            permissions,
         };
         return {
             access_token: this.jwtService.sign(payload),
@@ -114,11 +140,13 @@ let AuthService = class AuthService {
         if (!isMatch) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
+        const permissions = await this.buildPermissions(user.id, user.role);
         const payload = {
             sub: user.id,
             email: user.email,
             companyId: user.companyId,
-            role: user.role
+            role: user.role,
+            permissions,
         };
         return {
             access_token: this.jwtService.sign(payload),
@@ -128,6 +156,20 @@ let AuthService = class AuthService {
                 companyId: user.companyId,
                 role: user.role
             }
+        };
+    }
+    async refreshPermissions(userId) {
+        const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+        const permissions = await this.buildPermissions(user.id, user.role);
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            companyId: user.companyId,
+            role: user.role,
+            permissions,
+        };
+        return {
+            access_token: this.jwtService.sign(payload),
         };
     }
 };

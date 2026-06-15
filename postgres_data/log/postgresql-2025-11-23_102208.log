@@ -1,0 +1,17 @@
+2025-11-23 10:22:08 CET LOG:  le système de bases de données a été arrêté à 2025-11-23 10:21:23 CET
+2025-11-23 10:27:08 CET LOG:  début du checkpoint : time
+2025-11-23 10:27:08 CET LOG:  checkpoint terminé : a écrit 3 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.007 s, synchronisation=0.004 s, total=0.072 s; fichiers synchronisés=2, plus long=0.002 s, moyenne=0.002 s; distance=0 kB, estimation=0 kB
+2025-11-23 10:50:03 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:03 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-11-23 10:50:04 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:04 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-11-23 10:50:04 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:04 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-11-23 10:50:04 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:04 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-11-23 10:50:05 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:05 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-11-23 10:50:05 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:05 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »
+2025-11-23 10:50:10 CET FATAL:  authentification par mot de passe échouée pour l'utilisateur  « postgres »
+2025-11-23 10:50:10 CET DÉTAIL:  La connexion correspond à la ligne 87 du pg_hba.conf : « host    all             all             127.0.0.1/32            scram-sha-256 »

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/api-helpers';
+import { requirePermission } from '@/lib/require-permission';
 
 export async function GET(req: NextRequest) {
     try {
@@ -8,6 +9,9 @@ export async function GET(req: NextRequest) {
         if (!companyId) {
             return NextResponse.json({ error: 'Unauthorized: No active session' }, { status: 401 });
         }
+
+        const denied = await requirePermission('stock', 'inventory', 'read', req);
+        if (denied) return denied;
 
         const { searchParams } = new URL(req.url);
         const filter = searchParams.get('filter') || 'all'; // 'all', 'low_stock', 'out_of_stock'

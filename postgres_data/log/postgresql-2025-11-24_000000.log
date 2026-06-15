@@ -1,0 +1,4 @@
+2025-12-02 10:44:24 CET ERREUR:  annulation de la requête à la demande de l'utilisateur
+2025-12-02 10:44:24 CET LOG:  arrêt en cours
+2025-12-02 10:44:24 CET LOG:  début du checkpoint : shutdown immediate
+2025-12-02 10:44:24 CET LOG:  checkpoint terminé : a écrit 0 tampons (0.0%); 0 fichiers WAL ajoutés, 0 supprimés, 0 recyclés ; écriture=0.003 s, synchronisation=0.001 s, total=0.016 s; fichiers synchronisés=0, plus long=0.000 s, moyenne=0.000 s; distance=0 kB, estimation=0 kB
