@@ -36,44 +36,63 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     const checkAuth = useCallback(async () => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('atlas_token') : null;
 
-        if (!token) {
+        // Short-circuit: user already verified in this session
+        if (user) {
             setPhase('ok');
             return;
         }
 
-        // Short-circuit: do not fetch from database on every pathname change if user is already verified
-        if (user && !pathname.includes('/tenant')) {
-            setPhase('ok');
-            return;
-        }
+        if (token) {
+            // ── Path A: atlas_token (NestJS backend) ──────────────────────────
+            try {
+                const tenant = await apiFetch('/tenants/me');
+                if (tenant?.user) {
+                    setUser(tenant.user);
+                }
 
-        try {
-            const tenant = await apiFetch('/tenants/me');
-            if (tenant?.user) {
-                setUser(tenant.user);
-            }
+                if (!tenant && !pathname.includes('/tenant')) {
+                    router.push('/tenant');
+                    return;
+                }
+                if (tenant && pathname.includes('/tenant')) {
+                    router.push('/dashboard');
+                    return;
+                }
 
-            if (!tenant && !pathname.includes('/tenant')) {
-                router.push('/tenant');
-                return;
+                if (phase === 'reconnecting' || phase === 'retrying') {
+                    setPhase('restored');
+                    setTimeout(() => setPhase('ok'), 2000);
+                } else {
+                    setPhase('ok');
+                }
+            } catch (err: any) {
+                if (err.message === 'NETWORK_ERROR' || err.message === 'TIMEOUT') {
+                    setPhase('critical');
+                } else {
+                    setPhase('error');
+                }
             }
-            if (tenant && pathname.includes('/tenant')) {
-                router.push('/dashboard');
-                return;
-            }
-
-            // Brief "restored" flash if we were recovering
-            if (phase === 'reconnecting' || phase === 'retrying') {
-                setPhase('restored');
-                setTimeout(() => setPhase('ok'), 2000);
-            } else {
+        } else {
+            // ── Path B: NextAuth session (no atlas_token) ─────────────────────
+            // Users authenticated via NextAuth credentials don't carry an
+            // atlas_token but are valid — load their profile from the local API.
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data?.user) {
+                        setUser(data.user);
+                    }
+                    setPhase('ok');
+                } else if (res.status === 401) {
+                    // No session at all — let middleware handle redirect
+                    setPhase('ok');
+                } else {
+                    setPhase('ok');
+                }
+            } catch {
+                // Network error reaching local API — still render (middleware guards pages)
                 setPhase('ok');
-            }
-        } catch (err: any) {
-            if (err.message === 'NETWORK_ERROR' || err.message === 'TIMEOUT') {
-                setPhase('critical');
-            } else {
-                setPhase('error');
             }
         }
     }, [router, pathname, locale, phase, user, setUser]);

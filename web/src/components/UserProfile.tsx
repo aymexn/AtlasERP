@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { LogOut, User as UserIcon, Settings, ChevronDown } from 'lucide-react';
 import { useRouter } from '@/navigation';
 import { useState, useRef, useEffect } from 'react';
+import { signOut } from 'next-auth/react';
 
 const UserProfile = () => {
     const { user } = useAuth();
@@ -13,9 +14,10 @@ const UserProfile = () => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         localStorage.removeItem('atlas_token');
-        router.push('/login');
+        document.cookie = 'atlas_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        await signOut({ callbackUrl: '/fr/login' });
     };
 
     const fullName = user?.employee 
@@ -50,7 +52,11 @@ const UserProfile = () => {
                 </div>
                 <div className="text-left hidden md:block">
                     <p className="text-xs font-bold text-slate-800 leading-none">{fullName}</p>
-                    <p className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-wider">{user?.role || 'Collaborateur'}</p>
+                    <p className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-wider">{
+                        user?.role
+                            ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase().replace(/_/g, ' ')
+                            : 'Collaborateur'
+                    }</p>
                 </div>
                 <ChevronDown size={14} className="text-slate-400 shrink-0 hidden md:block" />
             </button>

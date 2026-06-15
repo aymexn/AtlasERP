@@ -76,19 +76,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      console.log("[AUTH TRACE] redirect callback:", { url, baseUrl });
       // Absolute lockdown rule to break post-auth recursive redirect traps
       if (url.includes('/login') || url === baseUrl || url.endsWith('/fr')) {
-        const dest = `${baseUrl}/fr/dashboard`;
-        console.log("[AUTH TRACE] redirect override:", dest);
-        return dest;
+        return `${baseUrl}/fr/dashboard`;
       }
-      const dest = url.startsWith(baseUrl) ? url : `${baseUrl}/fr/dashboard`;
-      console.log("[AUTH TRACE] redirect final:", dest);
-      return dest;
+      return url.startsWith(baseUrl) ? url : `${baseUrl}/fr/dashboard`;
     },
     async jwt({ token, user }) {
-      console.log("[AUTH TRACE] jwt callback input:", { token, user });
       if (user) {
         token.id = user.id;
         token.companyId = (user as any).companyId;
@@ -97,16 +91,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Embed permissions on first login — mirrors the atlas_token payload
         try {
           token.permissions = await getUserPermissions(user.id as string);
-          console.log("[AUTH TRACE] jwt permissions fetched:", token.permissions);
         } catch (err) {
-          console.error("[AUTH TRACE] jwt error fetching permissions:", err);
+          console.error("[AUTH] jwt error fetching permissions:", err);
         }
       }
-      console.log("[AUTH TRACE] jwt callback output:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log("[AUTH TRACE] session callback input:", { session, token });
       if (token && session.user) {
         session.user.id = token.id as string;
         (session.user as any).companyId = token.companyId;
@@ -114,7 +105,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (session.user as any).companyRole = token.companyRole;
         (session.user as any).permissions = token.permissions; // forward to client session
       }
-      console.log("[AUTH TRACE] session callback output:", session);
       return session;
     },
   },

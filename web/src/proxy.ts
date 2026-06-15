@@ -63,10 +63,6 @@ export default async function middleware(request: NextRequest) {
         pathname.includes('/inventory') ||
         pathname.includes('/manufacturing');
 
-    console.log("[PROXY TRACE] pathname:", pathname, "isApiRoute:", isApiRoute, "isAuthRoute:", isAuthRoute, "isProtected:", isProtected);
-    const allCookieNames = request.cookies.getAll().map(c => c.name);
-    console.log("[PROXY TRACE] all cookies:", allCookieNames);
-
     if ((isApiRoute && !isAuthRoute) || (isProtected && !isAuthRoute)) {
         // Check for the custom atlas_token cookie or NextAuth session cookies
         const atlasToken = request.cookies.get('atlas_token')?.value;
@@ -77,10 +73,7 @@ export default async function middleware(request: NextRequest) {
                  c.name.startsWith('__Secure-authjs.session-token')
         );
 
-        console.log("[PROXY TRACE] tokens found:", { atlasToken: !!atlasToken, nextAuthToken: !!nextAuthToken });
-
         if (!atlasToken && !nextAuthToken) {
-            console.log("[PROXY TRACE] redirecting/blocking due to missing tokens");
             if (isApiRoute) {
                 return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
             } else {

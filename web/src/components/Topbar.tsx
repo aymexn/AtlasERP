@@ -5,6 +5,7 @@ import { Menu, LogOut } from 'lucide-react';
 import UserProfile from './UserProfile';
 import NotificationsDropdown from './NotificationsDropdown';
 import { useTranslations } from 'next-intl';
+import { signOut } from 'next-auth/react';
 
 const Topbar = () => {
     const pathname = usePathname();
@@ -80,9 +81,10 @@ const Topbar = () => {
                 <div className="h-5 w-px bg-slate-200 mx-1 hidden sm:block" />
 
                 <button 
-                    onClick={() => {
+                    onClick={async () => {
                         localStorage.removeItem('atlas_token');
-                        window.location.href = '/login';
+                        document.cookie = 'atlas_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                        await signOut({ callbackUrl: '/fr/login' });
                     }}
                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                     title="Se déconnecter"

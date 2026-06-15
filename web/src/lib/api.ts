@@ -189,13 +189,21 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
 
         if (response.status === 401 && isClient) {
-            recoveryLog('warn', '401 Unauthorized — clearing session');
-            localStorage.removeItem('atlas_token');
-            document.cookie = 'atlas_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-            const localeMatch = window.location.pathname.match(/^\/(fr|ar|en)/);
-            const currentLocale = localeMatch ? localeMatch[1] : 'fr';
-            window.location.href = `/${currentLocale}/login`;
-            return;
+            // Only force-logout if the user was authenticated via atlas_token.
+            // NextAuth-authenticated users (no atlas_token) should NOT be
+            // redirected — the 401 may just mean their companyId wasn't resolved
+            // from the session yet, or a single endpoint failed.
+            const hasAtlasToken = !!token;
+            if (hasAtlasToken) {
+                recoveryLog('warn', '401 Unauthorized — clearing atlas_token session');
+                localStorage.removeItem('atlas_token');
+                document.cookie = 'atlas_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                const localeMatch = window.location.pathname.match(/^\/(fr|ar|en)/);
+                const currentLocale = localeMatch ? localeMatch[1] : 'fr';
+                window.location.href = `/${currentLocale}/login`;
+                return;
+            }
+            // No atlas_token → let the caller handle the 401 as a normal API error
         }
 
         if (!response.ok) {
