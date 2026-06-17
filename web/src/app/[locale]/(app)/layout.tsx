@@ -1,5 +1,5 @@
 import Sidebar from '@/components/Sidebar';
-import Topbar from '@/components/Topbar';
+import Navbar from '@/components/Navbar';
 import AuthWrapper from '@/components/AuthWrapper';
 import ShortcutProvider from '@/components/ShortcutProvider';
 import { PermissionProvider } from '@/contexts/PermissionContext';
@@ -25,7 +25,7 @@ export default async function AppLayout({
 
                             {/* Main Content Area */}
                             <div className="flex-1 flex flex-col min-w-0">
-                                <Topbar />
+                                <Navbar />
                                 <main className="flex-1 p-8 overflow-y-auto">
                                     <div className="max-w-7xl mx-auto w-full">
                                         {children}

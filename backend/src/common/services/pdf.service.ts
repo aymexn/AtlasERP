@@ -29,14 +29,26 @@ export class PdfService {
     return isNaN(num) ? 0 : num;
   }
 
-  /** Formats a number in Algerian style with space thousands separators */
+  /** Formats a number in Algerian style with space thousands separators using fr-FR */
   private formatAmount(amount: any): string {
     const value = this.toNumber(amount);
-    // Use fr-DZ locale which uses spaces for thousands and comma for decimals
-    return value.toLocaleString('fr-DZ', {
+    return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).replace(/\u00A0/g, ' ').replace(/\u202F/g, ' ');
+    }).format(value).replace(/[\u202f\u00a0\s]/g, '\u00a0');
+  }
+
+  private formatDA(amount: any): string {
+    return `${this.formatAmount(amount)} DA`;
+  }
+
+  private assertColumnWidths(widths: number[], usableWidth: number) {
+    const sum = widths.reduce((a, b) => a + b, 0);
+    if (sum > usableWidth) {
+      const errorMsg = `PDF Column overflow: Sum of widths (${sum}) exceeds usable page width (${usableWidth})`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
   }
 
   /** Safe string accessor with fallback */
@@ -100,6 +112,7 @@ export class PdfService {
 
       // ── Payroll Table ──
       const tableTop = 310;
+      this.assertColumnWidths([200, 60, 80, 80, 80], doc.page.width - doc.page.margins.left - doc.page.margins.right);
       doc.rect(40, tableTop - 5, 515, 20).fill('#2563eb');
       doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(8.5);
       doc.text('Libellé des Rubriques', 50, tableTop);
@@ -207,6 +220,10 @@ export class PdfService {
       // ── Items table ──
       const lines = invoice.lines || invoice.salesOrder?.lines || [];
       const tableTop = 310;
+
+      const colWidths = [190, 40, 35, 55, 35, 100];
+      this.assertColumnWidths(colWidths, doc.page.width - doc.page.margins.left - doc.page.margins.right);
+
       doc.rect(50, tableTop - 5, 500, 20).fill('#2563eb');
       doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(8.5);
       doc.text('Désignation', 60, tableTop);
@@ -355,6 +372,10 @@ export class PdfService {
         .text(`Créé le: ${new Date(order.createdAt || Date.now()).toLocaleDateString('fr-DZ')}`, 350, summaryTop + 35);
 
       const tableTop = 320;
+
+      const colWidths = [280, 100, 80];
+      this.assertColumnWidths(colWidths, doc.page.width - doc.page.margins.left - doc.page.margins.right);
+
       doc.rect(50, tableTop - 5, 500, 20).fill('#2563eb');
       doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(10);
       doc.text('Composant / Matière Première', 60, tableTop)
@@ -392,26 +413,29 @@ export class PdfService {
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
       doc.pipe(res);
 
+      const colWidths = [200, 90, 50, 25, 80];
+      this.assertColumnWidths(colWidths, doc.page.width - doc.page.margins.left - doc.page.margins.right);
+
       this.drawOfficialHeader(doc, company, 'ÉTAT DE STOCK');
 
       const tableTop = 180;
       doc.rect(50, tableTop - 5, 500, 20).fill('#2563eb');
       doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(9);
       doc.text('Article / SKU', 60, tableTop);
-      doc.text('Famille', 280, tableTop);
-      doc.text('Quantité', 380, tableTop, { width: 50, align: 'right' });
-      doc.text('Unité', 440, tableTop);
-      doc.text('Valorisation (DA)', 480, tableTop, { width: 60, align: 'right' });
+      doc.text('Famille', 270, tableTop);
+      doc.text('Quantité', 370, tableTop, { width: 50, align: 'right' });
+      doc.text('Unité', 430, tableTop);
+      doc.text('Valorisation (DA)', 460, tableTop, { width: 80, align: 'right' });
 
       let currentY = tableTop + 25;
       doc.font('Helvetica').fillColor('#000000').fontSize(9);
 
       for (const p of products) {
-        doc.text(this.str(p.name), 60, currentY, { width: 210 });
-        doc.text(this.str(p.family?.name, '-'), 280, currentY);
-        doc.text(this.formatAmount(p.stockQuantity), 380, currentY, { width: 50, align: 'right' });
-        doc.text(this.str(p.unit, ''), 440, currentY);
-        doc.text(this.formatAmount(p.stockValue || 0), 480, currentY, { width: 60, align: 'right' });
+        doc.text(this.str(p.name), 60, currentY, { width: 200 });
+        doc.text(this.str(p.family?.name, '-'), 270, currentY, { width: 90 });
+        doc.text(this.formatAmount(p.stockQuantity), 370, currentY, { width: 50, align: 'right' });
+        doc.text(this.str(p.unit, ''), 430, currentY, { width: 25 });
+        doc.text(this.formatAmount(p.stockValue || 0), 460, currentY, { width: 80, align: 'right' });
 
         this.generateLine(doc, currentY + 12, '#F3F4F6');
         currentY += 20;
@@ -468,6 +492,10 @@ export class PdfService {
       }
 
       const tableTop = 145;
+
+      const colWidths = [70, 85, 135, 85, 90];
+      this.assertColumnWidths(colWidths, doc.page.width - doc.page.margins.left - doc.page.margins.right);
+
       doc.rect(50, tableTop - 5, 500, 20).fill('#2563eb');
       doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(9);
       doc.text('Date', 60, tableTop);
@@ -613,6 +641,10 @@ export class PdfService {
 
       // Lines table
       const tableTop = 300;
+
+      const colWidths = [195, 60, 40, 60, 35, 70];
+      this.assertColumnWidths(colWidths, doc.page.width - doc.page.margins.left - doc.page.margins.right);
+
       doc.rect(50, tableTop - 5, 500, 20).fill('#2563eb');
       doc.font('Helvetica-Bold').fillColor('#FFFFFF').fontSize(9);
       doc.text('Désignation', 60, tableTop);

@@ -8,18 +8,15 @@ import {
   TrendingUp, 
   TrendingDown, 
   Target, 
-  ShieldCheck,
-  AlertCircle,
   RefreshCw,
-  Search,
-  ChevronRight,
-  ArrowRight
+  Search
 } from 'lucide-react';
 import { 
-  BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend 
+  ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid
 } from 'recharts';
 import { apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/format';
 
 interface AbcSummary {
   classification: string;
@@ -113,12 +110,32 @@ export default function ABCClient() {
     C: '#ec4899'  // Pink
   };
 
-  const chartData = summary.map(s => ({
-    name: `Classe ${s.classification}`,
-    value: Number(s.total_revenue),
-    count: Number(s.product_count),
-    color: COLORS[s.classification as keyof typeof COLORS] || '#94a3b8'
-  }));
+  // Sort A, B, C for Pareto cumulative chart sequence
+  const sortedSummary = [...summary].sort((a, b) => a.classification.localeCompare(b.classification));
+  const totalRevenueSum = summary.reduce((sum, s) => sum + Number(s.total_revenue), 0);
+  
+  let runningSum = 0;
+  const chartData = sortedSummary.map(s => {
+    const revenue = Number(s.total_revenue);
+    runningSum += revenue;
+    const cumulativePercent = totalRevenueSum > 0 ? (runningSum / totalRevenueSum) * 100 : 0;
+    
+    return {
+      name: `Classe ${s.classification}`,
+      revenue: Math.round(revenue),
+      cumulative: Number(cumulativePercent.toFixed(1)),
+      count: Number(s.product_count),
+      color: COLORS[s.classification as keyof typeof COLORS] || '#94a3b8'
+    };
+  });
+
+  const filteredProducts = products.filter(p => {
+    if (!p || !p.product) return false;
+    const name = p.product.name || '';
+    const sku = p.product.sku || '';
+    return name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           sku.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   if (loading && summary.length === 0) {
     return (
@@ -187,7 +204,7 @@ export default function ABCClient() {
                   <div className="text-right">
                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenus</div>
                     <div className="text-lg font-black text-slate-900 tracking-tighter">
-                      {data ? new Intl.NumberFormat('fr-DZ', { style: 'currency', currency: 'DZD' }).format(Number(data.total_revenue)) : '0 DZD'}
+                      {data ? formatCurrency(Number(data.total_revenue)) : '0,00 DA'}
                     </div>
                   </div>
                 </div>
@@ -213,32 +230,57 @@ export default function ABCClient() {
         </div>
 
         <div className="lg:col-span-8 bg-white border-2 border-slate-100 rounded-[3rem] p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
             <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase flex items-center gap-2">
               <BarIcon size={20} className="text-blue-600" />
-              Répartition des Revenus
+              Répartition & Pareto Cumulé
             </h2>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Classe A</span>
+                <span className="w-3 h-3 rounded-full bg-blue-600 block" />
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Classe A (80%)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Classe B</span>
+                <span className="w-3 h-3 rounded-full bg-purple-500 block" />
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Classe B (95%)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-pink-500"></div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Classe C</span>
+                <span className="w-3 h-3 rounded-full bg-pink-500 block" />
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Classe C (100%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-0.5 w-3 bg-amber-500 block" />
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">% Cumulé</span>
               </div>
             </div>
           </div>
           
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontWeight: 700, fontSize: 12 }} />
-                <YAxis hide />
+                
+                {/* Left Y-Axis for raw revenues */}
+                <YAxis 
+                  yAxisId="left"
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => `${(v / 1000).toFixed(0)}k DA`}
+                  tick={{ fill: '#94a3b8', fontWeight: 700, fontSize: 10 }}
+                />
+
+                {/* Right Y-Axis for Pareto line percentages */}
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  domain={[0, 100]}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => `${v}%`}
+                  tick={{ fill: '#d97706', fontWeight: 700, fontSize: 10 }}
+                />
+
                 <Tooltip 
                   cursor={{ fill: 'transparent' }}
                   content={({ active, payload }) => {
@@ -249,8 +291,12 @@ export default function ABCClient() {
                           <p className="font-black text-slate-900 text-xs uppercase mb-2">{data.name}</p>
                           <div className="space-y-1">
                             <div className="flex justify-between gap-8">
-                              <span className="text-[10px] font-bold text-slate-400">CA Total</span>
-                              <span className="text-[10px] font-black text-slate-900">{new Intl.NumberFormat('fr-DZ', { style: 'currency', currency: 'DZD' }).format(data.value)}</span>
+                              <span className="text-[10px] font-bold text-slate-400">Revenus</span>
+                              <span className="text-[10px] font-black text-slate-900">{formatCurrency(data.revenue)}</span>
+                            </div>
+                            <div className="flex justify-between gap-8">
+                              <span className="text-[10px] font-bold text-slate-400">Pourcentage Cumulé</span>
+                              <span className="text-[10px] font-black text-amber-500">{data.cumulative}%</span>
                             </div>
                             <div className="flex justify-between gap-8">
                               <span className="text-[10px] font-bold text-slate-400">Articles</span>
@@ -263,12 +309,42 @@ export default function ABCClient() {
                     return null;
                   }}
                 />
-                <Bar dataKey="value" radius={[15, 15, 15, 15]} barSize={60}>
+
+                {/* Bars */}
+                <Bar yAxisId="left" dataKey="revenue" radius={[15, 15, 15, 15]} barSize={60}>
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
-              </BarChart>
+
+                {/* Pareto line */}
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="cumulative"
+                  stroke="#F59E0B"
+                  strokeWidth={3}
+                  dot={{ fill: '#F59E0B', r: 5 }}
+                  activeDot={{ r: 7 }}
+                  name="Pareto Cumulé"
+                />
+
+                {/* Threshold Reference Lines */}
+                <ReferenceLine 
+                  yAxisId="right"
+                  y={80} 
+                  stroke="#10B981" 
+                  strokeDasharray="4 4" 
+                  label={{ value: 'Seuil A/B (80%)', position: 'top', fill: '#10B981', fontSize: 9, fontWeight: 700 }} 
+                />
+                <ReferenceLine 
+                  yAxisId="right"
+                  y={95} 
+                  stroke="#F59E0B" 
+                  strokeDasharray="4 4" 
+                  label={{ value: 'Seuil B/C (95%)', position: 'top', fill: '#F59E0B', fontSize: 9, fontWeight: 700 }} 
+                />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -315,9 +391,7 @@ export default function ABCClient() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {products
-                .filter(p => p.product.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map((item) => (
+              {filteredProducts.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
@@ -332,7 +406,7 @@ export default function ABCClient() {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="font-black text-slate-900 text-sm tracking-tighter">
-                      {new Intl.NumberFormat('fr-DZ', { style: 'currency', currency: 'DZD' }).format(Number(item.annualRevenue))}
+                      {formatCurrency(Number(item.annualRevenue))}
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
@@ -367,7 +441,7 @@ export default function ABCClient() {
           </table>
         </div>
         
-        {products.length === 0 && (
+        {filteredProducts.length === 0 && (
           <div className="p-20 text-center">
             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
               <Search size={32} />

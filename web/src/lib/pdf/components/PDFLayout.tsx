@@ -17,21 +17,26 @@ export const COLORS = {
 };
 
 // ─── Currency Formatter (French/Algerian style: 1 250 000,00 DA) ─────────────
-// NOTE: toLocaleString('fr-DZ') produces '/' separators in Node.js – use manual formatting.
-export const fmtCurrency = (val: any): string => {
+export const formatDA = (val: any): string => {
   const n = parseFloat(String(val ?? 0));
   if (isNaN(n)) return '0,00 DA';
-  const [intPart, decPart] = n.toFixed(2).split('.');
-  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'); // non-breaking space
-  return `${intFormatted},${decPart} DA`;
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n).replace(/[\u202f\u00a0\s]/g, '\u00a0') + ' DA';
+};
+
+export const fmtCurrency = (val: any): string => {
+  return formatDA(val);
 };
 
 export const fmtQty = (val: any): string => {
   const n = parseFloat(String(val ?? 0));
   if (isNaN(n)) return '0,00';
-  const [intPart, decPart] = n.toFixed(2).split('.');
-  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
-  return `${intFormatted},${decPart}`;
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n).replace(/[\u202f\u00a0\s]/g, '\u00a0');
 };
 
 const safe = (val: any, fallback = '---') =>

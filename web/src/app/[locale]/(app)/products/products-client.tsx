@@ -36,7 +36,7 @@ import {
 import { familiesService, ProductFamily } from '@/services/families';
 import { Link } from '@/navigation';
 import { downloadPdf } from '@/lib/download-pdf';
-import { Download, Percent } from 'lucide-react';
+import { Download, Percent, FileText } from 'lucide-react';
 import { ProductModal } from '@/components/modals/product-modal';
 import { DataTable } from '@/components/ui/data-table';
 import { BulkActionToolbar } from '@/components/ui/bulk-action-toolbar';
@@ -260,6 +260,15 @@ export default function ProductsClient() {
                     <p className="text-muted-foreground font-medium">{t('subtitle')}</p>
                 </div>
                 <div className="flex gap-3">
+                    <button
+                        onClick={() => {
+                            downloadPdf('/api/pdf/catalogue', `Catalogue_${new Date().toISOString().slice(0, 10)}.pdf`);
+                        }}
+                        className="flex items-center gap-2 bg-white border border-gray-200 text-blue-600 px-6 py-3 rounded-2xl font-bold shadow-sm transition-all hover:bg-gray-50 active:scale-95"
+                    >
+                        <FileText size={20} />
+                        Exporter Catalogue
+                    </button>
                     <button
                         onClick={() => {
                             downloadPdf(productsService.getInventoryPdfUrl(), 'inventaire.pdf');

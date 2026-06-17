@@ -55,6 +55,10 @@ let AuthService = class AuthService {
         this.prisma = prisma;
     }
     async buildPermissions(userId, userRole) {
+        if (userRole === 'ADMIN') {
+            const allPerms = await this.prisma.appPermission.findMany();
+            return allPerms.map(p => `${p.module}:${p.resource}:${p.action}`);
+        }
         const userRoles = await this.prisma.userRole.findMany({
             where: {
                 userId,
@@ -72,10 +76,6 @@ let AuthService = class AuthService {
         const permissions = [
             ...new Set(userRoles.flatMap(ur => ur.role.permissions.map(rp => `${rp.permission.module}:${rp.permission.resource}:${rp.permission.action}`))),
         ];
-        if (userRole === 'ADMIN' && permissions.length === 0) {
-            const allPerms = await this.prisma.appPermission.findMany();
-            return allPerms.map(p => `${p.module}:${p.resource}:${p.action}`);
-        }
         return permissions;
     }
     async register(dto) {

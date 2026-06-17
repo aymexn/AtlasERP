@@ -1,7 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CustomersService, CustomerFilters } from './customers.service';
 
+import { CreateCustomerDto } from './dto/create-customer.dto';
+
+@ApiTags('Customers')
+@ApiBearerAuth()
 @Controller('customers')
 @UseGuards(JwtAuthGuard)
 export class CustomersController {
@@ -23,8 +28,8 @@ export class CustomersController {
   }
 
   @Post()
-  async create(@Request() req, @Body() data: any) {
-    return this.customersService.create(req.user.companyId, data);
+  async create(@Request() req, @Body() createCustomerDto: CreateCustomerDto) {
+    return this.customersService.create(req.user.companyId, createCustomerDto);
   }
 
   @Patch(':id')

@@ -19,6 +19,11 @@ export class AuthService {
      * If ADMIN enum role and no AppRole permissions seeded, returns ALL permissions.
      */
     private async buildPermissions(userId: string, userRole: string): Promise<string[]> {
+        if (userRole === 'ADMIN') {
+            const allPerms = await this.prisma.appPermission.findMany();
+            return allPerms.map(p => `${p.module}:${p.resource}:${p.action}`);
+        }
+
         const userRoles = await this.prisma.userRole.findMany({
             where: {
                 userId,
@@ -43,12 +48,6 @@ export class AuthService {
                 )
             ),
         ];
-
-        // Safety fallback: ADMIN enum with no AppRole assignments gets ALL permissions
-        if (userRole === 'ADMIN' && permissions.length === 0) {
-            const allPerms = await this.prisma.appPermission.findMany();
-            return allPerms.map(p => `${p.module}:${p.resource}:${p.action}`);
-        }
 
         return permissions;
     }

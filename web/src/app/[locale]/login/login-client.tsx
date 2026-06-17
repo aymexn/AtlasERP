@@ -12,6 +12,7 @@ import * as z from 'zod';
 import { signIn } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Logo from '@/components/ui/logo';
 
 export function LoginClient() {
     const t = useTranslations('login');
@@ -114,10 +115,10 @@ export function LoginClient() {
             <Card className="w-full max-w-md shadow-2xl border border-slate-100/80 bg-white/90 backdrop-blur-md z-10 rounded-[2rem] overflow-hidden transition-all duration-300">
                 <CardContent className="p-8 space-y-6">
                     {/* Branding */}
-                    <div className="flex flex-col items-center text-center space-y-2">
-                        <span className="text-3xl font-black text-slate-900 tracking-tight select-none">
-                            Atlas<span className="text-[#1a56db] font-light">{ct('brand_suffix')}</span>
-                        </span>
+                    <div className="flex flex-col items-center text-center space-y-2 pt-2 pb-0 mt-0">
+                        <div className="flex flex-col items-center pt-2 pb-4 space-y-1">
+                            <Logo variant="full" width={160} height={44} className="object-contain p-0 m-0 antialiased" />
+                        </div>
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{t('title')}</h2>
                         <p className="text-xs text-slate-400 font-medium">{t('subtitle')}</p>
                     </div>

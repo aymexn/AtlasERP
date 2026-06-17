@@ -18,9 +18,9 @@ let CashFlowService = class CashFlowService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async get30DayForecast(companyId) {
+    async get30DayForecast(companyId, days = 30) {
         const today = (0, date_fns_1.startOfDay)(new Date());
-        const end = (0, date_fns_1.endOfDay)((0, date_fns_1.addDays)(today, 30));
+        const end = (0, date_fns_1.endOfDay)((0, date_fns_1.addDays)(today, days));
         const [totalReceived, totalSpent] = await Promise.all([
             this.prisma.payment.aggregate({
                 where: { companyId, date: { lt: today } },
@@ -43,7 +43,7 @@ let CashFlowService = class CashFlowService {
                 status: { in: ['SENT', 'PARTIAL'] },
                 dueDate: { lte: end }
             },
-            include: { customer: { select: { paymentBehavior: true } } }
+            include: { customer: { select: { name: true, paymentBehavior: true } } }
         });
         const operationalExpenses = await this.prisma.expense.groupBy({
             by: ['date'],
@@ -63,18 +63,17 @@ let CashFlowService = class CashFlowService {
         const realInflowMap = new Map(realInflows.map(i => [(0, date_fns_1.format)(i.date, 'yyyy-MM-dd'), Number(i._sum.amount || 0)]));
         const expenseMap = new Map(operationalExpenses.map(e => [(0, date_fns_1.format)(e.date, 'yyyy-MM-dd'), Number(e._sum.amount || 0)]));
         const forecast = [];
-        for (let i = 0; i <= 30; i++) {
+        for (let i = 0; i <= days; i++) {
             const date = (0, date_fns_1.addDays)(today, i);
             const dateStr = (0, date_fns_1.format)(date, 'yyyy-MM-dd');
             const dailyRealInflow = realInflowMap.get(dateStr) || 0;
-            const dailyForecastInflow = pendingInvoices
-                .filter(inv => {
+            const dayInvoices = pendingInvoices.filter(inv => {
                 const dueDate = inv.dueDate ? (0, date_fns_1.startOfDay)(inv.dueDate) : today;
                 if (i === 0)
                     return dueDate <= today;
                 return dueDate.getTime() === date.getTime();
-            })
-                .reduce((sum, inv) => {
+            });
+            const dailyForecastInflow = dayInvoices.reduce((sum, inv) => {
                 let factor = 0.85;
                 if (inv.customer?.paymentBehavior === 'EXCELLENT')
                     factor = 0.98;
@@ -84,13 +83,50 @@ let CashFlowService = class CashFlowService {
             }, 0);
             const inflow = dailyRealInflow + dailyForecastInflow;
             const dailyExpense = expenseMap.get(dateStr) || 0;
-            const dailyPurchases = purchaseOrders
-                .filter(po => {
+            const dayPOs = purchaseOrders.filter(po => {
                 const targetDate = po.status === client_1.PurchaseOrderStatus.FULLY_RECEIVED ? (po.orderDate || po.createdAt) : (po.expectedDate || po.orderDate);
                 return (0, date_fns_1.startOfDay)(new Date(targetDate)).getTime() === date.getTime();
-            })
-                .reduce((sum, po) => sum + Number(po.totalTtc), 0);
+            });
+            const dailyPurchases = dayPOs.reduce((sum, po) => sum + Number(po.totalTtc), 0);
             const outflow = dailyExpense + dailyPurchases;
+            const itemsList = [
+                ...dayInvoices.map(inv => {
+                    let factor = 0.85;
+                    if (inv.customer?.paymentBehavior === 'EXCELLENT')
+                        factor = 0.98;
+                    if (inv.customer?.paymentBehavior === 'POOR')
+                        factor = 0.50;
+                    return {
+                        id: inv.id,
+                        type: 'INFLOW',
+                        reference: inv.reference,
+                        label: `Facture Client : ${inv.customer?.name || 'Client'}`,
+                        amount: Number(inv.amountRemaining),
+                        weightedAmount: Number(inv.amountRemaining) * factor,
+                        status: inv.status
+                    };
+                }),
+                ...dayPOs.map(po => ({
+                    id: po.id,
+                    type: 'OUTFLOW',
+                    reference: po.reference || `PO-${po.id.substring(0, 8)}`,
+                    label: `Commande Achat Fournisseur`,
+                    amount: Number(po.totalTtc),
+                    weightedAmount: Number(po.totalTtc),
+                    status: po.status
+                }))
+            ];
+            if (dailyExpense > 0) {
+                itemsList.push({
+                    id: `exp-${dateStr}`,
+                    type: 'OUTFLOW',
+                    reference: 'Dépenses',
+                    label: 'Dépenses Opérationnelles Courantes',
+                    amount: dailyExpense,
+                    weightedAmount: dailyExpense,
+                    status: 'PAID'
+                });
+            }
             const net = inflow - outflow;
             runningBalance += net;
             forecast.push({
@@ -98,7 +134,8 @@ let CashFlowService = class CashFlowService {
                 inflow,
                 outflow,
                 netPosition: net,
-                projectedBalance: runningBalance
+                projectedBalance: runningBalance,
+                items: itemsList
             });
         }
         return forecast;

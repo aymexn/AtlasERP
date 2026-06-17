@@ -47,8 +47,9 @@ let TreasuryController = class TreasuryController {
     getActivities(req, customerId) {
         return this.collectionService.getActivities(req.user.companyId, customerId);
     }
-    getForecast(req) {
-        return this.cashFlowService.get30DayForecast(req.user.companyId);
+    getForecast(req, days) {
+        const daysCount = days ? parseInt(days, 10) : 30;
+        return this.cashFlowService.get30DayForecast(req.user.companyId, daysCount);
     }
 };
 exports.TreasuryController = TreasuryController;
@@ -107,8 +108,9 @@ __decorate([
 __decorate([
     (0, common_1.Get)('forecast'),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('days')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], TreasuryController.prototype, "getForecast", null);
 exports.TreasuryController = TreasuryController = __decorate([

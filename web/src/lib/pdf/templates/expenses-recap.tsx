@@ -80,7 +80,7 @@ export const ExpensesRecapTemplate: React.FC<Props> = ({ expenses, company, date
   }, {});
 
   const grandTotal = expenses.reduce(
-    (acc, exp) => acc + parseFloat(String(exp.amount || 0)),
+    (acc, exp) => acc + Number(exp.amount || exp.total_amount_ttc || exp.total_amount || 0),
     0
   );
 
@@ -98,7 +98,7 @@ export const ExpensesRecapTemplate: React.FC<Props> = ({ expenses, company, date
         {Object.keys(grouped).map((cat, idx) => {
           const catExpenses = grouped[cat];
           const catTotal = catExpenses.reduce(
-            (acc: number, exp: any) => acc + parseFloat(String(exp.amount || 0)),
+            (acc: number, exp: any) => acc + Number(exp.amount || exp.total_amount_ttc || exp.total_amount || 0),
             0
           );
 
@@ -120,16 +120,19 @@ export const ExpensesRecapTemplate: React.FC<Props> = ({ expenses, company, date
                   <Text style={[styles.thText, styles.colAmount]}>Montant</Text>
                 </View>
 
-                {catExpenses.map((exp: any, i: number) => (
-                  <View key={i} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
-                    <Text style={[styles.tdText, styles.colDate]}>
-                      {new Date(exp.date).toLocaleDateString('fr-FR')}
-                    </Text>
-                    <Text style={[styles.tdText, styles.colRef]}>{safe(exp.reference)}</Text>
-                    <Text style={[styles.tdText, styles.colLabel]}>{safe(exp.title)}</Text>
-                    <Text style={[styles.tdMono, styles.colAmount]}>{fmtCurrency(exp.amount)}</Text>
-                  </View>
-                ))}
+                {catExpenses.map((exp: any, i: number) => {
+                  const amt = Number(exp.amount || exp.total_amount_ttc || exp.total_amount || 0);
+                  return (
+                    <View key={i} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
+                      <Text style={[styles.tdText, styles.colDate]}>
+                        {new Date(exp.date).toLocaleDateString('fr-FR')}
+                      </Text>
+                      <Text style={[styles.tdText, styles.colRef]}>{safe(exp.reference)}</Text>
+                      <Text style={[styles.tdText, styles.colLabel]}>{safe(exp.title)}</Text>
+                      <Text style={[styles.tdMono, styles.colAmount]}>{fmtCurrency(amt)}</Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           );

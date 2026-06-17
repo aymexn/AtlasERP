@@ -49,6 +49,22 @@ let TenantsService = class TenantsService {
         if (!user || !user.companyId) {
             throw new Error('User not associated with a company');
         }
+        const company = await this.prisma.company.findUnique({
+            where: { id: user.companyId },
+            select: { settings: true }
+        });
+        const currentSettings = company?.settings || {};
+        let targetVal = undefined;
+        if (dto.settings?.monthly_revenue_target !== undefined) {
+            targetVal = Number(dto.settings.monthly_revenue_target);
+        }
+        else if (dto.monthly_revenue_target !== undefined) {
+            targetVal = Number(dto.monthly_revenue_target);
+        }
+        const newSettings = {
+            ...currentSettings,
+            ...(targetVal !== undefined ? { monthly_revenue_target: targetVal } : {})
+        };
         return this.prisma.company.update({
             where: { id: user.companyId },
             data: {
@@ -62,6 +78,7 @@ let TenantsService = class TenantsService {
                 ai: dto.ai,
                 rc: dto.rc,
                 rib: dto.rib,
+                settings: newSettings
             },
         });
     }

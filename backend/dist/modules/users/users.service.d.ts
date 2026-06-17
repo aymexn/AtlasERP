@@ -4,7 +4,6 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     findByEmail(email: string): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         invitationToken: string | null;
         name: string | null;
@@ -12,6 +11,8 @@ export declare class UsersService {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
+        preferredLocale: string;
+        createdAt: Date;
         invitationExpires: Date | null;
         companyRoleId: string | null;
     }>;
@@ -21,7 +22,6 @@ export declare class UsersService {
         companyId?: string;
     }): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         invitationToken: string | null;
         name: string | null;
@@ -29,12 +29,13 @@ export declare class UsersService {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
+        preferredLocale: string;
+        createdAt: Date;
         invitationExpires: Date | null;
         companyRoleId: string | null;
     }>;
     updateCompany(userId: string, companyId: string): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         invitationToken: string | null;
         name: string | null;
@@ -42,37 +43,38 @@ export declare class UsersService {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
+        preferredLocale: string;
+        createdAt: Date;
         invitationExpires: Date | null;
         companyRoleId: string | null;
     }>;
     findAll(): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         status: import(".prisma/client").$Enums.UserStatus;
+        createdAt: Date;
         roles: ({
             role: {
                 id: string;
-                createdAt: Date;
                 name: string;
+                createdAt: Date;
                 description: string | null;
-                updatedAt: Date;
                 displayName: string;
                 isSystemRole: boolean;
+                updatedAt: Date;
             };
         } & {
             id: string;
-            userId: string;
-            isActive: boolean;
-            roleId: string;
             assignedAt: Date;
             assignedBy: string | null;
             expiresAt: Date | null;
+            isActive: boolean;
+            userId: string;
+            roleId: string;
         })[];
     }[]>;
     invite(email: string, roleId: string, invitedBy: string, companyId: string): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         invitationToken: string | null;
         name: string | null;
@@ -80,6 +82,8 @@ export declare class UsersService {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.UserStatus;
         companyId: string;
+        preferredLocale: string;
+        createdAt: Date;
         invitationExpires: Date | null;
         companyRoleId: string | null;
     }>;

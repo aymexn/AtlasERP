@@ -27,7 +27,6 @@ export default function SettingsPage() {
     const ct = useTranslations('common');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    
     const [formData, setFormData] = useState({
         name: '',
         nif: '',
@@ -38,7 +37,8 @@ export default function SettingsPage() {
         phone: '',
         email: '',
         website: '',
-        logoUrl: ''
+        logoUrl: '',
+        monthly_revenue_target: ''
     });
 
     useEffect(() => {
@@ -58,7 +58,8 @@ export default function SettingsPage() {
                 phone: cachedCompanyData.phone || '',
                 email: cachedCompanyData.email || '',
                 website: cachedCompanyData.website || '',
-                logoUrl: cachedCompanyData.logoUrl || ''
+                logoUrl: cachedCompanyData.logoUrl || '',
+                monthly_revenue_target: String(cachedCompanyData.settings?.monthly_revenue_target ?? '')
             });
             setLoading(false);
             return;
@@ -81,7 +82,8 @@ export default function SettingsPage() {
                         phone: parsed.phone || '',
                         email: parsed.email || '',
                         website: parsed.website || '',
-                        logoUrl: parsed.logoUrl || ''
+                        logoUrl: parsed.logoUrl || '',
+                        monthly_revenue_target: String(parsed.settings?.monthly_revenue_target ?? '')
                     });
                     setLoading(false);
                     return;
@@ -118,7 +120,8 @@ export default function SettingsPage() {
                 phone: data.phone || '',
                 email: data.email || '',
                 website: data.website || '',
-                logoUrl: data.logoUrl || ''
+                logoUrl: data.logoUrl || '',
+                monthly_revenue_target: String(data.settings?.monthly_revenue_target ?? '')
             });
         } catch (err) {
             toast.error(ct('error'));
@@ -300,6 +303,19 @@ export default function SettingsPage() {
                                     className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] outline-none focus:bg-white focus:border-blue-600 transition-all font-bold text-gray-900 shadow-inner"
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 flex items-center gap-2">
+                                    <Hash size={12} className="text-blue-600" />
+                                    🎯 Objectif mensuel (DA)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] outline-none focus:bg-white focus:border-blue-600 transition-all font-bold text-gray-900 shadow-inner"
+                                    value={formData.monthly_revenue_target}
+                                    onChange={e => setFormData({ ...formData, monthly_revenue_target: e.target.value })}
+                                    placeholder="1 000 000"
                                 />
                             </div>
                         </div>

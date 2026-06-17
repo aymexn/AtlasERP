@@ -350,6 +350,8 @@
             "stock": "Stock",
             "tasks": "Tâches"
         },
+        "units": "Unités",
+        "activity_log": "Journal d'Activité",
         "gauge": {
             "excellent": "EXCELLENT",
             "good": "BON",
@@ -457,7 +459,13 @@
                 "logistics": "Logistique",
                 "consulting": "Conseil et Services",
                 "maintenance": "Maintenance",
-                "other": "Autre"
+                "other": "Autre",
+                "charges": "Charges Électricité / Eau",
+                "loyer": "Loyer Industriel",
+                "fournitures": "Fournitures de Bureau",
+                "formation": "Formation",
+                "deplacement": "Déplacement",
+                "assurance": "Assurance"
             },
             "sections": {
                 "financial_details": "Détails Financiers et Règlement"

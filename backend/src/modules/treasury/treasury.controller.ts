@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { AgedReceivablesService } from './aged-receivables.service';
 import { PaymentReminderService } from './payment-reminder.service';
 import { CollectionService } from './collection.service';
@@ -51,7 +51,8 @@ export class TreasuryController {
   }
 
   @Get('forecast')
-  getForecast(@Request() req) {
-    return this.cashFlowService.get30DayForecast(req.user.companyId);
+  getForecast(@Request() req, @Query('days') days?: string) {
+    const daysCount = days ? parseInt(days, 10) : 30;
+    return this.cashFlowService.get30DayForecast(req.user.companyId, daysCount);
   }
 }

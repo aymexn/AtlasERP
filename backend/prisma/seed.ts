@@ -68,6 +68,20 @@ async function main() {
     console.log('   ✓ Created company:', company.name, '→', companyId);
   }
 
+  // Update monthly target setting in Company settings JSON
+  const currentCompany = await prisma.company.findUnique({ where: { id: companyId } });
+  const currentSettings = (currentCompany?.settings as Record<string, any>) || {};
+  await prisma.company.update({
+    where: { id: companyId },
+    data: {
+      settings: {
+        ...currentSettings,
+        monthly_revenue_target: 1000000
+      }
+    }
+  });
+  console.log('   ✓ Seeded company settings: { monthly_revenue_target: 1000000 }');
+
   // ── STEP 2: Clean existing data (FK-safe order) ─────────
   console.log('\n🗑️  Step 2: Cleaning existing data');
 

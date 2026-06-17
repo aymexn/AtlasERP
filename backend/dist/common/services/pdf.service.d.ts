@@ -1,6 +1,8 @@
 export declare class PdfService {
     private toNumber;
     private formatAmount;
+    private formatDA;
+    private assertColumnWidths;
     private str;
     generatePayslipPdf(run: any, res: any): Promise<void>;
     generateInvoicePdf(invoice: any, res: any): Promise<void>;

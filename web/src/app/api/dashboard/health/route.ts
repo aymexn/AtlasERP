@@ -16,9 +16,10 @@ export async function GET() {
     const stockAlerts = products.filter(p => Number(p.stockQuantity) < Number(p.reorderPoint));
     const stockAlertsCount = stockAlerts.length;
 
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const totalCustomers = await prisma.customer.count({ where: { companyId } });
     const newCustomers = await prisma.customer.count({
-      where: { companyId, createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+      where: { companyId, createdAt: { gte: startOfMonth } }
     });
 
     const latestCustomer = await prisma.customer.findFirst({

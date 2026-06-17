@@ -97,10 +97,10 @@ export const aiService = {
     }));
   },
 
-  async sendChatMessage(message: string): Promise<{ response: string; messageId: string; suggestions?: string[] }> {
+  async sendChatMessage(message: string, history?: { role: string; content: string }[]): Promise<{ response: string; messageId: string; suggestions?: string[] }> {
     const res = await apiFetch('/api/ai/chat', {
       method: 'POST',
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message, history })
     });
     return {
       response: res?.assistantMessage?.message || "",

@@ -6,6 +6,7 @@ import UserProfile from './UserProfile';
 import NotificationsDropdown from './NotificationsDropdown';
 import { useTranslations } from 'next-intl';
 import { signOut } from 'next-auth/react';
+import Logo from '@/components/ui/logo';
 
 const Topbar = () => {
     const pathname = usePathname();
@@ -53,14 +54,7 @@ const Topbar = () => {
                 <button className="md:hidden p-2 hover:bg-slate-50 rounded-lg text-slate-500">
                     <Menu size={20} />
                 </button>
-                <div className="flex items-center gap-2.5">
-                    <div className="h-9 w-9 shrink-0 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-[18px] text-white shadow-sm">
-                        A
-                    </div>
-                    <span className="text-[18px] font-black tracking-tight text-slate-800 hidden sm:inline-block">
-                        Atlas<span className="text-blue-600">ERP</span>
-                    </span>
-                </div>
+                <Logo variant="full" width={140} height={38} />
             </div>
 
             {/* Center Section: Page Title */}

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFGenerationService } from '@/lib/services/pdf-generation.service';
+import { getTenantId } from '@/lib/api-helpers';
 
 export async function GET(req: NextRequest) {
   try {
-    const companyId = 'ae144f97-26c9-4c6a-b1dc-e48834f18553';
+    const companyId = await getTenantId();
+    if (!companyId) return new NextResponse('Unauthorized', { status: 401 });
     const stream = await PDFGenerationService.generateExpensesRecapPDF(companyId);
 
     return new NextResponse(stream as any, {

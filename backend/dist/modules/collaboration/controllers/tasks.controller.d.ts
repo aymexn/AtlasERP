@@ -4,15 +4,16 @@ export declare class TaskController {
     constructor(projectService: ProjectService);
     createTask(req: any, data: any): Promise<{
         id: string;
-        title: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.TaskStatus;
+        createdAt: Date;
         description: string | null;
-        projectId: string | null;
         updatedAt: Date;
+        title: string;
         createdBy: string | null;
-        priority: import(".prisma/client").$Enums.Priority;
         dueDate: Date | null;
+        completedAt: Date | null;
+        projectId: string | null;
+        priority: import(".prisma/client").$Enums.Priority;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -21,7 +22,6 @@ export declare class TaskController {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
-        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -29,15 +29,16 @@ export declare class TaskController {
     }>;
     moveTask(taskId: string, data: any): Promise<{
         id: string;
-        title: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.TaskStatus;
+        createdAt: Date;
         description: string | null;
-        projectId: string | null;
         updatedAt: Date;
+        title: string;
         createdBy: string | null;
-        priority: import(".prisma/client").$Enums.Priority;
         dueDate: Date | null;
+        completedAt: Date | null;
+        projectId: string | null;
+        priority: import(".prisma/client").$Enums.Priority;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -46,7 +47,6 @@ export declare class TaskController {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
-        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -54,15 +54,16 @@ export declare class TaskController {
     }>;
     deleteTask(taskId: string): Promise<{
         id: string;
-        title: string;
-        createdAt: Date;
         status: import(".prisma/client").$Enums.TaskStatus;
+        createdAt: Date;
         description: string | null;
-        projectId: string | null;
         updatedAt: Date;
+        title: string;
         createdBy: string | null;
-        priority: import(".prisma/client").$Enums.Priority;
         dueDate: Date | null;
+        completedAt: Date | null;
+        projectId: string | null;
+        priority: import(".prisma/client").$Enums.Priority;
         displayOrder: number | null;
         taskNumber: string | null;
         taskType: string;
@@ -71,7 +72,6 @@ export declare class TaskController {
         reporterId: string | null;
         estimatedHours: import("@prisma/client/runtime/library").Decimal | null;
         actualHours: import("@prisma/client/runtime/library").Decimal | null;
-        completedAt: Date | null;
         boardColumn: string | null;
         parentTaskId: string | null;
         attachments: import("@prisma/client/runtime/library").JsonValue | null;

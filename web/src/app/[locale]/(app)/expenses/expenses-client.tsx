@@ -226,12 +226,21 @@ export function ExpensesClient() {
                                 )
                             },
                             {
-                                header: "CATÉGORIE",
-                                accessor: (exp: any) => (
-                                    <Badge variant="primary" className="bg-slate-100 text-slate-600 border-none">
-                                        {t(`categories.${exp.category.toLowerCase()}` as any)}
-                                    </Badge>
-                                )
+                                header: "Catégorie",
+                                accessor: (exp: any) => {
+                                    const rawCategory = exp.category ? exp.category.toLowerCase() : 'charges';
+                                    
+                                    // Safely check if key includes full namespace pathing, otherwise strip to bare key name
+                                    const translationKey = rawCategory.includes('categories.') 
+                                        ? rawCategory.split('categories.')[1] 
+                                        : rawCategory;
+
+                                    return (
+                                        <Badge variant="primary" className="bg-slate-100 text-slate-600 border-none capitalize">
+                                            {t(`categories.${translationKey}` as any)}
+                                        </Badge>
+                                    );
+                                }
                             },
                             {
                                 header: "DATE",

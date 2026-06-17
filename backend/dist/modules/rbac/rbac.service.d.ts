@@ -16,11 +16,11 @@ export declare class RbacService {
         permissions: ({
             permission: {
                 id: string;
-                description: string | null;
                 createdAt: Date;
+                action: string;
+                description: string | null;
                 module: string;
                 resource: string;
-                action: string;
             };
         } & {
             id: string;
@@ -32,19 +32,19 @@ export declare class RbacService {
     } & {
         id: string;
         name: string;
-        displayName: string;
-        description: string | null;
-        isSystemRole: boolean;
         createdAt: Date;
+        description: string | null;
+        displayName: string;
+        isSystemRole: boolean;
         updatedAt: Date;
     })[]>;
     getAllPermissions(): Promise<{
         id: string;
-        description: string | null;
         createdAt: Date;
+        action: string;
+        description: string | null;
         module: string;
         resource: string;
-        action: string;
     }[]>;
     updateRolePermissions(roleId: string, permissionIds: string[], updatedBy: string): Promise<{
         success: boolean;
@@ -59,21 +59,21 @@ export declare class RbacService {
     removePermissionFromRole(roleId: string, permissionId: string, updatedBy: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
     assignRole(userId: string, roleId: string, assignedBy: string, expiresAt?: Date): Promise<{
         id: string;
-        userId: string;
-        roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
         isActive: boolean;
+        userId: string;
+        roleId: string;
     }>;
     revokeRole(userId: string, roleId: string, revokedBy: string): Promise<{
         id: string;
-        userId: string;
-        roleId: string;
         assignedAt: Date;
         assignedBy: string | null;
         expiresAt: Date | null;
         isActive: boolean;
+        userId: string;
+        roleId: string;
     }>;
     logAccess(data: {
         userId: string;
@@ -86,16 +86,16 @@ export declare class RbacService {
         details?: any;
     }): Promise<{
         id: string;
+        createdAt: Date;
         userId: string | null;
         roleId: string | null;
-        createdAt: Date;
-        permissionId: string | null;
         actionType: string;
         resourceType: string | null;
         resourceId: string | null;
         ipAddress: string | null;
         userAgent: string | null;
         details: import("@prisma/client/runtime/library").JsonValue | null;
+        permissionId: string | null;
         targetUserId: string | null;
     }>;
 }

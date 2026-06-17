@@ -29,18 +29,8 @@ export function formatCurrency(amount: number | string | any, locale?: string): 
         return locale === 'ar' ? '0,00 د.ج' : '0,00 DA';
     }
 
-    // Auto-detect locale from window if not provided
-    let activeLocale = locale;
-    if (!activeLocale && typeof window !== 'undefined') {
-        const pathParts = window.location.pathname.split('/');
-        const firstPart = pathParts[1];
-        if (['ar', 'fr', 'en'].includes(firstPart)) {
-            activeLocale = firstPart;
-        }
-    }
-    if (!activeLocale) {
-        activeLocale = 'fr';
-    }
+    // Default to 'fr' if not provided
+    let activeLocale = locale || 'fr';
 
     // For ar-DZ standard currency formatting with Latin numbers:
     const numLocale = activeLocale === 'ar' ? 'ar-DZ' : 'fr-DZ';
@@ -53,6 +43,15 @@ export function formatCurrency(amount: number | string | any, locale?: string): 
     // Normalize spacing to non-breaking space for consistency
     return formatted.replace(/[\u202f\u00a0]/g, '\u00a0') + suffix;
 }
+
+/**
+ * Formats a value specifically as Algerian Dinars (DA) using the French locale.
+ * Example: 1700411.77 -> "1 700 411,77 DA"
+ */
+export function formatDA(amount: number | string | any): string {
+    return formatCurrency(amount, 'fr');
+}
+
 
 /**
  * Formats a numeric value into a standardized price string (DA) using non-breaking spaces.

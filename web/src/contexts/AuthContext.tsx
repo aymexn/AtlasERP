@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   role: string;
+  preferredLocale?: string;
   employee?: {
     firstName: string;
     lastName: string;

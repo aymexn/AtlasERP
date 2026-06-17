@@ -308,6 +308,8 @@
             "stock": "Stock",
             "tasks": "Tasks"
         },
+        "units": "Units",
+        "activity_log": "Activity Log",
         "gauge": {
             "excellent": "EXCELLENT",
             "good": "GOOD",
@@ -399,7 +401,13 @@
                 "materials": "Materials & Supplies",
                 "logistics": "Logistics",
                 "consulting": "Consulting & Services",
-                "other": "Other"
+                "other": "Other",
+                "charges": "Electricity / Water Charges",
+                "loyer": "Industrial Rent",
+                "fournitures": "Office Supplies",
+                "formation": "Training",
+                "deplacement": "Travel",
+                "assurance": "Insurance"
             }
         }
     },

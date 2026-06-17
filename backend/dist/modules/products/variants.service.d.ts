@@ -4,41 +4,41 @@ export declare class VariantsService {
     constructor(prisma: PrismaService);
     findAll(productId: string): Promise<{
         id: string;
-        createdAt: Date;
         name: string | null;
+        createdAt: Date;
         isActive: boolean;
-        productId: string;
         sku: string;
+        productId: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     create(productId: string, data: any): Promise<{
         id: string;
-        createdAt: Date;
         name: string | null;
+        createdAt: Date;
         isActive: boolean;
-        productId: string;
         sku: string;
+        productId: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
     }>;
     update(id: string, data: any): Promise<{
         id: string;
-        createdAt: Date;
         name: string | null;
+        createdAt: Date;
         isActive: boolean;
-        productId: string;
         sku: string;
+        productId: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
     }>;
     remove(id: string): Promise<{
         id: string;
-        createdAt: Date;
         name: string | null;
+        createdAt: Date;
         isActive: boolean;
-        productId: string;
         sku: string;
+        productId: string;
         attributeValues: import("@prisma/client/runtime/library").JsonValue | null;
         priceAdjustment: import("@prisma/client/runtime/library").Decimal;
     }>;

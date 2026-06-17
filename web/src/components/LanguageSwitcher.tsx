@@ -19,9 +19,22 @@ export default function LanguageSwitcher() {
 
     const activeLanguage = LANGUAGES.find((lang) => lang.code === locale) || LANGUAGES[0];
 
-    const switchLocale = (newLocale: string) => {
+    const switchLocale = async (newLocale: string) => {
         // Set cookie for next-intl detection
         document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+        
+        try {
+            await fetch('/api/settings/locale', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ locale: newLocale })
+            });
+        } catch (e) {
+            // Ignore error if not logged in
+        }
+
         // Navigate to localized route (forcing refresh to apply RTL/LTR on server)
         window.location.href = `/${newLocale}${pathname === '/' ? '' : pathname}`;
         setIsOpen(false);

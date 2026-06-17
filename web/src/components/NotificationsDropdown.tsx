@@ -68,7 +68,13 @@ export default function NotificationsDropdown() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState<'all' | 'invoices' | 'stocks' | 'payments' | 'orders' | 'customers'>('all');
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isFormRoute = pathname.includes('/new') || pathname.includes('/edit');
 
@@ -96,8 +102,12 @@ export default function NotificationsDropdown() {
     };
 
     useEffect(() => {
-        // Disabled automatic fetching on mount to keep the layout silent
-    }, []);
+        fetchNotifications(true);
+        const interval = setInterval(() => {
+            fetchNotifications(false);
+        }, 60000);
+        return () => clearInterval(interval);
+    }, [pathname]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -108,6 +118,20 @@ export default function NotificationsDropdown() {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    if (!mounted) {
+        return (
+            <div className="relative">
+                <button
+                    id="notifications-bell"
+                    className="relative p-2.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
+                    aria-label="Notifications"
+                >
+                    <Bell size={20} />
+                </button>
+            </div>
+        );
+    }
 
     if (isFormRoute) {
         return null;
@@ -201,62 +225,122 @@ export default function NotificationsDropdown() {
                         </div>
                     </div>
 
-                    <div className="overflow-y-auto max-h-[400px]">
-                        {notifications.length === 0 ? (
-                            <div className="py-12 flex flex-col items-center gap-3 text-slate-300">
-                                <Bell size={32} />
-                                <p className="text-[11px] font-black uppercase tracking-widest">Aucune notification</p>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-slate-50">
-                                {notifications.map((n) => {
-                                    const config = priorityConfig[n.priority] || priorityConfig.info;
-                                    const Icon = config.icon;
-                                    return (
-                                        <button
-                                            key={n.id}
-                                            onClick={() => handleClick(n)}
-                                            className={`w-full text-left px-5 py-4 flex gap-3 hover:bg-slate-50 transition-all group ${!n.isRead ? 'bg-blue-50/30' : ''}`}
-                                        >
-                                            <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ring-2 ${config.ringColor} bg-white`}>
-                                                <Icon size={16} className={config.iconColor} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <p className={`text-sm leading-tight ${!n.isRead ? 'font-extrabold text-slate-900' : 'font-bold text-slate-700'}`}>
-                                                        {n.title}
-                                                    </p>
-                                                    {!n.isRead && (
-                                                        <span className={`flex-shrink-0 w-2 h-2 rounded-full mt-1.5 ${config.dot}`} />
+                    <div className="flex border-b border-slate-100 overflow-x-auto scrollbar-none bg-slate-50/50 px-2 py-1.5 gap-1 select-none">
+                        {[
+                            { id: 'all', label: 'Tous' },
+                            { id: 'invoices', label: 'Factures' },
+                            { id: 'stocks', label: 'Stocks' },
+                            { id: 'payments', label: 'Paiements' },
+                            { id: 'orders', label: 'Achats' },
+                            { id: 'customers', label: 'Clients' }
+                        ].map((tab) => {
+                            const count = notifications.filter(n => {
+                                if (tab.id === 'all') return !n.isRead;
+                                if (tab.id === 'invoices') return n.notificationType === 'unpaid-invoice' && !n.isRead;
+                                if (tab.id === 'stocks') return n.notificationType === 'low-stock-alert' && !n.isRead;
+                                if (tab.id === 'payments') return n.notificationType === 'payment-received' && !n.isRead;
+                                if (tab.id === 'orders') return n.notificationType === 'purchase-order-pending' && !n.isRead;
+                                if (tab.id === 'customers') return n.notificationType === 'new-customer' && !n.isRead;
+                                return false;
+                            }).length;
+
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black whitespace-nowrap transition-all ${
+                                        activeTab === tab.id
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    {tab.label}
+                                    {count > 0 && (
+                                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                                            activeTab === tab.id
+                                                ? 'bg-white text-blue-600'
+                                                : 'bg-slate-200 text-slate-700'
+                                        }`}>
+                                            {count}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="overflow-y-auto max-h-[350px]">
+                        {(() => {
+                            const filtered = notifications.filter(n => {
+                                if (activeTab === 'all') return true;
+                                if (activeTab === 'invoices') return n.notificationType === 'unpaid-invoice';
+                                if (activeTab === 'stocks') return n.notificationType === 'low-stock-alert';
+                                if (activeTab === 'payments') return n.notificationType === 'payment-received';
+                                if (activeTab === 'orders') return n.notificationType === 'purchase-order-pending';
+                                if (activeTab === 'customers') return n.notificationType === 'new-customer';
+                                return true;
+                            });
+
+                            if (filtered.length === 0) {
+                                return (
+                                    <div className="py-12 flex flex-col items-center gap-3 text-slate-300">
+                                        <Bell size={32} />
+                                        <p className="text-[11px] font-black uppercase tracking-widest">Aucune notification</p>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div className="divide-y divide-slate-50">
+                                    {filtered.map((n) => {
+                                        const config = priorityConfig[n.priority as keyof typeof priorityConfig] || priorityConfig.info;
+                                        const Icon = config.icon;
+                                        return (
+                                            <button
+                                                key={n.id}
+                                                onClick={() => handleClick(n)}
+                                                className={`w-full text-left px-5 py-4 flex gap-3 hover:bg-slate-50 transition-all group ${!n.isRead ? 'bg-blue-50/30' : ''}`}
+                                            >
+                                                <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ring-2 ${config.ringColor} bg-white`}>
+                                                    <Icon size={16} className={config.iconColor} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <p className={`text-sm leading-tight ${!n.isRead ? 'font-extrabold text-slate-900' : 'font-bold text-slate-700'}`}>
+                                                            {n.title}
+                                                        </p>
+                                                        {!n.isRead && (
+                                                            <span className={`flex-shrink-0 w-2 h-2 rounded-full mt-1.5 ${config.dot}`} />
+                                                        )}
+                                                    </div>
+                                                    {n.message && (
+                                                        <p className="text-xs text-slate-500 mt-0.5 truncate">{n.message}</p>
                                                     )}
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${config.badge}`}>
+                                                            {config.label}
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-400">{timeAgo(n.createdAt)}</span>
+                                                    </div>
                                                 </div>
-                                                {n.message && (
-                                                    <p className="text-xs text-slate-500 mt-0.5 truncate">{n.message}</p>
+                                                {n.linkUrl && (
+                                                    <ChevronRight size={14} className="flex-shrink-0 text-slate-300 group-hover:text-slate-500 mt-2 transition-colors" />
                                                 )}
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${config.badge}`}>
-                                                        {config.label}
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-400">{timeAgo(n.createdAt)}</span>
-                                                </div>
-                                            </div>
-                                            {n.linkUrl && (
-                                                <ChevronRight size={14} className="flex-shrink-0 text-slate-300 group-hover:text-slate-500 mt-2 transition-colors" />
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {notifications.length > 0 && (
                         <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50">
                             <button
-                                onClick={() => { router.push('/collaboration/activity' as any); setOpen(false); }}
+                                onClick={() => { router.push('/notifications' as any); setOpen(false); }}
                                 className="w-full text-center text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors"
                             >
-                                Voir toutes les activites
+                                Voir toutes les notifications →
                             </button>
                         </div>
                     )}

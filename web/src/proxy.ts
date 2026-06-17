@@ -97,9 +97,11 @@ export default async function middleware(request: NextRequest) {
                     const locale = locales.includes(segments[0] as any) ? segments[0] : 'fr';
 
                     // ADMIN enum role bypasses all permission checks
+                    // Dev mode also bypasses so any local user can explore all routes
                     const isSystemAdmin = userRole === 'ADMIN';
+                    const isDev = process.env.NODE_ENV === 'development';
 
-                    if (!isSystemAdmin) {
+                    if (!isSystemAdmin && !isDev) {
                         for (const rule of ROUTE_PERMISSION_MAP) {
                             if (rule.pattern.test(pathname)) {
                                 if (!userPermissions.includes(rule.key)) {

@@ -188,17 +188,48 @@ export class DashboardService {
       reorderPoint: Number(p.reorderPoint || 10)
     }));
 
+    // Load actual active manufacturing orders list
+    const activeOrdersList = await prisma.manufacturingOrder.findMany({
+      where: {
+        companyId,
+        status: { in: ['PLANNED', 'IN_PROGRESS'] }
+      },
+      include: {
+        product: {
+          select: { name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    });
+
+    const activeOrdersDetails = activeOrdersList.map(mo => {
+      const planned = Number(mo.plannedQuantity || 0);
+      const produced = Number(mo.producedQuantity || 0);
+      return {
+        id: mo.id,
+        reference: mo.reference,
+        productName: mo.product.name,
+        plannedQuantity: planned,
+        producedQuantity: produced,
+        unit: mo.unit,
+        progress: planned > 0 ? Math.min(100, Math.round((produced / planned) * 100)) : 0,
+        status: mo.status
+      };
+    });
+
     if (kpis['production_stats']) {
       return {
         activeOrders: kpis['production_stats'].metadata?.inProgress || kpis['production_stats'].value,
         realCost: kpis['production_stats'].metadata?.actualCosts || 0,
         stockAlerts: lowStockDetails.length,
-        lowStockProducts: lowStockDetails
+        lowStockProducts: lowStockDetails,
+        activeOrdersDetails
       };
     }
 
     // FALLBACK
-    const activeManufacturingOrders = await prisma.manufacturingOrder.count({
+    const activeManufacturingOrdersCount = await prisma.manufacturingOrder.count({
       where: {
         companyId,
         status: { in: ['PLANNED', 'IN_PROGRESS'] }
@@ -214,10 +245,11 @@ export class DashboardService {
     });
 
     return {
-      activeOrders: activeManufacturingOrders,
+      activeOrders: activeManufacturingOrdersCount,
       realCost: Number(totalCostResult._sum.totalActualCost || 0),
       stockAlerts: lowStockDetails.length,
-      lowStockProducts: lowStockDetails
+      lowStockProducts: lowStockDetails,
+      activeOrdersDetails
     };
   }
 
@@ -225,6 +257,54 @@ export class DashboardService {
    * Forteresse Financière
    */
   async getFinancialStats(companyId: string) {
+    const useBizDates = await this.useBusinessDates(companyId);
+    const now = new Date();
+    const thisMonthStart = startOfMonth(now);
+
+    const dateFilter = useBizDates
+      ? { date: { gte: thisMonthStart } }
+      : { createdAt: { gte: thisMonthStart } };
+
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = useBizDates
+        ? new Date(Date.UTC(2026, 5 - i, 1))
+        : new Date();
+      if (!useBizDates) d.setMonth(d.getMonth() - i);
+      return {
+        start: startOfMonth(d),
+        end: endOfMonth(d),
+        label: d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
+      };
+    }).reverse();
+
+    const [payments, expenses] = await Promise.all([
+      prisma.payment.findMany({
+        where: { companyId },
+        select: { amount: true, date: true, createdAt: true }
+      }),
+      prisma.expense.findMany({
+        where: { companyId },
+        select: { amount: true, date: true, createdAt: true }
+      })
+    ]);
+
+    const treasuryHistory = months.map(month => {
+      let received = 0;
+      let sent = 0;
+      payments.forEach(p => {
+        const pDate = useBizDates ? p.date : p.createdAt;
+        if (pDate <= month.end) received += Number(p.amount);
+      });
+      expenses.forEach(e => {
+        const eDate = useBizDates ? e.date : e.createdAt;
+        if (eDate <= month.end) sent += Number(e.amount);
+      });
+      return {
+        date: month.label,
+        balance: received - sent
+      };
+    });
+
     const kpis = await this.getKpis(companyId);
 
     if (kpis['cash_flow']) {
@@ -233,21 +313,12 @@ export class DashboardService {
         invoicedRevenue: kpis['revenue']?.value || 0,
         collected: kpis['collected_revenue']?.value || 0,
         recoveryRate: kpis['recovery_rate']?.value || 0,
-        profitability: kpis['profitability']?.value || 0
+        profitability: kpis['profitability']?.value || 0,
+        treasuryHistory
       };
     }
 
     // FALLBACK
-    const payments = await prisma.payment.findMany({
-      where: { companyId },
-      select: { amount: true }
-    });
-
-    const expenses = await prisma.expense.findMany({
-      where: { companyId },
-      select: { amount: true }
-    });
-
     let received = 0;
     let sent = 0;
     payments.forEach(p => received += Number(p.amount));
@@ -258,7 +329,8 @@ export class DashboardService {
     const invoicedRevenue = await prisma.invoice.aggregate({
       where: {
         companyId,
-        status: { in: ['PAID', 'PARTIAL', 'SENT'] }
+        status: { in: ['PAID', 'PARTIAL', 'SENT'] },
+        ...dateFilter
       },
       _sum: { totalAmountTtc: true }
     });
@@ -266,7 +338,10 @@ export class DashboardService {
     const totalInvoiced = Number(invoicedRevenue._sum.totalAmountTtc || 0);
 
     const collectedRevenue = await prisma.invoice.aggregate({
-      where: { companyId },
+      where: { 
+        companyId,
+        ...dateFilter
+      },
       _sum: { amountPaid: true }
     });
 
@@ -282,7 +357,8 @@ export class DashboardService {
       invoicedRevenue: totalInvoiced,
       collected,
       recoveryRate,
-      profitability
+      profitability,
+      treasuryHistory
     };
   }
 

@@ -9,11 +9,11 @@ const styles = StyleSheet.create({
   ...sharedStyles,
   // ── Table columns (landscape A4 = ~820pt usable width) ──────────────────────
   // Requested: Article/SKU (40%) | Famille (25%) | Quantité (15%) | Unité (10%) | Valorisation (10%)
-  colArticle:    { width: '40%' },
-  colFamily:     { width: '25%' },
-  colQty:        { width: '15%', textAlign: 'right' },
+  colArticle:    { width: '35%' },
+  colFamily:     { width: '20%' },
+  colQty:        { width: '10%', textAlign: 'right' },
   colUnit:       { width: '10%', textAlign: 'center' },
-  colValuation:  { width: '10%', textAlign: 'right' },
+  colValuation:  { width: '25%', textAlign: 'right' },
 
   // ── Branding & Styles ───────────────────────────────────────────────────────
   headerBlue: {
@@ -69,6 +69,13 @@ interface Props {
 }
 
 export const InventoryReportTemplate: React.FC<Props> = ({ products, company, date }) => {
+  // Column width assertion
+  const colWidths = [35, 20, 10, 10, 25];
+  const sumWidths = colWidths.reduce((a, b) => a + b, 0);
+  if (Math.abs(sumWidths - 100) > 0.01) {
+    throw new Error(`Inventory PDF columns percentage sum must be exactly 100%, but got ${sumWidths}%`);
+  }
+
   const docRef = `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`;
   const generationTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 

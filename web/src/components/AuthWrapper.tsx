@@ -132,6 +132,15 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         checkAuth();
     }, [router, pathname, locale]);
 
+    // ── Locale enforcement based on preferredLocale ──────────────────────────
+    useEffect(() => {
+        if (user?.preferredLocale && user.preferredLocale !== locale) {
+            document.cookie = `NEXT_LOCALE=${user.preferredLocale}; path=/; max-age=31536000; SameSite=Lax`;
+            const cleanPath = window.location.pathname.replace(/^\/(fr|en|ar)/, '');
+            window.location.href = `/${user.preferredLocale}${cleanPath}${window.location.search}`;
+        }
+    }, [user, locale]);
+
     // ── Handle "Restored" success flash timeout ────────────────────────────────
     useEffect(() => {
         if (phase === 'restored') {

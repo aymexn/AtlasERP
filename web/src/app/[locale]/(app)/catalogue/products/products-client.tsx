@@ -18,12 +18,15 @@ import {
     Layers,
     Tag,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Download,
+    FileText
 } from 'lucide-react';
 import { familiesService, ProductFamily } from '@/services/families';
 import { ProductModal } from '@/components/modals/product-modal';
 import { DataTable } from '@/components/ui/data-table';
 import { toast } from 'sonner';
+import { downloadPdf } from '@/lib/download-pdf';
 
 export default function ProductsClient() {
     const t = useTranslations('products');
@@ -115,6 +118,20 @@ export default function ProductsClient() {
                     <p className="text-slate-500 font-medium mt-1">Gestion haute-densité et configuration du catalogue industriel</p>
                 </div>
                 <div className="flex gap-3">
+                    <button
+                        onClick={() => downloadPdf('/api/pdf/catalogue', `Catalogue_${new Date().toISOString().slice(0, 10)}.pdf`)}
+                        className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-205 px-5 py-3 rounded-2xl font-bold shadow-xs transition-all active:scale-95 text-sm"
+                    >
+                        <FileText size={18} className="text-slate-500" />
+                        Exporter Catalogue
+                    </button>
+                    <button
+                        onClick={() => downloadPdf('/api/pdf/inventory', `Inventaire_${new Date().toISOString().slice(0, 10)}.pdf`)}
+                        className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-205 px-5 py-3 rounded-2xl font-bold shadow-xs transition-all active:scale-95 text-sm"
+                    >
+                        <Download size={18} className="text-slate-500" />
+                        Export Inventaire
+                    </button>
                     <button
                         onClick={() => router.push('/catalogue/products/new')}
                         className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold shadow-xl transition-all active:scale-95 text-sm"

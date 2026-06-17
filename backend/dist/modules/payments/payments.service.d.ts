@@ -14,26 +14,26 @@ export declare class PaymentsService {
         };
     } & {
         id: string;
-        createdAt: Date;
         companyId: string;
-        notes: string | null;
+        createdAt: Date;
         updatedAt: Date;
         reference: string | null;
         date: Date;
-        invoiceId: string;
+        notes: string | null;
         amount: Prisma.Decimal;
+        invoiceId: string;
         method: import(".prisma/client").$Enums.PaymentMethod;
     })[]>;
     recordPayment(companyId: string, data: any): Promise<{
         id: string;
-        createdAt: Date;
         companyId: string;
-        notes: string | null;
+        createdAt: Date;
         updatedAt: Date;
         reference: string | null;
         date: Date;
-        invoiceId: string;
+        notes: string | null;
         amount: Prisma.Decimal;
+        invoiceId: string;
         method: import(".prisma/client").$Enums.PaymentMethod;
     }>;
 }

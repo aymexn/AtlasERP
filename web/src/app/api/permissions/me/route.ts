@@ -47,7 +47,7 @@ export async function GET() {
             return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
         }
 
-        const isSystemAdmin = user.role === 'ADMIN' || user.roles.some(r => r.role.name === 'ADMIN');
+        const isSystemAdmin = user.role === 'ADMIN' || user.roles.some(r => ['admin', 'administrator'].includes(r.role.name.toLowerCase()));
         
         let permissionsList: any[] = [];
         let userRoles: any[] = [];
@@ -64,9 +64,9 @@ export async function GET() {
             }));
 
             // Ensure an ADMIN role is present in roles list if they are admin
-            if (!userRoles.some(r => r.name === 'ADMIN')) {
-                const adminRole = await prisma.appRole.findUnique({
-                    where: { name: 'ADMIN' }
+            if (!userRoles.some(r => ['admin', 'administrator', 'admin'].includes(r.name.toLowerCase()))) {
+                const adminRole = await prisma.appRole.findFirst({
+                    where: { name: { in: ['admin', 'administrator'], mode: 'insensitive' } }
                 });
                 if (adminRole) {
                     userRoles.push({

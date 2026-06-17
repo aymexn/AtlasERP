@@ -11,9 +11,7 @@ const nextConfig: any = {
     '172.23.80.1:3001'
   ],
 
-  devIndicators: {
-    appIsrStatus: false,
-  }
+  devIndicators: false
 };
 
 export default withNextIntl(nextConfig as NextConfig);

@@ -296,6 +296,8 @@
             "stock": "مخزون",
             "tasks": "مهام"
         },
+        "units": "وحدات",
+        "activity_log": "سجل النشاطات",
         "gauge": {
             "excellent": "ممتاز",
             "good": "جيد",
@@ -948,7 +950,13 @@
                 "materials": "مواد وتوريدات",
                 "logistics": "اللوجستيات",
                 "consulting": "استشارات وخدمات",
-                "other": "أخرى"
+                "other": "أخرى",
+                "charges": "رسوم الكهرباء والماء",
+                "loyer": "الإيجار الصناعي",
+                "fournitures": "المستلزمات المكتبية",
+                "formation": "التدريب",
+                "deplacement": "التنقل",
+                "assurance": "التأمين"
             }
         }
     },

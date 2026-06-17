@@ -50,6 +50,6 @@ export const treasuryService = {
   getCollectionActivities: (customerId: string): Promise<any[]> => 
     apiFetch(`/treasury/collections/activities/${customerId}`),
 
-  getForecast: (): Promise<any[]> => 
-    apiFetch('/treasury/forecast'),
+  getForecast: (days = 30): Promise<any[]> => 
+    apiFetch(`/treasury/forecast?days=${days}`),
 };

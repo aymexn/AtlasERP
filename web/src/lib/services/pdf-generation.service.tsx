@@ -11,6 +11,7 @@ import { ClientStatementTemplate } from '../pdf/templates/client-statement';
 import { ProductionOrderTemplate } from '../pdf/templates/production-order';
 import { SupplierCardTemplate } from '../pdf/templates/supplier-card';
 import { CustomerDossierTemplate } from '../pdf/templates/customer-dossier';
+import { CataloguePDFTemplate } from '../pdf/templates/catalogue';
 
 /** Recursively convert all Prisma Decimal objects to plain JS numbers */
 function sanitizeDecimals(obj: any): any {
@@ -155,6 +156,24 @@ export class PDFGenerationService {
     }
   }
 
+  static async generateCataloguePDF(companyId: string) {
+    try {
+      const rawProducts = await prisma.product.findMany({
+        where: { companyId, isActive: true },
+        include: { family: true }
+      });
+
+      const company = await this.getCompany(companyId);
+      const products = sanitizeDecimals(rawProducts);
+      const date = new Date().toLocaleDateString('fr-FR');
+
+      return await renderToStream(<CataloguePDFTemplate products={products} company={company} date={date} />);
+    } catch (error: any) {
+      console.error(`ERREUR PDF Catalogue : ${error.message}`);
+      throw error;
+    }
+  }
+
   static async generateExpensesRecapPDF(companyId: string, startDate?: string, endDate?: string) {
     try {
       const where: any = { companyId };
@@ -164,7 +183,10 @@ export class PDFGenerationService {
         if (endDate) where.date.lte = new Date(endDate);
       }
 
-      const rawExpenses = await prisma.expense?.findMany({ where }) || [];
+      const rawExpenses = await prisma.expense?.findMany({
+        where,
+        orderBy: { date: 'desc' }
+      }) || [];
       const company = await this.getCompany(companyId);
       const expenses = sanitizeDecimals(rawExpenses);
       const dateRange = startDate && endDate ? `Du ${startDate} au ${endDate}` : 'Tout historique';

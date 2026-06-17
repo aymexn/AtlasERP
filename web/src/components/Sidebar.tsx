@@ -32,20 +32,54 @@ import {
     CheckSquare,
     Zap
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Can } from '@/components/guards/PermissionGuard';
 import { usePermissions } from '@/contexts/PermissionContext';
 import { useAuth } from '@/contexts/AuthContext';
+import Logo from '@/components/ui/logo';
 
 const Sidebar = () => {
     const t = useTranslations('nav');
     const pathname = usePathname();
     const [collapsed, setCollapsed] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const [expandedSections, setExpandedSections] = useState<string[]>(['dashboard', 'commerce', 'administration']);
     const { hasPermission: originalHasPermission } = usePermissions();
     const { user } = useAuth();
 
+    useEffect(() => {
+        const stored = localStorage.getItem('atlas_sidebar_collapsed');
+        if (stored === 'true') {
+            setCollapsed(true);
+        }
+        setMounted(true);
+    }, []);
+
+    const toggleCollapse = () => {
+        const nextCollapsed = !collapsed;
+        setCollapsed(nextCollapsed);
+        localStorage.setItem('atlas_sidebar_collapsed', String(nextCollapsed));
+    };
+
+    const handleGroupClick = (groupId: string) => {
+        setCollapsed(false);
+        localStorage.setItem('atlas_sidebar_collapsed', 'false');
+        if (!expandedSections.includes(groupId)) {
+            setExpandedSections(prev => [...prev, groupId]);
+        }
+    };
+
+    const isGroupActive = (group: any) => {
+        if (group.id === 'administration') {
+            return adminSubItems.some(item => pathname === item.href);
+        }
+        return group.items.some((item: any) => pathname === item.href);
+    };
+
+    const isDev = process.env.NODE_ENV === 'development';
+
     const hasPermission = (moduleOrPermission: string, resource?: string, action?: string) => {
+        if (isDev || user?.role === 'ADMIN') return true;
         if (!resource || !action) {
             if (moduleOrPermission === 'USERS_VIEW') return originalHasPermission('users', 'user', 'read');
             if (moduleOrPermission === 'PERMISSIONS_VIEW') return originalHasPermission('roles', 'role', 'read');
@@ -195,26 +229,31 @@ const Sidebar = () => {
         }
     ];
 
+    if (!mounted) {
+        return (
+            <aside className="bg-white border-r border-slate-100 shadow-xl w-[280px] h-screen sticky top-0 flex flex-col shrink-0">
+                <div className="w-full h-16 flex items-center border-b border-gray-100 bg-white px-5">
+                    <Logo variant="full" width={130} height={36} />
+                </div>
+                <div className="flex-1 py-4 space-y-4 px-3">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className="h-11 bg-slate-50 animate-pulse rounded-xl" />
+                    ))}
+                </div>
+            </aside>
+        );
+    }
+
     return (
         <aside
             className={`
                 bg-white border-r border-slate-100 shadow-xl transition-all duration-300 z-50 sticky top-0 h-screen flex flex-col shrink-0
-                ${collapsed ? 'w-[70px]' : 'w-[280px]'}
+                ${collapsed ? 'w-16' : 'w-[280px]'}
             `}
         >
             {/* Header / Brand */}
-            <div className={`h-14 flex items-center border-b border-slate-50 shrink-0 transition-all ${collapsed ? 'justify-center px-0' : 'px-4'}`}>
-                <div className="h-10 w-10 shrink-0 bg-blue-600 rounded-[10px] flex items-center justify-center font-bold text-[18px] text-white shadow-sm">
-                    A
-                </div>
-                {!collapsed && (
-                    <div className="ml-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-500">
-                        <span className="text-[18px] font-bold tracking-tight">
-                            <span className="text-slate-800">Atlas</span>
-                            <span className="text-blue-600">ERP</span>
-                        </span>
-                    </div>
-                )}
+            <div className={`w-full h-16 flex items-center border-b border-gray-100 bg-white ${collapsed ? 'justify-center px-0' : 'px-5'}`}>
+                <Logo variant={collapsed ? 'icon-only' : 'full'} width={collapsed ? 32 : 130} height={collapsed ? 32 : 36} />
             </div>
 
             {/* Navigation */}
@@ -222,18 +261,22 @@ const Sidebar = () => {
                 {menuStructure.map((group) => {
                     const isExpanded = expandedSections.includes(group.id);
                     const GroupIcon = group.icon;
+                    const active = isGroupActive(group);
 
                     return (
-                        <div key={group.id} className="px-3">
+                        <div key={group.id} className="px-3 relative group/tooltip">
                             <button
-                                onClick={() => !collapsed && toggleSection(group.id)}
+                                onClick={() => collapsed ? handleGroupClick(group.id) : toggleSection(group.id)}
                                 className={`
-                                    w-full flex items-center gap-3 h-11 rounded-xl transition-all
+                                    w-full flex items-center gap-3 h-11 rounded-xl transition-all relative
                                     ${collapsed ? 'justify-center px-0' : 'px-4'}
-                                    ${isExpanded && !collapsed ? 'bg-slate-50/50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}
+                                    ${collapsed 
+                                        ? (active ? 'bg-blue-50/75 text-blue-600' : 'text-slate-500 hover:bg-slate-50')
+                                        : (isExpanded ? 'bg-slate-50/50 text-blue-600' : 'text-slate-500 hover:bg-slate-50')
+                                    }
                                 `}
                             >
-                                <GroupIcon size={20} className="shrink-0" />
+                                <GroupIcon size={20} className={`shrink-0 ${collapsed && active ? 'text-blue-600' : ''}`} />
                                 {!collapsed && (
                                     <>
                                         <span className="flex-1 text-[13px] font-bold text-left whitespace-nowrap overflow-hidden text-ellipsis">
@@ -246,6 +289,18 @@ const Sidebar = () => {
                                     </>
                                 )}
                             </button>
+
+                            {/* Active border accent for collapsed mode */}
+                            {active && collapsed && (
+                                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-md" />
+                            )}
+
+                            {/* Collapsed Tooltip */}
+                            {collapsed && (
+                                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap z-50">
+                                    {group.title}
+                                </div>
+                            )}
 
                             {/* Sub-items */}
                             {!collapsed && isExpanded && (
@@ -312,7 +367,8 @@ const Sidebar = () => {
             {/* Footer / Toggle */}
             <div className="p-3 border-t border-slate-50 bg-slate-50/30">
                 <button
-                    onClick={() => setCollapsed(!collapsed)}
+                    onClick={toggleCollapse}
+                    title={collapsed ? "Agrandir le menu" : "Réduire le menu"}
                     className={`
                         flex items-center rounded-xl transition-all h-11 w-full
                         ${collapsed ? 'justify-center px-0' : 'px-4 gap-4'}
@@ -325,7 +381,7 @@ const Sidebar = () => {
                         <>
                             <ChevronLeft size={20} />
                             <span className="text-[10px] uppercase font-black tracking-widest opacity-60">
-                                {t('items.settings') || 'REDUCE'}
+                                RÉDUIRE
                             </span>
                         </>
                     )}

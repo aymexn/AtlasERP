@@ -11,26 +11,26 @@ export declare class PaymentsController {
         };
     } & {
         id: string;
-        createdAt: Date;
         companyId: string;
-        notes: string | null;
+        createdAt: Date;
         updatedAt: Date;
         reference: string | null;
         date: Date;
-        invoiceId: string;
+        notes: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        invoiceId: string;
         method: import(".prisma/client").$Enums.PaymentMethod;
     })[]>;
     recordPayment(body: any, req: any): Promise<{
         id: string;
-        createdAt: Date;
         companyId: string;
-        notes: string | null;
+        createdAt: Date;
         updatedAt: Date;
         reference: string | null;
         date: Date;
-        invoiceId: string;
+        notes: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        invoiceId: string;
         method: import(".prisma/client").$Enums.PaymentMethod;
     }>;
 }

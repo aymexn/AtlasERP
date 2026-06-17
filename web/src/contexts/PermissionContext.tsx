@@ -145,10 +145,12 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
   }, [userId]);
 
   const hasPermission = (module: string, resource: string, action: string): boolean => {
+    if (process.env.NODE_ENV === 'development' || user?.role === 'ADMIN') return true;
     return grouped[module]?.[resource]?.includes(action) || false;
   };
 
   const hasAnyPermission = (required: { module: string, resource: string, action: string }[]): boolean => {
+    if (process.env.NODE_ENV === 'development' || user?.role === 'ADMIN') return true;
     return required.some(r => hasPermission(r.module, r.resource, r.action));
   };
 

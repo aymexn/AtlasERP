@@ -14,8 +14,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomersController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const customers_service_1 = require("./customers.service");
+const create_customer_dto_1 = require("./dto/create-customer.dto");
 let CustomersController = class CustomersController {
     constructor(customersService) {
         this.customersService = customersService;
@@ -29,8 +31,8 @@ let CustomersController = class CustomersController {
     async findOne(req, id) {
         return this.customersService.findOne(req.user.companyId, id);
     }
-    async create(req, data) {
-        return this.customersService.create(req.user.companyId, data);
+    async create(req, createCustomerDto) {
+        return this.customersService.create(req.user.companyId, createCustomerDto);
     }
     async update(req, id, data) {
         return this.customersService.update(req.user.companyId, id, data);
@@ -69,7 +71,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, create_customer_dto_1.CreateCustomerDto]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "create", null);
 __decorate([
@@ -90,6 +92,8 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "remove", null);
 exports.CustomersController = CustomersController = __decorate([
+    (0, swagger_1.ApiTags)('Customers'),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('customers'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [customers_service_1.CustomersService])

@@ -5,17 +5,17 @@ export declare class ReorderPointService {
     private readonly logger;
     constructor(prisma: PrismaService);
     calculateReorderPoint(companyId: string, productId: string, warehouseId: string | null, serviceLevelPercent?: number): Promise<{
-        id: string;
-        createdAt: Date;
-        companyId: string;
-        updatedAt: Date;
         reorderPoint: Decimal;
+        id: string;
+        companyId: string;
+        createdAt: Date;
+        updatedAt: Date;
         productId: string;
+        leadTimeDays: number | null;
         warehouseId: string | null;
         safetyStock: Decimal;
         reorderQuantity: Decimal;
         maximumStock: Decimal | null;
-        leadTimeDays: number | null;
         averageDailyDemand: Decimal | null;
         demandVariability: Decimal | null;
         serviceLevel: Decimal;

@@ -10,6 +10,14 @@ export class RbacService {
    * Check if user has specific permission
    */
   async checkPermission(userId: string, module: string, resource: string, action: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true }
+    });
+    if (user?.role === 'ADMIN') {
+      return true;
+    }
+
     const userRoles = await this.prisma.userRole.findMany({
       where: {
         userId,
@@ -49,6 +57,13 @@ export class RbacService {
    * Get all permissions for a user
    */
   async getUserPermissions(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true }
+    });
+
+    const isSystemAdmin = user?.role === 'ADMIN';
+
     const userRoles = await this.prisma.userRole.findMany({
       where: {
         userId,
@@ -75,18 +90,30 @@ export class RbacService {
     const detailed = [];
     const grouped: Record<string, Record<string, string[]>> = {};
 
-    for (const userRole of userRoles) {
-      for (const rp of userRole.role.permissions) {
-        const p = rp.permission;
+    if (isSystemAdmin) {
+      const allPerms = await this.prisma.appPermission.findMany();
+      for (const p of allPerms) {
         const key = `${p.module}:${p.resource}:${p.action}`;
-        
-        if (!permissions.has(key)) {
-          permissions.add(key);
-          detailed.push(p);
+        permissions.add(key);
+        detailed.push(p);
+        if (!grouped[p.module]) grouped[p.module] = {};
+        if (!grouped[p.module][p.resource]) grouped[p.module][p.resource] = [];
+        grouped[p.module][p.resource].push(p.action);
+      }
+    } else {
+      for (const userRole of userRoles) {
+        for (const rp of userRole.role.permissions) {
+          const p = rp.permission;
+          const key = `${p.module}:${p.resource}:${p.action}`;
           
-          if (!grouped[p.module]) grouped[p.module] = {};
-          if (!grouped[p.module][p.resource]) grouped[p.module][p.resource] = [];
-          grouped[p.module][p.resource].push(p.action);
+          if (!permissions.has(key)) {
+            permissions.add(key);
+            detailed.push(p);
+            
+            if (!grouped[p.module]) grouped[p.module] = {};
+            if (!grouped[p.module][p.resource]) grouped[p.module][p.resource] = [];
+            grouped[p.module][p.resource].push(p.action);
+          }
         }
       }
     }
@@ -96,6 +123,25 @@ export class RbacService {
       name: ur.role.name,
       displayName: ur.role.displayName,
     }));
+
+    if (isSystemAdmin && !roles.some(r => ['admin', 'administrator'].includes(r.name.toLowerCase()))) {
+      const adminRole = await this.prisma.appRole.findFirst({
+        where: { name: { in: ['admin', 'administrator'], mode: 'insensitive' } }
+      });
+      if (adminRole) {
+        roles.push({
+          id: adminRole.id,
+          name: adminRole.name,
+          displayName: adminRole.displayName
+        });
+      } else {
+        roles.push({
+          id: 'admin-mock-id',
+          name: 'ADMIN',
+          displayName: 'Administrateur'
+        });
+      }
+    }
 
     return { roles, permissions: detailed, grouped };
   }

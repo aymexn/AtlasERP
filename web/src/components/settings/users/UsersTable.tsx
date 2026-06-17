@@ -1,8 +1,7 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Mail, Shield, MoreVertical, UserX, UserCheck, Eye, Trash2, Ban } from 'lucide-react';
 import { useRouter } from '@/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 
 export interface AppRole {
   id: string;
@@ -38,6 +37,8 @@ export default function UsersTable({
   onDelete
 }: UsersTableProps) {
   const router = useRouter();
+  const t = useTranslations('admin.users');
+  const locale = useLocale();
   const [activeMenuUserId, setActiveMenuUserId] = useState<string | null>(null);
 
   const filteredUsers = users.filter(u =>
@@ -73,22 +74,48 @@ export default function UsersTable({
     }
   };
 
+  const getRoleDisplayName = (displayName: string, loc: string) => {
+    const name = displayName.toUpperCase();
+    if (loc === 'en') {
+      if (name.includes('ADMIN')) return 'Administrator';
+      if (name.includes('COLLABORATEUR') || name.includes('USER')) return 'Collaborator';
+      if (name.includes('COMMERCIAL') || name.includes('VENTE')) return 'Commercial/Sales';
+      if (name.includes('COMPTABLE') || name.includes('ACCOUNTANT')) return 'Accountant';
+      if (name.includes('MAGASINIER')) return 'Warehouse Manager';
+    } else if (loc === 'ar') {
+      if (name.includes('ADMIN')) return 'مسؤول';
+      if (name.includes('COLLABORATEUR') || name.includes('USER')) return 'متعاون';
+      if (name.includes('COMMERCIAL') || name.includes('VENTE')) return 'تجاري / مبيعات';
+      if (name.includes('COMPTABLE') || name.includes('ACCOUNTANT')) return 'محاسب';
+      if (name.includes('MAGASINIER')) return 'أمين مخزن';
+    }
+    return displayName;
+  };
+
   return (
     <div className="overflow-x-auto overflow-y-visible">
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/50">
-            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
-            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rôles Actifs</th>
-            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
-            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {t('table.user')}
+            </th>
+            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {t('table.roles')}
+            </th>
+            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {t('table.status')}
+            </th>
+            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+              {t('table.actions')}
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {filteredUsers.length === 0 ? (
             <tr>
               <td colSpan={4} className="text-center py-12 text-slate-400 font-bold text-sm">
-                Aucun utilisateur trouvé
+                {locale === 'ar' ? 'لم يتم العثور على مستخدمين' : locale === 'en' ? 'No users found' : 'Aucun utilisateur trouvé'}
               </td>
             </tr>
           ) : (
@@ -104,7 +131,7 @@ export default function UsersTable({
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Mail size={10} className="text-slate-400" />
                         <span className="text-[10px] font-bold text-slate-400">
-                          {user.roles[0]?.role.displayName ?? 'Collaborateur'}
+                          {getRoleDisplayName(user.roles[0]?.role.displayName ?? 'Collaborateur', locale)}
                         </span>
                       </div>
                     </div>
@@ -120,14 +147,14 @@ export default function UsersTable({
                         title="Voir le rôle et ses permissions"
                       >
                         <Shield size={10} />
-                        {ur.role.displayName}
+                        {getRoleDisplayName(ur.role.displayName, locale)}
                       </button>
                     ))}
                     <button
                       onClick={() => onEditRole(user)}
                       className="px-3 py-1 border border-dashed border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-600 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all"
                     >
-                      + AJOUTER
+                      {locale === 'ar' ? '+ إضافة' : locale === 'en' ? '+ ADD' : '+ AJOUTER'}
                     </button>
                   </div>
                 </td>
@@ -138,8 +165,9 @@ export default function UsersTable({
                       user.status === 'PENDING' ? 'bg-amber-500' : 'bg-slate-400'
                     }`}></div>
                     <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                      {user.status === 'ACTIVE' ? 'Accepté' :
-                       user.status === 'PENDING' ? 'En attente' : 'Suspendu'}
+                      {user.status === 'ACTIVE' ? (locale === 'ar' ? 'نشط' : locale === 'en' ? 'Active' : 'Accepté') :
+                       user.status === 'PENDING' ? (locale === 'ar' ? 'قيد الانتظار' : locale === 'en' ? 'Pending' : 'En attente') : 
+                       (locale === 'ar' ? 'معلق' : locale === 'en' ? 'Suspended' : 'Suspendu')}
                     </span>
                   </div>
                 </td>
@@ -150,7 +178,7 @@ export default function UsersTable({
                   >
                     <MoreVertical size={18} />
                   </button>
-
+                  
                   {activeMenuUserId === user.id && (
                     <div className="absolute right-8 top-12 z-50 w-56 bg-white border-2 border-slate-100 rounded-2xl shadow-xl py-2 text-left animate-in fade-in slide-in-from-top-2 duration-200">
                       <button
@@ -161,7 +189,7 @@ export default function UsersTable({
                         className="w-full px-4 py-2.5 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
                       >
                         <Shield size={14} className="text-slate-400" />
-                        Gérer les rôles
+                        {locale === 'ar' ? 'إدارة الأدوار' : locale === 'en' ? 'Manage roles' : 'Gérer les rôles'}
                       </button>
 
                       <button
@@ -172,7 +200,7 @@ export default function UsersTable({
                         className="w-full px-4 py-2.5 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
                       >
                         <Eye size={14} className="text-slate-400" />
-                        Voir activité
+                        {locale === 'ar' ? 'عرض النشاط' : locale === 'en' ? 'View activity' : 'Voir activité'}
                       </button>
 
                       {user.status === 'SUSPENDED' ? (
@@ -184,7 +212,7 @@ export default function UsersTable({
                           className="w-full px-4 py-2.5 hover:bg-green-50 hover:text-green-700 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
                         >
                           <UserCheck size={14} className="text-green-500" />
-                          Activer
+                          {locale === 'ar' ? 'تنشيط' : locale === 'en' ? 'Activate' : 'Activer'}
                         </button>
                       ) : (
                         <>
@@ -196,7 +224,7 @@ export default function UsersTable({
                             className="w-full px-4 py-2.5 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
                           >
                             <UserX size={14} className="text-slate-400" />
-                            Désactiver
+                            {locale === 'ar' ? 'إلغاء التنشيط' : locale === 'en' ? 'Deactivate' : 'Désactiver'}
                           </button>
                           <button
                             onClick={() => {
@@ -205,8 +233,8 @@ export default function UsersTable({
                             }}
                             className="w-full px-4 py-2.5 hover:bg-amber-50 hover:text-amber-700 text-slate-700 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter"
                           >
-                            <Ban size={14} className="text-amber-55 text-amber-500" />
-                            Suspendre
+                            <Ban size={14} className="text-amber-500" />
+                            {locale === 'ar' ? 'تعليق' : locale === 'en' ? 'Suspend' : 'Suspendre'}
                           </button>
                         </>
                       )}
@@ -216,10 +244,10 @@ export default function UsersTable({
                           onDelete(user);
                           setActiveMenuUserId(null);
                         }}
-                        className="w-full px-4 py-2.5 hover:bg-red-55 bg-white hover:bg-red-50 text-red-600 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter border-t border-slate-100"
+                        className="w-full px-4 py-2.5 hover:bg-red-50 text-red-600 text-xs font-bold flex items-center gap-2 transition-all uppercase tracking-tighter border-t border-slate-100"
                       >
                         <Trash2 size={14} className="text-red-500" />
-                        Supprimer
+                        {locale === 'ar' ? 'حذف' : locale === 'en' ? 'Delete' : 'Supprimer'}
                       </button>
                     </div>
                   )}
